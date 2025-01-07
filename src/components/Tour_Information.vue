@@ -13,14 +13,14 @@
       <div><i class="fa-regular fa-user"></i> Group size: 6 - 18</div>
     </div>
     <div class="container">
-      <h3>About this trip</h3>
+      <h2>About this trip</h2>
       {{ Tour.Description }}
     </div>
     <div class="container my-4">
-      <h3>Upcoming dates</h3>
+      <h2>Upcoming dates</h2>
 
       <div v-for="(items, year) in groupedSchedules" :key="year">
-        <h6 class="my-1">{{ year }}</h6>
+        <h5 class="my-1">{{ year }}</h5>
         <div v-for="(item, index) in items" :key="index">
           <span>
             {{ item.StartDate }} -
@@ -36,7 +36,7 @@
     </div>
 
     <div class="container">
-      <h3><i class="fa-regular fa-face-grimace"></i> Is this tour for me ?</h3>
+      <h2><i class="fa-regular fa-face-grimace"></i> Is this tour for me ?</h2>
       <div>
         <h5>What's the average age?</h5>
         <p>
@@ -74,10 +74,10 @@
     </div>
 
     <div class="container my-4">
-      <h3>What included</h3>
+      <h2>What included</h2>
 
       <div v-for="(items, status) in groupedServices" :key="status">
-        <h6 class="my-1">{{ status }}</h6>
+        <h5 class="my-1">{{ status }}</h5>
         <div v-if="status == 'Available'">
           <div v-for="(item, index) in items" :key="index">
             <div class="row mb-3">
@@ -91,6 +91,7 @@
                 {{ item.Description }}
               </div>
             </div>
+            <hr />
           </div>
         </div>
         <div v-else>
@@ -106,6 +107,7 @@
                 {{ item.Description }}
               </div>
             </div>
+            <hr />
           </div>
         </div>
       </div>
@@ -147,5 +149,11 @@ const groupedServices = computed(() => {
 }
 .fa-star {
   color: yellow;
+}
+p,
+span,
+i,
+div {
+  font-size: 18px;
 }
 </style>

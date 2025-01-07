@@ -29,6 +29,7 @@
         tabindex="-1"
         aria-labelledby="popupTitle"
         aria-hidden="true"
+        data-bs-backdrop="static"
       >
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
@@ -51,8 +52,15 @@
                         :columns="columns"
                         :expanded="expanded"
                         :color="selectedColor"
-                        :attributes="attrs"
+                        :attributes="[...allowedDates]"
+                        :disabled-dates="allDisabledDates"
+                        :min-date="minDate"
+                        :max-date="maxDate"
+                        @dayclick="
+                          removeSevenDaysAfterSelectedDate($event.date)
+                        "
                         borderless
+                        is-required
                       />
                     </div>
 
@@ -125,7 +133,7 @@ import Navigate from '@/components/Navigate.vue';
 import HeroSection from '@/components/HeroSection.vue';
 import Footer from '@/components/Footer.vue';
 import Tour_Information from '@/components/Tour_Information.vue';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useScreens } from 'vue-screen-utils';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 import axios from 'axios';
@@ -152,6 +160,50 @@ const attrs = ref([
     // dates: new Date(),
   },
 ]);
+
+var minDate = ref();
+var maxDate = ref();
+var allDisabledDates = reactive([]);
+
+// Tính toán các ngày được phép
+const allowedDates = computed(() => {
+  return schedules.value.map((date) => ({
+    key: `allowed-${date.StartDate}`,
+    dates: date.StartDate,
+    // highlight: {
+    //   start: { fillMode: 'outline' },
+    //   base: { fillMode: 'light' },
+    //   end: { fillMode: 'outline' },
+    // },
+  }));
+});
+
+// Cấu hình các ngày bị disable
+const disabledDates = () => {
+  // Xác định khoảng thời gian rộng nhất dựa trên schedules
+  const minDate = new Date(
+    Math.min(...schedules.value.map((item) => new Date(item.StartDate)))
+  );
+  const maxDate = new Date(
+    Math.max(...schedules.value.map((item) => new Date(item.StartDate)))
+  );
+
+  // Tạo một mảng chứa tất cả các ngày cần vô hiệu hóa
+
+  for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)) {
+    let currentDate = new Date(d);
+    // Kiểm tra xem ngày hiện tại có nằm trong danh sách các ngày được phép không
+    if (
+      !schedules.value.some(
+        (schedule) =>
+          new Date(schedule.StartDate).toDateString() ===
+          currentDate.toDateString()
+      )
+    ) {
+      allDisabledDates.push(currentDate);
+    }
+  }
+};
 
 const selectedDate = ref(null);
 const tripPrice = ref(1495);
@@ -192,10 +244,43 @@ const confirmBooking = () => {
   closePopup();
 };
 
+// Hàm loại bỏ 7 ngày liên tiếp sau ngày được chọn
+const removeSevenDaysAfterSelectedDate = async (selectedDate) => {
+  if (
+    schedules.value.some(
+      (schedule) =>
+        new Date(schedule.StartDate).toDateString() ===
+        selectedDate.toDateString()
+    )
+  ) {
+    // console.log('hello');
+    const startDate = new Date(selectedDate);
+    for (let i = 0; i < 7; i++) {
+      const dateToRemove = new Date(startDate);
+      dateToRemove.setDate(startDate.getDate() + i);
+      const index = allDisabledDates.findIndex(
+        (disabledDate) =>
+          disabledDate.toDateString() === dateToRemove.toDateString()
+      );
+      if (index !== -1) {
+        allDisabledDates.splice(index, 1); // Xóa phần tử khỏi reactive array
+      }
+    }
+  }
+};
+
 const fetchTourSchedule = async (tourid) => {
   try {
     const response = await axios.get(`/api/tour/${tourid}/schedule`);
     schedules.value = response.data;
+
+    minDate = new Date(
+      Math.min(...schedules.value.map((item) => new Date(item.StartDate)))
+    );
+    maxDate = new Date(
+      Math.max(...schedules.value.map((item) => new Date(item.StartDate)))
+    );
+    disabledDates();
 
     schedules.value.map((item) => {
       item.StartDate = new Date(item.StartDate).toLocaleDateString('en-US', {
@@ -226,7 +311,6 @@ const fetchTourDetail = async (tourid) => {
 const fetchTourService = async (tourid) => {
   try {
     const response = await axios.get(`/api/tour/${tourid}/service`);
-    console.log(response.data);
     services.value = response.data;
   } catch (error) {
     console.error('Error fetching Tour Detail:', error);

@@ -12,8 +12,8 @@
     </header>
     <div class="card-box">
       <div class="card text-center card-booking">
-        <h1 class="Card-title">$1240</h1>
-        <h6>deposit $200</h6>
+        <h1 class="Card-title">${{ tour.Price }}</h1>
+        <h6>deposit ${{ tour.Price * 0.3 }}</h6>
         <hr />
         <div class="btn btn-success" @click="openPopup">Book Now</div>
         <hr />
@@ -41,10 +41,32 @@
                 @click="closePopup"
               ></button>
             </div>
+            <div class="breadcrumb">
+              <span
+                class="breadcrumb-item"
+                :class="{ active: currentStep === 1 }"
+              >
+                Choose a Package
+              </span>
+              <span class="breadcrumb-separator">&gt;</span>
+              <span
+                class="breadcrumb-item"
+                :class="{ active: currentStep === 2 }"
+              >
+                Add Participant Info
+              </span>
+              <span class="breadcrumb-separator">&gt;</span>
+              <span
+                class="breadcrumb-item"
+                :class="{ active: currentStep === 3 }"
+              >
+                Complete Payment
+              </span>
+            </div>
             <div class="modal-body">
               <div class="container-fluid">
                 <div class="row">
-                  <div class="col-md-8">
+                  <div v-if="currentStep === 1" class="col-md-8">
                     <h6>Select Departure</h6>
                     <div class="mb-3">
                       <!-- Lịch hiển thị toàn bộ calendar -->
@@ -52,10 +74,11 @@
                         :columns="columns"
                         :expanded="expanded"
                         :color="selectedColor"
-                        :attributes="[...allowedDates]"
+                        :attributes="[...allowedDates, ...datesPicked]"
                         :disabled-dates="allDisabledDates"
                         :min-date="minDate"
                         :max-date="maxDate"
+                        v-model="selectedDate"
                         @dayclick="
                           removeSevenDaysAfterSelectedDate($event.date)
                         "
@@ -65,53 +88,442 @@
                     </div>
 
                     <h6>Package</h6>
-                    <div class="mb-3">
-                      <p>
-                        Trip Price: <strong>${{ tripPrice }}</strong>
-                      </p>
+                    <div class="mb-3 d-flex">
+                      <div class="dropdown">
+                        <button
+                          class="btn btn-light dropdown-toggle"
+                          type="button"
+                          id="dropdownMenuButton"
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          <i class="bi bi-person"></i> {{ selectedPakage }}
+                        </button>
+                        <ul
+                          class="dropdown-menu"
+                          aria-labelledby="dropdownMenuButton"
+                        >
+                          <li
+                            v-for="value in caculateMount(
+                              getSchedule(selectedDate)?.Capacity
+                            )"
+                            :key="value"
+                          >
+                            <a
+                              class="dropdown-item"
+                              href="#"
+                              @click.prevent="_selectPackage(value)"
+                            >
+                              {{ value }}
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <h6 style="margin-left: 20%">
+                        Trip Price: <strong>${{ tour.Price }}</strong>
+                      </h6>
                     </div>
 
                     <h6>Select Options</h6>
                     <div
-                      class="form-check"
-                      v-for="(option, index) in options"
-                      :key="index"
+                      class="form-check px-0"
+                      v-for="(items, status) in groupedServices()"
+                      :key="status"
                     >
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        v-model="selectedOptions"
-                        :value="option"
-                      />
-                      <label class="form-check-label">
-                        {{ option.name }} (+${{ option.price }})
-                      </label>
+                      <div v-if="status != 'Available'">
+                        <div v-for="(option, index) in items" :key="index">
+                          <div class="row">
+                            <div class="col-2">
+                              <div class="dropdown">
+                                <button
+                                  class="btn btn-light dropdown-toggle"
+                                  type="button"
+                                  id="dropdownMenuButton"
+                                  data-bs-toggle="dropdown"
+                                  aria-expanded="false"
+                                  style="width: fit-content"
+                                >
+                                  {{
+                                    selectedOptions[option.ServiceID]
+                                      ?.Quantity || 0
+                                  }}
+                                </button>
+                                <ul
+                                  class="dropdown-menu"
+                                  aria-labelledby="dropdownMenuButton"
+                                >
+                                  <li
+                                    v-for="value in caculateMount(
+                                      option.Capacity
+                                    )"
+                                    :key="value"
+                                  >
+                                    <a
+                                      class="dropdown-item"
+                                      href="#"
+                                      @click.prevent="
+                                        selectOption(option.ServiceID, value)
+                                      "
+                                    >
+                                      {{ value }}
+                                    </a>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="d-flex flex-column">
+                                <div class="d-flex">
+                                  <h5>
+                                    {{ option.ServiceName }}
+                                  </h5>
+                                  <h5 style="margin-left: auto">
+                                    ${{ option.Price }}
+                                  </h5>
+                                </div>
+                                <div>
+                                  {{ option.Description }}
+                                </div>
+                              </div>
+                              <hr />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  </div>
+
+                  <div v-else-if="currentStep === 2" class="col-md-8">
+                    <h6>Buyer Information</h6>
+                    <form @submit.prevent="">
+                      <div class="row g-3">
+                        <div class="col-6">
+                          <input
+                            v-model="Buyer.firstName"
+                            type="text"
+                            class="form-control"
+                            placeholder="First Name"
+                            required
+                          />
+                        </div>
+                        <div class="col-6">
+                          <input
+                            v-model="Buyer.lastName"
+                            type="text"
+                            class="form-control"
+                            placeholder="Last Name"
+                            required
+                          />
+                        </div>
+                        <div class="col-6">
+                          <input
+                            v-model="Buyer.email"
+                            type="email"
+                            class="form-control"
+                            placeholder="Email"
+                            required
+                          />
+                        </div>
+                        <div class="col-6">
+                          <input
+                            v-model="Buyer.confirmEmail"
+                            type="email"
+                            class="form-control"
+                            placeholder="Confirm Email"
+                            required
+                          />
+                        </div>
+                        <hr />
+                      </div>
+                      <div>
+                        <h6>Participant Information</h6>
+                        <div class="row g-3">
+                          <div class="col-6">
+                            <input
+                              v-model="Participant.firstName"
+                              type="text"
+                              class="form-control"
+                              placeholder="First Name"
+                              required
+                            />
+                          </div>
+                          <div class="col-6">
+                            <input
+                              v-model="Participant.lastName"
+                              type="text"
+                              class="form-control"
+                              placeholder="Last Name"
+                              required
+                            />
+                          </div>
+                          <div class="col">
+                            <input
+                              v-model="Participant.email"
+                              type="email"
+                              class="form-control"
+                              placeholder="Email"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div class="my-1">
+                          <label
+                            for="inputNameOnPassport"
+                            class="form-label m-1"
+                            >Full Name On Passport</label
+                          >
+                          <input
+                            id="inputNameOnPassport"
+                            v-model="Participant.fullNameOnPassport"
+                            type="text"
+                            class="form-control"
+                            placeholder="Your Answer"
+                            required
+                          />
+                        </div>
+                        <div class="my-1">
+                          <label
+                            for="inputPassportNumber"
+                            class="form-label m-1"
+                            >Passport Number</label
+                          >
+                          <input
+                            id="inputPassportNumber"
+                            v-model="Participant.passportNumber"
+                            type="number"
+                            class="form-control"
+                            placeholder="Your Answer"
+                            required
+                          />
+                        </div>
+                        <div class="my-1">
+                          <label for="gender" class="form-label m-1"
+                            >Gender</label
+                          >
+                          <div class="form-check">
+                            <input
+                              type="radio"
+                              class="form-check-input"
+                              id="male"
+                              v-model="Participant.gender"
+                              value="male"
+                            />
+                            <label for="male" class="form-check-label"
+                              >Male</label
+                            >
+                          </div>
+                          <div class="form-check">
+                            <input
+                              type="radio"
+                              class="form-check-input"
+                              id="female"
+                              v-model="Participant.gender"
+                              value="female"
+                            />
+                            <label for="female" class="form-check-label"
+                              >Female</label
+                            >
+                          </div>
+                        </div>
+                        <div class="my-1">
+                          <label for="inputNationality" class="form-label m-1"
+                            >Nationality</label
+                          >
+                          <input
+                            id="inputNationality"
+                            v-model="Participant.nationality"
+                            type="text"
+                            class="form-control"
+                            placeholder="Your Answer"
+                            required
+                          />
+                        </div>
+                        <div class="my-1">
+                          <label for="inputPhoneNumber" class="form-label m-1"
+                            >Phone Number</label
+                          >
+                          <input
+                            id="inputPhoneNumber"
+                            v-model="Participant.phoneNumber"
+                            type="text"
+                            class="form-control"
+                            placeholder="Your Answer"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </form>
+                    <!-- Add participant form here -->
+                  </div>
+                  <div v-else-if="currentStep === 3" class="col-md-8">
+                    <h6>Payment</h6>
+                    <form>
+                      <div class="mb-3">
+                        <label for="cardNumber" class="form-label"
+                          >Card number</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="cardNumber"
+                          placeholder="1234 1234 1234 1234"
+                          v-model="payment.cardNumber"
+                        />
+                      </div>
+                      <div class="row mb-3">
+                        <div class="col-md-6">
+                          <label for="expirationDate" class="form-label"
+                            >Expiration date</label
+                          >
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="expirationDate"
+                            placeholder="MM / YY"
+                            v-model="payment.expirationDate"
+                          />
+                        </div>
+                        <div class="col-md-6">
+                          <label for="cvc" class="form-label"
+                            >Security code</label
+                          >
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="cvc"
+                            placeholder="CVC"
+                            v-model="payment.cvc"
+                          />
+                        </div>
+                      </div>
+                      <h5>Billing Address</h5>
+                      <div class="mb-3">
+                        <label for="nameOnCard" class="form-label"
+                          >Name on Card</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="nameOnCard"
+                          placeholder="Name on Card"
+                          v-model="payment.nameOnCard"
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="addressLine1" class="form-label"
+                          >Address Line 1</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="addressLine1"
+                          placeholder="Address Line 1"
+                          v-model="payment.addressLine1"
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="addressLine2" class="form-label"
+                          >Address Line 2</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="addressLine2"
+                          placeholder="Address Line 2"
+                          v-model="payment.addressLine2"
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="city" class="form-label">City / Town</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="city"
+                          placeholder="City / Town"
+                          v-model="payment.city"
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="postcode" class="form-label"
+                          >Postcode</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="postcode"
+                          placeholder="Postcode"
+                          v-model="payment.postcode"
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label for="country" class="form-label">Country</label>
+                        <select class="form-select" v-model="payment.country">
+                          <option value="Vietnam">Vietnam</option>
+                          <option value="United States">United States</option>
+                          <option value="United Kingdom">United Kingdom</option>
+                          <option value="Japan">Japan</option>
+                        </select>
+                      </div>
+                    </form>
                   </div>
 
                   <div class="col-md-4">
                     <h6>Your Booking</h6>
-                    <p>Trip Price: ${{ tripPrice }}</p>
-                    <p>Total: ${{ calculateTotal() }}</p>
-                    <p>Due at Booking: ${{ calculateDeposit() }}</p>
+                    <div>
+                      <div class="d-flex">
+                        <h6 class="text-bold">Trip Price:</h6>
+                        <h6 style="margin-left: auto">
+                          ${{ tour.Price * selectedPakage }}
+                        </h6>
+                      </div>
+
+                      <span style="font-size: small; margin-left: 10px"
+                        >${{ tour.Price }} * {{ selectedPakage }}</span
+                      >
+                    </div>
+                    <hr />
+
+                    <div v-if="Object.keys(selectedOptions).length > 0">
+                      <div
+                        class="my-2"
+                        v-for="(optionData, optionId) in selectedOptions"
+                        :key="optionId"
+                      >
+                        <div class="d-flex">
+                          <h6 class="text-bold" style="margin-bottom: 0">
+                            {{ optionData.ServiceName }}
+                          </h6>
+                          <h6 style="margin-left: auto; margin-bottom: 0">
+                            ${{ optionData.Price * optionData.Quantity }}
+                          </h6>
+                        </div>
+
+                        <span
+                          style="
+                            font-size: small;
+                            margin-left: 10px;
+                            margin-bottom: 15px;
+                          "
+                        >
+                          ${{ optionData.Price }} * {{ optionData.Quantity }}
+                        </span>
+                      </div>
+                      <hr />
+                    </div>
+
+                    <!-- <p>Total: ${{ calculateTotal() }}</p> -->
+                    <p>Trip Total: ${{ calculateTotal() }}</p>
                   </div>
                 </div>
               </div>
             </div>
             <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                @click="closePopup"
-              >
-                Close
+              <button type="button" class="btn btn-secondary" @click="goBack">
+                {{ currentStep > 1 ? 'Back' : 'Close' }}
               </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click="confirmBooking"
-              >
-                Continue
+              <button type="button" class="btn btn-primary" @click="goNext">
+                {{ currentStep === 3 ? 'Confirm Booking' : 'Continue' }}
               </button>
             </div>
           </div>
@@ -136,12 +548,13 @@ import Tour_Information from '@/components/Tour_Information.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useScreens } from 'vue-screen-utils';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
-import axios from 'axios';
+import axios, { all } from 'axios';
 
 const route = useRoute();
-const schedules = ref([]);
-const tour = ref({});
-const services = ref([]);
+const schedules = ref([]); // Lưu trữ các lịch trình của tour
+const tour = ref({}); // Lưu thông tin của tour
+const services = ref([]); // Lưu các services của tour
+const currentStep = ref(1); // Lưu bước hiện tại của việc đặt tour
 
 const { mapCurrent } = useScreens({
   xs: '0px',
@@ -163,31 +576,34 @@ const attrs = ref([
 
 var minDate = ref();
 var maxDate = ref();
-var allDisabledDates = reactive([]);
-
+var allDisabledDates = ref([]);
+var allAvailableDates = ref([]);
 // Tính toán các ngày được phép
 const allowedDates = computed(() => {
   return schedules.value.map((date) => ({
     key: `allowed-${date.StartDate}`,
     dates: date.StartDate,
-    // highlight: {
-    //   start: { fillMode: 'outline' },
-    //   base: { fillMode: 'light' },
-    //   end: { fillMode: 'outline' },
-    // },
+    highlight: 'blue',
   }));
 });
 
-// Cấu hình các ngày bị disable
-const disabledDates = () => {
-  // Xác định khoảng thời gian rộng nhất dựa trên schedules
-  const minDate = new Date(
-    Math.min(...schedules.value.map((item) => new Date(item.StartDate)))
-  );
-  const maxDate = new Date(
-    Math.max(...schedules.value.map((item) => new Date(item.StartDate)))
-  );
+const datesPicked = computed(() => {
+  if (allAvailableDates.value != null && allAvailableDates.value.length > 0) {
+    return [
+      {
+        dates: {
+          start: allAvailableDates.value[0],
+          end: allAvailableDates.value[allAvailableDates.value.length - 1],
+        },
+        highlight: 'blue',
+      },
+    ];
+  }
+  return [];
+});
 
+// Cấu hình các ngày bị disable
+const disabledDates = async () => {
   // Tạo một mảng chứa tất cả các ngày cần vô hiệu hóa
 
   for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)) {
@@ -200,20 +616,14 @@ const disabledDates = () => {
           currentDate.toDateString()
       )
     ) {
-      allDisabledDates.push(currentDate);
+      allDisabledDates.value.push(currentDate);
+      // Loại bỏ giá trị trùng lặp
+      // allDisabledDates = [...new Set(allDisabledDates)];
     }
   }
 };
 
-const selectedDate = ref(null);
-const tripPrice = ref(1495);
-const deposit = ref(200);
-const options = ref([
-  { name: 'Pre-Nights Accommodation', price: 60 },
-  { name: 'Secret Handicraft Villages of Hanoi', price: 49 },
-  { name: 'Private Room Upgrade', price: 500 },
-]);
-const selectedOptions = ref([]);
+const selectedDate = ref();
 
 const openPopup = () => {
   const modal = new bootstrap.Modal(document.getElementById('bookingPopup'));
@@ -228,44 +638,145 @@ const closePopup = () => {
 };
 
 const calculateTotal = () => {
-  let optionsTotal = selectedOptions.value.reduce(
-    (sum, option) => sum + option.price,
-    0
+  // Tính giá tour dựa trên số lượng người
+  const tourTotal = (parseFloat(tour.value.Price) || 0) * selectedPakage.value;
+
+  // Tính tổng giá các dịch vụ đã chọn
+  const servicesTotal = Object.values(selectedOptions.value).reduce(
+    (total, option) => {
+      console.log(option);
+      const price = parseFloat(option.Price) || 0; // Giá dịch vụ
+      const quantity = option.Quantity || 0; // Số lượng dịch vụ
+      return total + price * quantity; // Tích lũy tổng giá trị dịch vụ
+    },
+    0 // Giá trị ban đầu là 0
   );
-  return tripPrice.value + optionsTotal;
+
+  // Tổng toàn bộ chi phí
+  return tourTotal + servicesTotal;
 };
 
-const calculateDeposit = () => {
-  return deposit.value;
+const goNext = () => {
+  if (currentStep.value < 3) currentStep.value++;
+  else this.$emit('confirmBooking');
 };
 
-const confirmBooking = () => {
-  alert('Booking confirmed!');
-  closePopup();
+const goBack = () => {
+  if (currentStep.value > 1) currentStep.value--;
+  else closePopup();
 };
 
+// current =1
+//datadata
+const selectedPakage = ref(1); // Lưu số lượng người tham gia
+const selectedOptions = ref({}); // Lưu số lượng đã chọn cho từng option
+const schedulePicked = ref({}); // Lưu lịch trình đã chọn
+//
+
+const _selectPackage = (value) => {
+  selectedPakage.value = value; // Lưu giá trị đã chọn
+};
+
+const selectOption = (optionId, Quantity) => {
+  const service = services.value.find(
+    (service) => service.ServiceID == optionId
+  );
+  console.log(service);
+  selectedOptions.value[optionId] = { Quantity, ...service }; // Cập nhật số lượng cho từng option
+  console.log('Selected Options:', selectedOptions.value);
+};
+
+const getSchedule = (date) => {
+  const index = schedules.value.findIndex((schedule) => {
+    return (
+      new Date(schedule.StartDate).toDateString() ===
+      new Date(date).toDateString()
+    );
+  });
+  if (index != -1) {
+    schedulePicked.value = schedules.value[index];
+    return schedules.value[index];
+  }
+};
+
+// current = 2
+const Buyer = reactive({
+  firstName: '',
+  lastName: '',
+  email: '',
+  confirmEmail: '',
+});
+
+const Participant = reactive([
+  {
+    firstName: '',
+    lastName: '',
+    email: '',
+    fullNameOnPassport: '',
+    passportNumber: '',
+    dateOfBirth: '',
+    gender: '',
+    nationality: '',
+    phoneNumber: '',
+  },
+]);
+
+// current = 3
+const payment = reactive({
+  cardNumber: '',
+  expirationDate: '',
+  cvc: '',
+  nameOnCard: '',
+  addressLine1: '',
+  addressLine2: '',
+  city: '',
+  postcode: '',
+  country: 'Vietnam',
+});
 // Hàm loại bỏ 7 ngày liên tiếp sau ngày được chọn
-const removeSevenDaysAfterSelectedDate = async (selectedDate) => {
-  if (
-    schedules.value.some(
-      (schedule) =>
-        new Date(schedule.StartDate).toDateString() ===
-        selectedDate.toDateString()
-    )
-  ) {
-    // console.log('hello');
-    const startDate = new Date(selectedDate);
-    for (let i = 0; i < 7; i++) {
-      const dateToRemove = new Date(startDate);
-      dateToRemove.setDate(startDate.getDate() + i);
-      const index = allDisabledDates.findIndex(
-        (disabledDate) =>
-          disabledDate.toDateString() === dateToRemove.toDateString()
-      );
-      if (index !== -1) {
-        allDisabledDates.splice(index, 1); // Xóa phần tử khỏi reactive array
+const removeSevenDaysAfterSelectedDate = async (datePicked) => {
+  selectedDate.value = new Date(datePicked).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  try {
+    // Lưu vào allAvailable
+    if (allAvailableDates.value != null && allAvailableDates.value.length > 0) {
+      allDisabledDates.value = [
+        ...allDisabledDates.value,
+        ...allAvailableDates.value.slice(1),
+      ];
+      allAvailableDates.value = [];
+    }
+    const index_StartDate = schedules.value.findIndex(
+      (date) =>
+        new Date(date.StartDate).toDateString() === datePicked.toDateString()
+    );
+    // Kiểm tra ngày được chọn có ở trong schedule
+    if (index_StartDate != -1) {
+      const startDate = new Date(datePicked);
+      allAvailableDates.value.push(datePicked);
+
+      const dayNumber =
+        new Date(schedules.value[index_StartDate].EndDate).getDate() -
+        datePicked.getDate() +
+        1;
+      for (let i = 0; i < dayNumber; i++) {
+        const dateToRemove = new Date(startDate);
+        dateToRemove.setDate(startDate.getDate() + i);
+        const index = allDisabledDates.value.findIndex(
+          (disabledDate) =>
+            disabledDate.toDateString() === dateToRemove.toDateString()
+        );
+        if (index !== -1) {
+          allAvailableDates.value.push(allDisabledDates.value[index]);
+          allDisabledDates.value.splice(index, 1);
+        }
       }
     }
+  } catch (error) {
+    console.error('Error remove 7 days after selected date:', error);
   }
 };
 
@@ -280,6 +791,7 @@ const fetchTourSchedule = async (tourid) => {
     maxDate = new Date(
       Math.max(...schedules.value.map((item) => new Date(item.StartDate)))
     );
+    maxDate.setDate(maxDate.getDate() + 30);
     disabledDates();
 
     schedules.value.map((item) => {
@@ -303,6 +815,7 @@ const fetchTourDetail = async (tourid) => {
   try {
     const response = await axios.get(`/api/tour/${tourid}`);
     tour.value = response.data;
+    console.log(tour.value);
   } catch (error) {
     console.error('Error fetching Tour Detail:', error);
   }
@@ -315,6 +828,23 @@ const fetchTourService = async (tourid) => {
   } catch (error) {
     console.error('Error fetching Tour Detail:', error);
   }
+};
+
+const groupedServices = () => {
+  return services.value.reduce((acc, service) => {
+    const status = service.Status;
+    if (!acc[status]) acc[status] = [];
+    acc[status].push(service);
+    return acc;
+  }, {});
+};
+
+const caculateMount = (mount) => {
+  let arr = [];
+  for (let i = 0; i <= mount; i++) {
+    arr.push(i);
+  }
+  return arr;
 };
 
 onMounted(() => {
@@ -352,5 +882,41 @@ onMounted(() => {
 }
 .modal .modal-content {
   border-radius: 10px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4a4a4a; /* Màu nền tương tự */
+  padding: 10px;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+.breadcrumb-item {
+  padding: 0 5px;
+}
+
+.breadcrumb-item.active {
+  font-weight: bold;
+}
+
+.breadcrumb-separator {
+  padding: 0 5px;
+  color: #cccccc;
+}
+
+.dropdown-menu {
+  max-height: 200px;
+  overflow-y: auto; /* Cho phép cuộn khi danh sách dài */
+}
+
+.btn-light {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100px; /* Độ rộng của nút */
 }
 </style>

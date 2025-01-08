@@ -33,6 +33,7 @@ const db = mysql.createConnection({
   user: 'root',
   password: process.env.PASSWORD_MYSQL, // Thay bằng mật khẩu của bạn
   database: 'TourManagement', // Tên database
+  connectTimeout: 10000,
 });
 
 db.connect((err) => {

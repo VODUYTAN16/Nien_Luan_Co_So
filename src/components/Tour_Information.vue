@@ -8,7 +8,13 @@
         67 reviews
       </div>
       <div class="mx-5">
-        <i class="fa-solid fa-calendar-days"></i> Duration: 13 days
+        <i class="fa-solid fa-calendar-days"></i> Duration:
+        {{
+          new Date(Schedules[0]?.EndDate).getDate() -
+            new Date(Schedules[0]?.StartDate).getDate() +
+            1 || 0
+        }}
+        days
       </div>
       <div><i class="fa-regular fa-user"></i> Group size: 6 - 18</div>
     </div>

@@ -161,9 +161,9 @@ onMounted(() => {
   const button = document.querySelector('.navbar-toggler');
   const navbar = document.querySelector('#navbar');
 
-  button.addEventListener('click', () => {
-    navbar.classList.toggle('active'); // Toggle class 'active' để thay đổi màu
-  });
+  // button.addEventListener('click', () => {
+  //   navbar.classList.toggle('active'); // Toggle class 'active' để thay đổi màu
+  // });
 
   fetchUser();
 });

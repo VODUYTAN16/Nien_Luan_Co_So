@@ -1,23 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '@/views/HomeView.vue';
+import AdminView from '@/views/AdminView.vue';
+import AdminBookingView from '@/components/AdminBookingView.vue';
+import AdminTourView from '@/components/AdminTourView.vue';
+import AdminServiceView from '@/components/AdminServiceView.vue';
+import AdminBlogView from '@/components/AdminBlogView.vue';
 import TourDetail from '@/views/TourDetail.vue';
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      component: AdminView,
     },
+    { path: '/booking', name: 'Booking', component: AdminBookingView },
+    { path: '/service', name: 'Service', component: AdminServiceView },
+    { path: '/tour', name: 'Tour', component: AdminTourView },
+    { path: '/adminBlog', component: AdminBlogView },
     {
       path: '/TourDetail/:tourid',
       component: TourDetail,
     },
-    // {
-    //   path: '/about',
-    //   name: 'about',
-    //   component: () => import('../views/AboutView.vue'),
-    // },
   ],
 });
 

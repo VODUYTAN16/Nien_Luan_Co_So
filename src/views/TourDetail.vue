@@ -1,6 +1,6 @@
 <template>
   <div class="body">
-    <header>
+    <!-- <header>
       <Navigate class="navigate"></Navigate>
       <div class="herosection">
         <HeroSection
@@ -9,7 +9,7 @@
           p2=""
         ></HeroSection>
       </div>
-    </header>
+    </header> -->
     <div class="card-box">
       <div class="card text-center card-booking">
         <h1 class="Card-title">${{ tour.Price }}</h1>
@@ -66,7 +66,7 @@
             <div class="modal-body">
               <div class="container-fluid">
                 <div class="row">
-                  <div v-if="currentStep === 1" class="col-md-8">
+                  <div v-if="currentStep === 1" class="col-md-8 page-left">
                     <h6>Select Departure</h6>
                     <div class="mb-3">
                       <!-- Lịch hiển thị toàn bộ calendar -->
@@ -105,7 +105,7 @@
                         >
                           <li
                             v-for="value in caculateMount(
-                              getSchedule(selectedDate)?.Capacity
+                              getSchedule(selectedDate)?.AvailableSpots
                             )"
                             :key="value"
                           >
@@ -194,7 +194,7 @@
                     </div>
                   </div>
 
-                  <div v-else-if="currentStep === 2" class="col-md-8">
+                  <div v-else-if="currentStep === 2" class="col-md-8 page-left">
                     <h6>Buyer Information</h6>
                     <form @submit.prevent="">
                       <div class="row g-3">
@@ -238,125 +238,139 @@
                       </div>
                       <div>
                         <h6>Participant Information</h6>
-                        <div class="row g-3">
-                          <div class="col-6">
-                            <input
-                              v-model="Participant.firstName"
-                              type="text"
-                              class="form-control"
-                              placeholder="First Name"
-                              required
-                            />
-                          </div>
-                          <div class="col-6">
-                            <input
-                              v-model="Participant.lastName"
-                              type="text"
-                              class="form-control"
-                              placeholder="Last Name"
-                              required
-                            />
-                          </div>
-                          <div class="col">
-                            <input
-                              v-model="Participant.email"
-                              type="email"
-                              class="form-control"
-                              placeholder="Email"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div class="my-1">
-                          <label
-                            for="inputNameOnPassport"
-                            class="form-label m-1"
-                            >Full Name On Passport</label
+                        <div v-for="number in selectedPakage" :key="number">
+                          <h5
+                            class="bg-secondary rounded-circle text-center text-white"
+                            style="width: 30px; height: 30px"
                           >
-                          <input
-                            id="inputNameOnPassport"
-                            v-model="Participant.fullNameOnPassport"
-                            type="text"
-                            class="form-control"
-                            placeholder="Your Answer"
-                            required
-                          />
-                        </div>
-                        <div class="my-1">
-                          <label
-                            for="inputPassportNumber"
-                            class="form-label m-1"
-                            >Passport Number</label
-                          >
-                          <input
-                            id="inputPassportNumber"
-                            v-model="Participant.passportNumber"
-                            type="number"
-                            class="form-control"
-                            placeholder="Your Answer"
-                            required
-                          />
-                        </div>
-                        <div class="my-1">
-                          <label for="gender" class="form-label m-1"
-                            >Gender</label
-                          >
-                          <div class="form-check">
-                            <input
-                              type="radio"
-                              class="form-check-input"
-                              id="male"
-                              v-model="Participant.gender"
-                              value="male"
-                            />
-                            <label for="male" class="form-check-label"
-                              >Male</label
-                            >
+                            {{ number }}
+                          </h5>
+                          <div>
+                            <div class="row g-3">
+                              <div class="col-6">
+                                <input
+                                  v-model="Participant.firstName"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="First Name"
+                                  required
+                                />
+                              </div>
+                              <div class="col-6">
+                                <input
+                                  v-model="Participant.lastName"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="Last Name"
+                                  required
+                                />
+                              </div>
+                              <div class="col">
+                                <input
+                                  v-model="Participant.email"
+                                  type="email"
+                                  class="form-control"
+                                  placeholder="Email"
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <div class="my-1">
+                              <label
+                                for="inputNameOnPassport"
+                                class="form-label m-1"
+                                >Full Name On Passport</label
+                              >
+                              <input
+                                id="inputNameOnPassport"
+                                v-model="Participant.fullNameOnPassport"
+                                type="text"
+                                class="form-control"
+                                placeholder="Your Answer"
+                                required
+                              />
+                            </div>
+                            <div class="my-1">
+                              <label
+                                for="inputPassportNumber"
+                                class="form-label m-1"
+                                >Passport Number</label
+                              >
+                              <input
+                                id="inputPassportNumber"
+                                v-model="Participant.passportNumber"
+                                type="number"
+                                class="form-control"
+                                placeholder="Your Answer"
+                                required
+                              />
+                            </div>
+                            <div class="my-1">
+                              <label for="gender" class="form-label m-1"
+                                >Gender</label
+                              >
+                              <div class="form-check">
+                                <input
+                                  type="radio"
+                                  class="form-check-input"
+                                  id="male"
+                                  v-model="Participant.gender"
+                                  value="male"
+                                />
+                                <label for="male" class="form-check-label"
+                                  >Male</label
+                                >
+                              </div>
+                              <div class="form-check">
+                                <input
+                                  type="radio"
+                                  class="form-check-input"
+                                  id="female"
+                                  v-model="Participant.gender"
+                                  value="female"
+                                />
+                                <label for="female" class="form-check-label"
+                                  >Female</label
+                                >
+                              </div>
+                            </div>
+                            <div class="my-1">
+                              <label
+                                for="inputNationality"
+                                class="form-label m-1"
+                                >Nationality</label
+                              >
+                              <input
+                                id="inputNationality"
+                                v-model="Participant.nationality"
+                                type="text"
+                                class="form-control"
+                                placeholder="Your Answer"
+                                required
+                              />
+                            </div>
+                            <div class="my-1">
+                              <label
+                                for="inputPhoneNumber"
+                                class="form-label m-1"
+                                >Phone Number</label
+                              >
+                              <input
+                                id="inputPhoneNumber"
+                                v-model="Participant.phoneNumber"
+                                type="text"
+                                class="form-control"
+                                placeholder="Your Answer"
+                                required
+                              />
+                            </div>
                           </div>
-                          <div class="form-check">
-                            <input
-                              type="radio"
-                              class="form-check-input"
-                              id="female"
-                              v-model="Participant.gender"
-                              value="female"
-                            />
-                            <label for="female" class="form-check-label"
-                              >Female</label
-                            >
-                          </div>
-                        </div>
-                        <div class="my-1">
-                          <label for="inputNationality" class="form-label m-1"
-                            >Nationality</label
-                          >
-                          <input
-                            id="inputNationality"
-                            v-model="Participant.nationality"
-                            type="text"
-                            class="form-control"
-                            placeholder="Your Answer"
-                            required
-                          />
-                        </div>
-                        <div class="my-1">
-                          <label for="inputPhoneNumber" class="form-label m-1"
-                            >Phone Number</label
-                          >
-                          <input
-                            id="inputPhoneNumber"
-                            v-model="Participant.phoneNumber"
-                            type="text"
-                            class="form-control"
-                            placeholder="Your Answer"
-                            required
-                          />
                         </div>
                       </div>
                     </form>
                     <!-- Add participant form here -->
                   </div>
-                  <div v-else-if="currentStep === 3" class="col-md-8">
+                  <div v-else-if="currentStep === 3" class="col-md-8 page-left">
                     <h6>Payment</h6>
                     <form>
                       <div class="mb-3">
@@ -541,9 +555,9 @@
 </template>
 
 <script setup>
-import Navigate from '@/components/Navigate.vue';
-import HeroSection from '@/components/HeroSection.vue';
-import Footer from '@/components/Footer.vue';
+// import Navigate from '@/components/Navigate.vue';
+// import HeroSection from '@/components/HeroSection.vue';
+// import Footer from '@/components/Footer.vue';
 import Tour_Information from '@/components/Tour_Information.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useScreens } from 'vue-screen-utils';
@@ -688,6 +702,7 @@ const selectOption = (optionId, Quantity) => {
 
 const getSchedule = (date) => {
   const index = schedules.value.findIndex((schedule) => {
+    console.log(schedules.value);
     return (
       new Date(schedule.StartDate).toDateString() ===
       new Date(date).toDateString()
@@ -867,8 +882,7 @@ onMounted(() => {
 .card-box {
   position: absolute; /* Phần tử cha cần có position khác "static" */
   height: 180%;
-  top: 60%;
-  right: 5%;
+  right: 2%;
 }
 
 .card-booking {
@@ -918,5 +932,29 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   width: 100px; /* Độ rộng của nút */
+}
+
+.page-left {
+  overflow-y: auto; /* Hiển thị thanh cuộn dọc */
+  overflow-x: hidden; /* Ẩn thanh cuộn ngang */
+  max-height: 500px;
+}
+
+/* Tùy chỉnh thanh cuộn */
+.page-left::-webkit-scrollbar {
+  width: 8px; /* Chiều rộng của thanh cuộn dọc */
+}
+
+.page-left::-webkit-scrollbar-thumb {
+  background-color: #888; /* Màu của thanh cuộn */
+  border-radius: 4px; /* Bo góc thanh cuộn */
+}
+
+.page-left::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Màu của thanh cuộn khi hover */
+}
+
+.page-left::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Màu nền của thanh cuộn */
 }
 </style>

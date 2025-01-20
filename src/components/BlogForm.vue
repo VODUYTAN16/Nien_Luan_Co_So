@@ -111,6 +111,7 @@
               type="url"
               class="form-control"
               id="link"
+              required
               v-model="formData.link"
             />
           </div>
@@ -238,6 +239,11 @@ const createPost = async () => {
     const response = await axios.post('/api/posts', formData);
     message.value = response.data.message;
     success.value = true;
+    console.log(response.data);
+    axios.post(
+      'https://hook.eu2.make.com/7xzu3q45dgkbhi650m8idth9qmpmenr9',
+      response.data
+    );
   } catch (error) {
     message.value = error.response?.data?.message || 'Error creating post';
     success.value = false;
@@ -245,7 +251,7 @@ const createPost = async () => {
 };
 
 function getDriveFileId(url) {
-  const regex = /\/d\/([a-zA-Z0-9_-]+)/;
+  const regex = /\/(?:file\/d|d)\/([a-zA-Z0-9_-]+)/;
   const match = url.match(regex);
   return match ? match[1] : null;
 }

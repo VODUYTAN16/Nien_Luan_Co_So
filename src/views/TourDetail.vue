@@ -199,6 +199,7 @@
                     <form @submit.prevent="">
                       <div class="row g-3">
                         <div class="col-6">
+                          <label for="" class="form-label">First Name</label>
                           <input
                             v-model="Buyer.firstName"
                             type="text"
@@ -208,6 +209,7 @@
                           />
                         </div>
                         <div class="col-6">
+                          <label for="" class="form-label">Last Name</label>
                           <input
                             v-model="Buyer.lastName"
                             type="text"
@@ -217,6 +219,7 @@
                           />
                         </div>
                         <div class="col-6">
+                          <label for="" class="form-label">Email</label>
                           <input
                             v-model="Buyer.email"
                             type="email"
@@ -226,6 +229,7 @@
                           />
                         </div>
                         <div class="col-6">
+                          <label for="" class="form-label">Confirm Email</label>
                           <input
                             v-model="Buyer.confirmEmail"
                             type="email"
@@ -248,6 +252,9 @@
                           <div>
                             <div class="row g-3">
                               <div class="col-6">
+                                <label for="" class="form-label"
+                                  >First Name</label
+                                >
                                 <input
                                   v-model="Participant.firstName"
                                   type="text"
@@ -257,6 +264,9 @@
                                 />
                               </div>
                               <div class="col-6">
+                                <label for="" class="form-label"
+                                  >Last Name</label
+                                >
                                 <input
                                   v-model="Participant.lastName"
                                   type="text"
@@ -266,6 +276,7 @@
                                 />
                               </div>
                               <div class="col">
+                                <label for="" class="form-label">Email</label>
                                 <input
                                   v-model="Participant.email"
                                   type="email"
@@ -563,6 +574,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useScreens } from 'vue-screen-utils';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 import axios, { all } from 'axios';
+import { differenceInDays } from 'date-fns';
 
 const route = useRoute();
 const schedules = ref([]); // Lưu trữ các lịch trình của tour
@@ -579,14 +591,6 @@ const { mapCurrent } = useScreens({
 const columns = mapCurrent({ lg: 2 }, 1);
 const expanded = mapCurrent({ lg: false }, true);
 const selectedColor = ref('blue');
-const attrs = ref([
-  {
-    key: 'test',
-    highlight: true,
-    dates: { start: new Date(2019, 3, 15), end: new Date(2019, 3, 19) },
-    // dates: new Date(),
-  },
-]);
 
 var minDate = ref();
 var maxDate = ref();
@@ -597,7 +601,11 @@ const allowedDates = computed(() => {
   return schedules.value.map((date) => ({
     key: `allowed-${date.StartDate}`,
     dates: date.StartDate,
-    highlight: 'blue',
+    highlight: {
+      color: 'blue',
+      fillMode: 'outline',
+      contentClass: 'italic',
+    },
   }));
 });
 
@@ -702,7 +710,6 @@ const selectOption = (optionId, Quantity) => {
 
 const getSchedule = (date) => {
   const index = schedules.value.findIndex((schedule) => {
-    console.log(schedules.value);
     return (
       new Date(schedule.StartDate).toDateString() ===
       new Date(date).toDateString()
@@ -750,11 +757,7 @@ const payment = reactive({
 });
 // Hàm loại bỏ 7 ngày liên tiếp sau ngày được chọn
 const removeSevenDaysAfterSelectedDate = async (datePicked) => {
-  selectedDate.value = new Date(datePicked).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  selectedDate.value = new Date(datePicked);
   try {
     // Lưu vào allAvailable
     if (allAvailableDates.value != null && allAvailableDates.value.length > 0) {
@@ -774,9 +777,13 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
       allAvailableDates.value.push(datePicked);
 
       const dayNumber =
-        new Date(schedules.value[index_StartDate].EndDate).getDate() -
-        datePicked.getDate() +
-        1;
+        differenceInDays(
+          new Date(schedules.value[index_StartDate].EndDate),
+          new Date(schedules.value[index_StartDate].StartDate)
+        ) + 1;
+
+      console.log(schedules.value[index_StartDate]);
+      console.log(dayNumber);
       for (let i = 0; i < dayNumber; i++) {
         const dateToRemove = new Date(startDate);
         dateToRemove.setDate(startDate.getDate() + i);
@@ -798,6 +805,7 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
 const fetchTourSchedule = async (tourid) => {
   try {
     const response = await axios.get(`/api/tour/${tourid}/schedule`);
+    console.log(response.data);
     schedules.value = response.data;
 
     minDate = new Date(
@@ -830,7 +838,6 @@ const fetchTourDetail = async (tourid) => {
   try {
     const response = await axios.get(`/api/tour/${tourid}`);
     tour.value = response.data;
-    console.log(tour.value);
   } catch (error) {
     console.error('Error fetching Tour Detail:', error);
   }
@@ -862,7 +869,16 @@ const caculateMount = (mount) => {
   return arr;
 };
 
+const createBooking = () => {};
+
 onMounted(() => {
+  const tourid = route.params.tourid;
+  fetchTourSchedule(tourid);
+  fetchTourService(tourid);
+  fetchTourDetail(tourid);
+});
+
+onBeforeRouteUpdate(() => {
   const tourid = route.params.tourid;
   fetchTourSchedule(tourid);
   fetchTourService(tourid);

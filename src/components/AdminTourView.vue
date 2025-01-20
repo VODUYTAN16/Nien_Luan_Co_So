@@ -24,7 +24,10 @@
     </nav>
     <div v-if="currentStep == 1" class="createTour">
       <h2 class="text-center">Create Tour</h2>
-      <form @submit.prevent="createTour">
+      <form
+        id="form"
+        @submit.prevent="createTour(tourInf, dateForms, serviceForms)"
+      >
         <h4>Tour Infomation</h4>
         <div class="tourInfo">
           <div class="row">
@@ -35,18 +38,65 @@
                 id="tourName"
                 class="form-control"
                 placeholder="Your Anwer"
-                v-model="TourInf.tourName"
+                v-model="tourInf.tourName"
               />
             </div>
-            <div class="col-3">
-              <label for="price" class="form-label"> Price of tour </label>
+            <div class="col mb-2">
+              <label for="tourimg" class="form-label">Image of tour</label>
               <input
-                type="number"
-                id="price"
+                type="file"
+                id="tourimg"
                 class="form-control"
-                v-model="TourInf.price"
-                required
-                placeholder="Your Answer"
+                placeholder="Your Anwer"
+                @change="handleImage"
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div>
+                <label for="price" class="form-label"> Price of tour </label>
+                <input
+                  type="number"
+                  id="price"
+                  class="form-control"
+                  v-model="tourInf.price"
+                  required
+                  placeholder="$0"
+                />
+              </div>
+              <div class="my-2">
+                <label for="startLocation" class="form-label"
+                  >Start Location</label
+                >
+                <input
+                  id="startLocation"
+                  type="text"
+                  class="form-control"
+                  placeholder="Your Answer"
+                  required
+                  v-model="tourInf.startLocation"
+                />
+              </div>
+              <div>
+                <label for="destination" class="form-label">Destination</label>
+                <input
+                  type="text"
+                  id="destination"
+                  class="form-control"
+                  placeholder="Your Answer"
+                  required
+                  v-model="tourInf.destination"
+                />
+              </div>
+            </div>
+            <div class="col">
+              <img
+                class="rounded border border-4 order-light-subtle"
+                :src="tourInf.image"
+                alt=""
+                style="height: 250px"
               />
             </div>
           </div>
@@ -57,42 +107,16 @@
             <textarea
               id="description"
               class="form-control"
-              v-model="TourInf.description"
+              v-model="tourInf.description"
               required
               placeholder="Description about some interesting of the tour"
             ></textarea>
           </div>
-          <div class="row">
-            <div class="col">
-              <label for="startLocation" class="form-label"
-                >Start Location</label
-              >
-              <input
-                id="startLocation"
-                type="text"
-                class="form-control"
-                placeholder="Your Answer"
-                required
-                v-model="TourInf.startLocation"
-              />
-            </div>
-            <div class="col">
-              <label for="destination" class="form-label">Destination</label>
-              <input
-                type="text"
-                id="destination"
-                class="form-control"
-                placeholder="Destination"
-                required
-                v-model="TourInf.destination"
-              />
-            </div>
-          </div>
         </div>
-
+        <hr />
         <div class="tourSchedule my-3">
           <h4>Tour Schedule</h4>
-          <div class="text-center row">
+          <div class="row">
             <div
               v-for="(form, index) in dateForms"
               :key="index"
@@ -103,8 +127,8 @@
                   <VDatePicker
                     v-model="form.date"
                     is-range
+                    timezone="UTC"
                     :min-date="new Date()"
-                    :rules="rules"
                     :columns="columns"
                     :expanded="expanded"
                     :color="selectedColor"
@@ -139,8 +163,22 @@
                     </template>
                   </VDatePicker>
                 </div>
-
-                <div class="text-end">
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <label for="capacity" class="form-label">Capacity</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    placeholder="Your Answer"
+                    id="capacity"
+                    v-model="form.capacity"
+                    required
+                  />
+                </div>
+                <div
+                  class="col-1 d-flex justify-content-start align-items-end p-0"
+                >
                   <button
                     type="button"
                     class="btn btn-danger me-2"
@@ -167,7 +205,7 @@
           <h4>Tour Services</h4>
           <div class="row">
             <div
-              v-for="(service, index) in serviceForm"
+              v-for="(service, index) in serviceForms"
               :key="index"
               class="col-lg-6 col-sm-12"
             >
@@ -177,14 +215,19 @@
                     <label for="servicename" class="form-label"
                       >Service Name</label
                     >
-                    <input
-                      type="text"
+                    <select
+                      v-model="service.serviceID"
+                      class="form-select"
                       id="servicename"
-                      class="form-control"
-                      required
-                      placeholder="Your Answer"
-                      v-model="service.serviceName"
-                    />
+                    >
+                      <option
+                        v-for="ser in services"
+                        :key="ser.ServiceID"
+                        :value="ser.ServiceID"
+                      >
+                        {{ ser.ServiceName }}
+                      </option>
+                    </select>
                   </div>
                   <div class="col-3">
                     <label for="status" class="form-label">Status</label>
@@ -194,8 +237,7 @@
                       aria-label="Default select example"
                       v-model="service.status"
                     >
-                      <option selected>Select status of this service</option>
-                      <option value="Availabel">Available</option>
+                      <option value="Available">Available</option>
                       <option value="Optional">Optional</option>
                     </select>
                   </div>
@@ -203,27 +245,24 @@
                 <div class="row my-2">
                   <div class="col-3">
                     <label for="availableSpot" class="form-label"
-                      >Availabel Spots</label
+                      >Capacity</label
                     >
                     <input
                       type="number"
                       class="form-control"
                       required
+                      placeholder="Your Answer"
                       id="availableSpot"
-                      v-model="service.availableSpots"
+                      v-model="service.capacity"
                     />
                   </div>
-                  <div
-                    class="col-1 d-flex justify-content-start align-items-end p-0"
-                    style="max-width: fit-content"
-                  ></div>
                   <div
                     class="col-1 d-flex justify-content-start align-items-end p-0"
                   >
                     <button
                       type="button"
                       class="btn btn-danger me-2"
-                      @click="removeForm(serviceForm, index)"
+                      @click="removeForm(serviceForms, index)"
                     >
                       Remove
                     </button>
@@ -236,12 +275,13 @@
             type="button"
             id="btn"
             class="btn btn-primary"
-            @click="addForm(serviceForm)"
+            @click="addForm(serviceForms)"
           >
             ADD
           </button>
           <hr />
         </div>
+
         <div class="text-end">
           <button type="submit" class="btn btn-primary btn-block my-3">
             Create Tour
@@ -256,9 +296,13 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useScreens } from 'vue-screen-utils';
 import TourSection from './TourSection.vue';
+import axios from 'axios';
+import { format } from 'date-fns';
+
+const services = ref([]); // Lưu các services của tour
 
 const range = ref({
   start: new Date(2020, 0, 6),
@@ -285,10 +329,9 @@ const goBack = () => {
   if (currentStep.value > 1) currentStep.value--;
 };
 
-const dateForms = reactive([{}]); // Khởi tạo mảng chứa form đầu tiên
-const serviceForm = reactive([{}]);
-
-const TourInf = reactive({
+const dateForms = reactive([{ date: {}, capacity: '' }]);
+const serviceForms = reactive([{}]);
+const tourInf = reactive({
   tourName: '',
   description: '',
   price: '',
@@ -325,12 +368,69 @@ const removeForm = (form, index) => {
   }
 };
 
-const createTour = () => {};
+const handleImage = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file); // Chuyển đổi file sang Base64
+    reader.onload = () => {
+      tourInf.image = reader.result; // Gán Base64 cho imagePreview
+      console.log(tourInf.image);
+    };
+    reader.onerror = (error) => {
+      console.error('Lỗi khi đọc file:', error);
+    };
+  }
+};
+
+const createTour = async (tourInf, dateForms, serviceForms) => {
+  try {
+    dateForms.map((date) => {
+      console.log(date.date);
+      date.date.start = format(
+        new Date(date.date.start),
+        'yyyy-MM-dd HH:mm:ss'
+      );
+      date.date.end = format(new Date(date.date.end), 'yyyy-MM-dd HH:mm:ss');
+    });
+
+    const confirm = window.confirm('Are you sure you want to create new tour?');
+    if (!confirm) {
+      return;
+    } else {
+      const response = await axios.post('/api/create_tour', {
+        tourInf,
+        dateForms,
+        serviceForms,
+      });
+      if (response.status != 200) {
+        alert(response.data.message);
+      }
+      location.reload();
+    }
+  } catch (error) {
+    console.error('Lỗi khi tạo tour:', error);
+  }
+};
+
+const fetchTourService = async () => {
+  try {
+    const response = await axios.get(`/api/services`);
+    console.log(response.data);
+    services.value = response.data;
+  } catch (error) {
+    console.error('Error fetching Tour Detail:', error);
+  }
+};
+
+onMounted(() => {
+  fetchTourService();
+});
 </script>
 <style scoped>
 .adminTour {
-  height: 100vh;
   padding: 0 20px;
+  background-color: #f5f7f8;
 }
 /* .form-control:invalid {
   border-color: red;

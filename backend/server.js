@@ -6,6 +6,9 @@ import axios from 'axios';
 const app = express();
 const port = 3000;
 
+app.use(express.json({ limit: '50mb' })); // Tăng giới hạn payload JSON
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 // Cấu hình CORS và Express
 app.use(cors());
 
@@ -259,11 +262,13 @@ app.post('/api/posts', (req, res) => {
         image_url,
         link,
       ],
-      (err) => {
+      (err, result) => {
         if (err) {
           res.status(500).json({ message: 'Error creating post content' });
         } else {
-          res.status(201).json({
+          res.status(200).json({
+            title,
+            image: image_url,
             message: 'Post created successfully',
             postId: postId,
           });
@@ -307,7 +312,7 @@ app.post('/api/categories', (req, res) => {
     if (err) {
       res.status(500).json({ message: 'Error creating category' });
     } else {
-      res.status(201).json({
+      res.status(200).json({
         message: 'Category created successfully',
         categoryId: result.insertId,
       });
@@ -371,7 +376,7 @@ app.post('/api/posts/:postId/comments', (req, res) => {
           return res.status(500).json({ message: 'Error creating comment' });
         }
 
-        res.status(201).json({
+        res.status(200).json({
           message: 'Comment created successfully',
           commentId: result.insertId,
         });
@@ -523,10 +528,10 @@ app.get('/api/posts/:userId/is-liked/:postId', (req, res) => {
 
 // API đăng nhập bằng google
 app.post('/api/google-login', (req, res) => {
-  const { email, name, image_avatar } = req.body;
+  const { email, name, avatarurl } = req.body;
 
   // Kiểm tra xem user đã tồn tại chưa
-  const queryCheck = 'SELECT * FROM users WHERE email = ?';
+  const queryCheck = 'SELECT * FROM user WHERE email = ?';
   db.query(queryCheck, [email], (err, results) => {
     if (err) {
       console.error('Database error:', err); // Ghi lại lỗi cơ sở dữ liệu
@@ -542,19 +547,19 @@ app.post('/api/google-login', (req, res) => {
     } else {
       // Nếu chưa tồn tại, thêm user vào database
       const queryInsert =
-        'INSERT INTO users (username, email, image_avatar) VALUES (?, ?, ?)';
-      db.query(queryInsert, [name, email, image_avatar], (err, result) => {
+        'INSERT INTO user (fullname, email, avatarurl) VALUES (?, ?, ?)';
+      db.query(queryInsert, [name, email, avatarurl], (err, result) => {
         if (err) throw err;
         // Lấy id của user vừa thêm
         const queryGetId = result.insertId;
-        res.status(201).json({
+        res.status(200).json({
           message: 'Tạo tài khoản mới và đăng nhập thành công!',
           user: {
-            id: queryGetId,
-            username: name,
-            email: email,
-            role: 'user',
-            image_avatar: image_avatar,
+            UserID: queryGetId,
+            FullName: name,
+            Email: email,
+            Role: 'user',
+            AvatarUrl: avatarurl,
           },
         });
       });
@@ -595,7 +600,7 @@ app.post('/api/register', async (req, res) => {
 
           const queryGetId = result.insertId;
 
-          res.status(201).json({
+          res.status(200).json({
             message: 'Account created successfully',
             user: {
               id: queryGetId,
@@ -712,7 +717,7 @@ app.get('/api/tour/:tourid/', (req, res) => {
 app.get('/api/tour/:tourid/schedule', (req, res) => {
   const tourid = req.params.tourid;
   const query = `select schedule.*, ts.* from tour
-  join tour_schedule ts on tour.tourid = ts.tourid
+  join schedule ts on tour.tourid = ts.tourid
   join schedule on ts.ScheduleID = schedule.ScheduleID
   where tour.tourid = ?`;
   db.query(query, [tourid], (err, results) => {
@@ -738,6 +743,241 @@ app.get('/api/tour/:tourid/service', (req, res) => {
       res.json(results);
     }
   });
+});
+////////////////////////////////////////////////////////////////////////////////////
+// API tạo service
+app.post('/api/create_service', (req, res) => {
+  const service = req.body;
+  const query = `INSERT INTO service (ServiceName, Description, Price) VALUE (?,?,?)`;
+  db.query(
+    query,
+    [service.ServiceName, service.Description, service.Price],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ message: 'Error create service' });
+      } else {
+        res.status(200).json({
+          message: 'Service created successfully',
+        });
+      }
+    }
+  );
+});
+
+// APi dùng để lấy danh sách service
+app.get('/api/services', (req, res) => {
+  const query = `select * from service`;
+  db.query(query, (err, results) => {
+    if (err) {
+      console.log('Error retrieving services');
+      res.status(500).json({ message: 'Error retrieving services' });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+//API dùng để xóa tạm thời service
+app.put('/api/delete_service/:serviceId', (req, res) => {
+  const serviceId = req.params.serviceId;
+  console.log(serviceId);
+  const query = `UPDATE service SET IsDeleted = TRUE WHERE ServiceID = ?`;
+  db.query(query, [serviceId], (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error updating service' });
+    } else {
+      res
+        .status(200)
+        .json({ message: 'Service marked as deleted successfully' });
+    }
+  });
+});
+
+//API dùng để khôi phục service
+app.put('/api/restore_service/:serviceId', (req, res) => {
+  const serviceId = req.params.serviceId;
+  const query = `UPDATE service SET IsDeleted = FALSE WHERE ServiceID = ?`;
+  db.query(query, [serviceId], (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error updating service' });
+    } else {
+      res
+        .status(200)
+        .json({ message: 'Service marked as restored successfully' });
+    }
+  });
+});
+
+app.put('/api/tour/:tourID', (req, res) => {
+  const tourID = req.params.tourID;
+  console.log(tourID);
+  const query = `UPDATE tour SET IsDeleted = TRUE WHERE TourID = ?`;
+  db.query(query, [tourID], (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error delete tour' });
+    } else {
+      res.status(200).json({ message: 'Tour was deleted successfully' });
+    }
+  });
+});
+
+// API dùng để lấy danh sách các booking
+app.get('/api/booking', (req, res) => {
+  const query = `SELECT booking.*, s.StartDate, s.EndDate, tour.* FROM booking JOIN Schedule ts on ts.ScheduleID = booking.ScheduleID 
+join schedule s on s.ScheduleID = ts.ScheduleID 
+join tour on tour.TourID = ts.TourID`;
+  db.query(query, (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error retrieving booking' });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+// API dùng để tạo booking
+app.post('/api/create_booking', (req, res) => {
+  const buyer = req.body.Buyer;
+  const participants = req.body.Participant;
+  const schedulePicked = req.body.schedulePicked;
+  const selectedOptions = req.body.selectedOptions;
+  const total = req.body.total;
+
+  const query = `INSERT INTO booking (NumberOfGuests, ScheduleID, UserID, TotalAmount) VALUES (?,?,?,?)`;
+  db.query(
+    query,
+    [participants.length, schedulePicked.ScheduleID, buyer.UserID, total],
+    (err, result) => {
+      if (err) {
+        console.log('Error create booking');
+        return res.status(500).json({ message: 'Error create booking' });
+      } else {
+        const bookingID = result.insertId;
+
+        participants.map((part) => {
+          const query = `INSERT INTO participant (BookingID, Email, FullName, FullNameOnPassport, Nationality, PassportNumber, DateOfBirth) VALUES (?,?,?,?,?,?,?)`;
+
+          db.query(
+            query,
+            [
+              bookingID,
+              part.email,
+              part.firstName + '' + part.lastName,
+              part.fullNameOnPassport,
+              part.nationality,
+              part.passportNumber,
+              part.dateOfBirth,
+            ],
+            (err, result) => {
+              if (err) {
+                console.log('Error create participant');
+                return res
+                  .status(500)
+                  .json({ message: 'Error create participant' });
+              }
+            }
+          );
+        });
+
+        selectedOptions.map((option) => {
+          const query = `INSERT INTO booking_service (BookingID, ServiceID, Quantity) VALUES (?,?,?)`;
+          db.query(
+            query,
+            [bookingID, option.ServiceID, option.Quantity],
+            (err, result) => {
+              if (err) {
+                console.log('Error create booking service');
+                return res
+                  .status(500)
+                  .json({ message: 'Error create booking service' });
+              }
+            }
+          );
+        });
+        res.status(200).json({
+          message: 'Tour Booked Successfuly',
+        });
+      }
+    }
+  );
+});
+
+// API dùng để tạo tour
+app.post('/api/create_tour', (req, res) => {
+  const tourInf = req.body.tourInf;
+  const dateForms = req.body.dateForms;
+  const serviceForms = req.body.serviceForms;
+
+  const query = `INSERT INTO tour (TourName, Description, StartLocation, Destination, Price, Img_Tour) VALUES (?,?,?,?,?,?)`;
+
+  db.query(
+    query,
+    [
+      tourInf.tourName,
+      tourInf.description,
+      tourInf.startLocation,
+      tourInf.destination,
+      tourInf.price,
+      tourInf.image,
+    ],
+    (err, result) => {
+      if (err) {
+        console.log('Error create tour', err);
+        return res.status(500).json({ message: 'Error create tour' });
+      } else {
+        const tourID = result.insertId;
+        dateForms.map((date) => {
+          const query = `INSERT INTO schedule (TourID, StartDate, EndDate, Capacity, AvailableSpots) VALUES (?,?,?,?,?)`;
+          db.query(
+            query,
+            [
+              tourID,
+              date.date.start,
+              date.date.end,
+              date.capacity,
+              date.capacity,
+            ],
+            (err, result) => {
+              if (err) {
+                console.log('Error create schedule', err);
+
+                return res
+                  .status(500)
+                  .json({ message: 'Error create schedule for tour' });
+              }
+            }
+          );
+        });
+
+        serviceForms.map((service) => {
+          const query = `INSERT INTO tour_service(TourID, ServiceID, AvailableSpots, Capacity ,Status) VALUES (?,?,?,?,?)`;
+          db.query(
+            query,
+            [
+              tourID,
+              service.serviceID,
+              service.capacity,
+              service.capacity,
+              service.status,
+            ],
+            (err, result) => {
+              if (err) {
+                console.log('Error create service', err);
+
+                return res
+                  .status(500)
+                  .json({ message: 'Error create service for tour' });
+              }
+            }
+          );
+        });
+
+        res.status(200).json({
+          message: 'schedule for tour created successfully',
+        });
+      }
+    }
+  );
 });
 
 // Khởi động server

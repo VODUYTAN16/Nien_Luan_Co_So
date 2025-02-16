@@ -4,6 +4,7 @@ import AdminBookingView from '@/components/AdminBookingView.vue';
 import AdminTourView from '@/components/AdminTourView.vue';
 import AdminServiceView from '@/components/AdminServiceView.vue';
 import AdminBlogView from '@/components/AdminBlogView.vue';
+import AdminUserView from '@/components/AdminUserView.vue';
 import TourDetail from '@/views/TourDetail.vue';
 import BlogDetail from '@/components/BlogDetail.vue';
 import FileViewer from '@/components/FileViewer.vue';
@@ -21,6 +22,7 @@ const router = createRouter({
     { path: '/service', name: 'Service', component: AdminServiceView },
     { path: '/tour', name: 'Tour', component: AdminTourView },
     { path: '/adminBlog', component: AdminBlogView },
+    { path: '/user', component: AdminUserView },
     {
       path: '/TourDetail/:tourid',
       component: TourDetail,

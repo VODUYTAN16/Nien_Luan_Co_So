@@ -23,31 +23,39 @@
       </ol>
     </nav>
     <div v-if="currentStep == 1">
-      <div class="row">
+      <form class="row">
         <div class="input-group mb-3 col">
           <span class="input-group-text" id="basic-addon1">Start Date</span>
-          <input
-            type="text"
-            class="form-control"
-            aria-label="Username"
-            aria-describedby="basic-addon1"
-          />
+          <VDatePicker v-model="Filter.StartDate">
+            <template #default="{ inputValue, inputEvents }">
+              <input
+                class="form-control"
+                :value="inputValue"
+                v-on="inputEvents"
+              />
+            </template>
+          </VDatePicker>
         </div>
         <div class="input-group mb-3 col">
           <span class="input-group-text" id="basic-addon1">End Date</span>
-          <input
-            type="text"
-            class="form-control"
-            aria-label="Username"
-            aria-describedby="basic-addon1"
-          />
+          <VDatePicker v-model="Filter.EndDate">
+            <template #default="{ inputValue, inputEvents }">
+              <input
+                class="form-control"
+                :value="inputValue"
+                v-on="inputEvents"
+              />
+            </template>
+          </VDatePicker>
         </div>
         <div class="form-floating col">
           <select
+            v-model="Filter.TourID"
             class="form-select"
             id="floatingSelect"
             aria-label="Floating label select example"
           >
+            <option value="-1">All</option>
             <option
               v-for="(item, index) in tourNameList"
               :key="index"
@@ -63,15 +71,16 @@
             class="form-select"
             id="floatingSelect"
             aria-label="Floating label select example"
+            v-model="Filter.Status"
           >
             <option selected>All</option>
-            <option value="1">Pending</option>
-            <option value="2">Booked</option>
-            <option value="3">Cancel</option>
+            <option value="Pending">Pending</option>
+            <option value="Booked">Booked</option>
+            <option value="Cancel">Cancel</option>
           </select>
           <label for="floatingSelect">Status</label>
         </div>
-      </div>
+      </form>
       <table class="table table-striped table-bordered table-hover table-sm">
         <thead class="table-light">
           <tr>
@@ -85,12 +94,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="(item, index) in bookings.filter(
-              (booking) => booking.IsDeleted === 0
-            )"
-            :key="index"
-          >
+          <tr v-for="(item, index) in filter(Filter)" :key="index">
             <td>{{ index + 1 }}</td>
             <td>{{ item.TourName }}</td>
             <td>{{ item.StartDate }}</td>
@@ -111,8 +115,27 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
+import { useScreens } from 'vue-screen-utils';
+
+const { mapCurrent } = useScreens({
+  xs: '0px',
+  sm: '640px',
+  md: '768px',
+  lg: '1024px',
+});
+const columns = mapCurrent({ lg: 2 }, 1);
+const expanded = mapCurrent({ lg: false }, true);
+const selectedColor = ref('blue');
+
+const Filter = reactive({
+  StartDate: '',
+  EndDate: '',
+  TourID: '',
+  Status: '',
+});
 
 const currentStep = ref(1);
+const tours = ref([]);
 
 const goNext = () => {
   if (currentStep.value < 2) currentStep.value++;
@@ -122,15 +145,32 @@ const goBack = () => {
   if (currentStep.value > 1) currentStep.value--;
 };
 
-const bookings = ref([]);
-const tourNameList = ref([]);
+var bookings = reactive([]); // Save current bookings
+const tourNameList = ref([]); // Save current tour name list
+
+const filter = (Filter) => {
+  console.log(Filter);
+  return bookings.filter((booking) => {
+    return (
+      (!Filter.TourID ||
+        Filter.TourID == -1 ||
+        booking.TourID == Filter.TourID) &&
+      (!Filter.Status ||
+        Filter.Status == 'All' ||
+        booking.Status == Filter.Status) &&
+      (!Filter.StartDate ||
+        new Date(booking.StartDate) >= new Date(Filter.StartDate)) &&
+      (!Filter.EndDate || new Date(booking.EndDate) <= new Date(Filter.EndDate))
+    );
+  });
+};
 
 const fetchBookings = async () => {
   try {
     const response = await axios.get('api/booking');
     console.log(response.data);
-    bookings.value = response.data.reverse();
-    bookings.value.map((item) => {
+    bookings = response.data.reverse();
+    bookings.map((item) => {
       item.StartDate = new Date(item.StartDate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -144,20 +184,30 @@ const fetchBookings = async () => {
     });
     tourNameList.value = [
       ...new Map(
-        bookings.value.map((booking) => [
+        bookings.map((booking) => [
           booking.TourID,
           { TourID: booking.TourID, TourName: booking.TourName },
         ])
       ).values(),
     ];
-    console.log(tourNameList.value);
   } catch (error) {
     console.log(error);
   }
 };
 
+const fetchTours = async () => {
+  try {
+    const response = await axios.get(`/api/tour`);
+    console.log(response.data);
+    tours.value = response.data.reverse();
+  } catch (error) {
+    console.error('Error fetching tour:', error);
+  }
+};
+
 onMounted(() => {
   fetchBookings();
+  fetchTours();
 });
 </script>
 
@@ -169,6 +219,10 @@ onMounted(() => {
 } */
 .breadcrumb .active {
   color: blue;
+}
+
+.adminBooking {
+  background-color: #f5f7f8;
 }
 
 table {

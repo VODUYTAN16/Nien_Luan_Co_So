@@ -278,17 +278,6 @@ app.post('/api/posts', (req, res) => {
   });
 });
 
-// API lấy danh sách admin
-app.get('/api/users/admin', (req, res) => {
-  const query = `SELECT * from admin`;
-  db.query(query, (err, results) => {
-    if (err) {
-      res.status(500).json({ message: 'Error retrieving categories' });
-    } else {
-      res.json(results);
-    }
-  });
-});
 // API lấy danh sách danh mục
 app.get('/api/categories', (req, res) => {
   const query = 'SELECT * FROM categories';
@@ -569,11 +558,11 @@ app.post('/api/google-login', (req, res) => {
 
 // API đăng ký (Register)
 app.post('/api/register', async (req, res) => {
-  const { email, password, name, image_avatar } = req.body;
+  const { Email, Password, FullName, PhoneNumber } = req.body;
 
   try {
     // Kiểm tra xem email đã tồn tại chưa
-    db.query(`SELECT * FROM users WHERE email = ?`, [email], (err, results) => {
+    db.query(`SELECT * FROM user WHERE Email = ?`, [Email], (err, results) => {
       if (err) {
         return res
           .status(500)
@@ -589,8 +578,8 @@ app.post('/api/register', async (req, res) => {
 
       // Nếu email chưa tồn tại, tiến hành tạo tài khoản
       db.query(
-        `INSERT INTO users (email, password, username, image_avatar) VALUE (?, ?, ?, ?)`,
-        [email, password, name, image_avatar],
+        `INSERT INTO user (Email, Password, FullName, PhoneNumber) VALUE (?, ?, ?, ?)`,
+        [Email, Password, FullName, PhoneNumber],
         (err, result) => {
           if (err) {
             return res
@@ -598,17 +587,9 @@ app.post('/api/register', async (req, res) => {
               .json({ message: 'Database error', error: err.message });
           }
 
-          const queryGetId = result.insertId;
-
           res.status(200).json({
             message: 'Account created successfully',
-            user: {
-              id: queryGetId,
-              username: name,
-              email: email,
-              role: 'user',
-              image_avatar: image_avatar,
-            },
+            user: result[0],
           });
         }
       );
@@ -627,7 +608,7 @@ app.post('/api/login', async (req, res) => {
   try {
     // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
     db.query(
-      `SELECT * FROM users WHERE email = ?`,
+      `SELECT * FROM user join role on user.UserID = role.UserID WHERE email = ?`,
       [email],
       async (err, results) => {
         if (err) {
@@ -643,7 +624,7 @@ app.post('/api/login', async (req, res) => {
         const user = results[0];
 
         // Kiểm tra mật khẩu
-        const isPasswordValid = password == user.password;
+        const isPasswordValid = password == user.Password;
         if (!isPasswordValid) {
           return res.status(400).json({
             message:
@@ -978,6 +959,108 @@ app.post('/api/create_tour', (req, res) => {
       }
     }
   );
+});
+
+// API lấy danh sách user
+app.get('/api/users_list', (req, res) => {
+  const query = `SELECT * from user`;
+  db.query(query, (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error retrieving user' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+// API lấy danh sách admin
+app.get('/api/admins_list', (req, res) => {
+  const query = `select * from user join role on user.UserID = role.UserID`;
+  db.query(query, (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error retrieving admin list' });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+// API promote admin hay manager
+app.post('/api/promote', (req, res) => {
+  const user = req.body;
+  const query = `SELECT * FROM user join role on user.UserID = role.UserID WHERE email = ?`;
+  db.query(query, [user.Email], (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error promote user' });
+    } else {
+      if (results.length === 0) {
+        const query = `INSERT INTO role (UserID, Role) VALUES (?, ?)`;
+        db.query(query, [user.UserID, user.Role], (err, results) => {
+          if (err) {
+            res.status(500).json({ message: 'Error promote user' });
+          } else {
+            res.json({ message: 'User promoted successfully' });
+          }
+        });
+      } else {
+        const query = `UPDATE role SET Role = ? WHERE UserID = ?`;
+        db.query(query, [user.Role, user.UserID], (err, results) => {
+          if (err) {
+            res.status(500).json({ message: 'Error promote user' });
+          } else {
+            res.json({ message: 'User promoted successfully' });
+          }
+        });
+      }
+    }
+  });
+});
+
+app.put('/api/delete_user', (req, res) => {
+  console.log(req.body);
+  const query = `UPDATE user SET IsDeleted = true WHERE UserID = ?`;
+  db.query(query, [req.body.UserID], (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error delete user' });
+    } else {
+      res.status(200).json({ message: 'User deleted successfully' });
+    }
+  });
+});
+
+app.put('/api/update_user', (req, res) => {
+  const query = `UPDATE user SET FullName = ?, Email = ?, Password = ?, PhoneNumber = ? WHERE UserID = ?`;
+  db.query(
+    query,
+    [
+      req.body.FullName,
+      req.body.Email,
+      req.body.Password,
+      req.body.PhoneNumber,
+      req.body.UserID,
+    ],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ message: 'Error update user' });
+      } else {
+        res.status(200).json({ message: 'User updated successfully' });
+      }
+    }
+  );
+});
+
+app.delete('/api/dismissal/:UserID', (req, res) => {
+  console.log(req.params.UserID);
+  const query = `DELETE FROM role WHERE UserID = ?`;
+  db.query(query, [req.params.UserID], (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error dismissal user' });
+    } else {
+      res.status(200).json({
+        message: 'User dismissed successfully',
+      });
+    }
+  });
 });
 
 // Khởi động server

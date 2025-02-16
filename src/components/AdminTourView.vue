@@ -221,7 +221,9 @@
                       id="servicename"
                     >
                       <option
-                        v-for="ser in services"
+                        v-for="ser in services.filter(
+                          (service) => service.IsDeleted == 0
+                        )"
                         :key="ser.ServiceID"
                         :value="ser.ServiceID"
                       >

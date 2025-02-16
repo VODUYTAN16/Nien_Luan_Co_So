@@ -755,7 +755,7 @@ const payment = reactive({
   postcode: '',
   country: 'Vietnam',
 });
-// Hàm loại bỏ 7 ngày liên tiếp sau ngày được chọn
+// Hàm loại bỏ n ngày liên tiếp sau ngày được chọn
 const removeSevenDaysAfterSelectedDate = async (datePicked) => {
   selectedDate.value = new Date(datePicked);
   try {

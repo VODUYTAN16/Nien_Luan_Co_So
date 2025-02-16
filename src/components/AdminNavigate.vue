@@ -75,6 +75,15 @@
         >
           Blog
         </router-link>
+
+        <router-link
+          to="/user"
+          class="btn border my-2"
+          active-class="active"
+          type="button"
+        >
+          User
+        </router-link>
       </div>
     </div>
   </div>
@@ -122,12 +131,12 @@ const logout = () => {
   // Nếu cần, có thể điều hướng người dùng đến trang đăng nhập
   fetchUser();
   router.push('/');
+  location.reload();
   // window.location.reload();
 };
 
 const fetchUser = () => {
   const userData = JSON.parse(localStorage.getItem('user'));
-  console.log(userData);
   if (userData) {
     isLoggedIn.value = true;
     user.email = userData.Email;

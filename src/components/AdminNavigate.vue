@@ -17,7 +17,11 @@
           <div v-if="isCardVisible">
             <div class="card" style="width: 18rem">
               <img
-                :src="user.avatarurl"
+                :src="
+                  user.avatarurl
+                    ? user.avatarurl
+                    : 'https://i.pinimg.com/736x/f6/d5/fe/f6d5fe0a4ce89d111b60cf8f7a552502.jpg'
+                "
                 class="card-img-top rounded-circle"
                 alt="User Avatar"
               />
@@ -142,6 +146,7 @@ const fetchUser = () => {
     user.email = userData.Email;
     user.fullname = userData.FullName;
     user.avatarurl = userData.AvatarUrl;
+    console.log(user.avatarurl);
   } else {
     isLoggedIn.value = false;
   }

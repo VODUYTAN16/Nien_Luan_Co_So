@@ -92,16 +92,58 @@
             :key="index"
           >
             <td>{{ index + 1 }}</td>
-            <td>{{ item.ServiceName }}</td>
-            <td>{{ item.Price }}</td>
-            <td>{{ item.Description }}</td>
+            <td v-if="editableRow !== item.ServiceID">
+              {{ item.ServiceName }}
+            </td>
+            <td v-else>
+              <input v-model="editedData.ServiceName" class="form-control" />
+            </td>
+
+            <td v-if="editableRow !== item.ServiceID">{{ item.Price }}</td>
+            <td v-else>
+              <input v-model="editedData.Price" class="form-control" />
+            </td>
+
+            <td v-if="editableRow !== item.ServiceID">
+              {{ item.Description }}
+            </td>
+            <td v-else>
+              <textarea
+                v-model="editedData.Description"
+                class="form-control"
+                cols="15"
+                rows="5"
+              ></textarea>
+            </td>
             <td>
-              <button
-                class="btn btn-sm btn-outline-danger"
-                @click="deleteService(item.ServiceID)"
-              >
-                Delete
-              </button>
+              <div v-if="editableRow != item.ServiceID">
+                <button
+                  class="btn btn-sm btn-outline-success mx-1"
+                  @click="editService(item)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger mx-1"
+                  @click="deleteService(item.ServiceID)"
+                >
+                  Delete
+                </button>
+              </div>
+              <div v-else>
+                <button
+                  @click="saveEdit"
+                  class="btn btn-sm btn-outline-primary mx-1"
+                >
+                  Save
+                </button>
+                <button
+                  @click="cancelEdit"
+                  class="btn btn-sm btn-outline-secondary mx-1"
+                >
+                  Cancel
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -126,9 +168,26 @@
             :key="index"
           >
             <td>{{ index + 1 }}</td>
-            <td>{{ item.ServiceName }}</td>
-            <td>{{ item.Price }}</td>
-            <td>{{ item.Description }}</td>
+
+            <td v-if="editableRow !== item.ServiceID">
+              {{ item.ServiceName }}
+            </td>
+            <td v-else>
+              <input v-model="editedData.ServiceName" class="form-control" />
+            </td>
+
+            <td v-if="editableRow !== item.ServiceID">{{ item.Price }}</td>
+            <td v-else>
+              <input v-model="editedData.Price" class="form-control" />
+            </td>
+
+            <td v-if="editableRow !== item.ServiceID">
+              {{ item.Description }}
+            </td>
+            <td v-else>
+              <input v-model="editedData.Description" class="form-control" />
+            </td>
+
             <td>
               <button
                 class="btn btn-sm btn-outline-success"
@@ -145,7 +204,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, reactive } from 'vue';
 import axios from 'axios';
 
 const currentStep = ref(1);
@@ -221,6 +280,37 @@ const fetchService = async () => {
   } catch (error) {
     console.log(error);
   }
+};
+
+const editableRow = ref(null); // Theo dõi ID của hàng đang chỉnh sửa
+const editedData = reactive({}); // Lưu thông tin chỉnh sửa tạm thời
+
+const editService = (item) => {
+  editableRow.value = item.ServiceID; // Gán hàng đang chỉnh sửa
+  editedData.ServiceID = item.ServiceID;
+  editedData.ServiceName = item.ServiceName;
+  editedData.Price = item.Price;
+  editedData.IsDeleted = item.IsDeleted;
+  editedData.Description = item.Description;
+};
+
+const saveEdit = async () => {
+  try {
+    const response = await axios.put('/api/update_service', editedData);
+    if (response.status == 200) {
+      // Tải lại danh sách service
+      fetchService();
+      editableRow.value = null; // Thoát khỏi chế độ chỉnh sửa
+      alert(response.data.message);
+    }
+  } catch (error) {
+    console.log('Error updating user:', error);
+    alert('Error updating user');
+  }
+};
+
+const cancelEdit = () => {
+  editableRow.value = null; // Hủy chỉnh sửa
 };
 
 onMounted(() => {

@@ -23,6 +23,16 @@
       </ol>
     </nav>
     <div v-if="currentStep == 1">
+      <div class="input-group mb-3 col">
+        <span class="input-group-text">Tour Name</span>
+        <input
+          type="text"
+          class="form-control"
+          v-model="Filter.TourName"
+          placeholder="Search by tour name"
+        />
+      </div>
+
       <form class="row">
         <div class="input-group mb-3 col">
           <span class="input-group-text" id="basic-addon1">Start Date</span>
@@ -102,20 +112,193 @@
             <td>{{ item.NumberOfGuests }}</td>
             <td>{{ item.Status }}</td>
             <td>
-              <button class="btn btn-sm btn-outline-success">Detail</button>
-              <button class="btn btn-sm btn-outline-danger">Delete</button>
+              <!-- Button trigger modal -->
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-success"
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal"
+                @click="
+                  getDetailOfSpecificedBooking(item),
+                    bookedServices(item.BookingID)
+                "
+              >
+                Detail
+              </button>
+              <button class="btn btn-sm btn-outline-danger mx-2">Delete</button>
+              <button class="btn btn-sm btn-outline-primary">Approve</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+    <div v-if="currentStep == 2">
+      <ListOfPaticipantOfTour></ListOfPaticipantOfTour>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5 text-primary" id="exampleModalLabel">
+              DETAIL OF BOOKING
+            </h1>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col">
+                <h5 class="text-success">Info Of Tour</h5>
+                <h6>Name of tour: {{ BookingDetail[0].TourName }}</h6>
+                <h6>Start Location: {{ BookingDetail[0].StartLocation }}</h6>
+                <h6>Destination: {{ BookingDetail[0].Destination }}</h6>
+
+                <h6>
+                  Start Date:
+                  {{
+                    new Date(BookingDetail[0].StartDate).toLocaleDateString(
+                      'en-US',
+                      {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }
+                    )
+                  }}
+                </h6>
+                <h6>
+                  End Date:
+                  {{
+                    new Date(BookingDetail[0].EndDate).toLocaleDateString(
+                      'en-US',
+                      {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }
+                    )
+                  }}
+                </h6>
+              </div>
+              <div class="col">
+                <h5 class="text-success">Whose Booking</h5>
+                <h6>FullName: {{ BookingDetail[0].FullName }}</h6>
+                <h6>
+                  Booking Date:
+                  {{
+                    new Date(BookingDetail[0].BookingDate).toLocaleDateString(
+                      'en-US',
+                      {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }
+                    )
+                  }}
+                </h6>
+                <h6>
+                  Number of participant: {{ BookingDetail[0].NumberOfGuests }}
+                </h6>
+                <h6>Total Amount: ${{ BookingDetail[0].TotalAmount }}</h6>
+              </div>
+              <div class="col">
+                <h5 class="text-success">Booked Services</h5>
+                <table
+                  class="table table-striped table-bordered table-hover table-sm"
+                >
+                  <thead class="table-light">
+                    <tr>
+                      <th class="fw-bold">#</th>
+                      <th class="fw-bold">Service</th>
+                      <th class="fw-bold">Quantity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(service, index) in bookServices" :key="index">
+                      <td>{{ index + 1 }}</td>
+                      <td>{{ service.ServiceName }}</td>
+                      <td>{{ service.Quantity }}</td>
+                    </tr>
+                    <tr v-if="bookServices && bookServices.length === 0">
+                      <td colspan="7" class="text-center">No data</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <table
+              class="table table-striped table-bordered table-hover table-sm"
+            >
+              <thead class="table-light">
+                <tr>
+                  <th class="fw-bold">#</th>
+                  <th class="fw-bold">FullName</th>
+                  <th class="fw-bold">Date of Birth</th>
+                  <th class="fw-bold">Gender</th>
+                  <th class="fw-bold">Email</th>
+                  <th class="fw-bold">Phone Number</th>
+                  <th class="fw-bold">Full Name on passport</th>
+                  <th class="fw-bold">Passport number</th>
+                  <th class="fw-bold">Nationality</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in BookingDetail" :key="index">
+                  <td>{{ index + 1 }}</td>
+                  <td>{{ item.FullName }}</td>
+                  <td>
+                    {{
+                      new Date(item.DateOfBirth).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    }}
+                  </td>
+                  <td>{{ item.Gender }}</td>
+                  <td>{{ item.Email }}</td>
+                  <td>{{ item.PhoneNumber }}</td>
+                  <td>{{ item.FullNameOnPassport }}</td>
+                  <td>{{ item.PassportNumber }}</td>
+                  <td>{{ item.Nationality }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useScreens } from 'vue-screen-utils';
+import ListOfPaticipantOfTour from './ListOfPaticipantOfTour.vue';
 
 const { mapCurrent } = useScreens({
   xs: '0px',
@@ -132,10 +315,13 @@ const Filter = reactive({
   EndDate: '',
   TourID: '',
   Status: '',
+  TourName: '', // Thêm trường mới
 });
 
 const currentStep = ref(1);
-const tours = ref([]);
+const tours = ref([]); // Lưu thông tin những tour hiện tại
+const BookingDetail = ref([{}]);
+const bookServices = ref([{}]);
 
 const goNext = () => {
   if (currentStep.value < 2) currentStep.value++;
@@ -148,9 +334,31 @@ const goBack = () => {
 var bookings = reactive([]); // Save current bookings
 const tourNameList = ref([]); // Save current tour name list
 
+const removeDiacritics = (str) => {
+  return str
+    .normalize('NFD') // Chuyển thành dạng Unicode tổ hợp
+    .replace(/[\u0300-\u036f]/g, '') // Xóa dấu tiếng Việt
+    .toLowerCase(); // Chuyển về chữ thường
+};
+
 const filter = (Filter) => {
-  console.log(Filter);
+  const query = removeDiacritics(Filter.TourName || '').trim();
+
   return bookings.filter((booking) => {
+    const tourName = removeDiacritics(booking.TourName);
+
+    // ✅ Kiểm tra nếu toàn bộ query nằm trong tên tour
+    if (tourName.includes(query)) return true;
+
+    // ✅ Tách query thành các từ nhỏ hơn
+    const queryWords = query.split(' ');
+    const tourWords = tourName.split(' ');
+
+    // ✅ Kiểm tra nếu mọi từ trong query đều có trong tên tour
+    const matchEachWord = queryWords.every((q) =>
+      tourWords.some((word) => word.includes(q))
+    );
+
     return (
       (!Filter.TourID ||
         Filter.TourID == -1 ||
@@ -160,7 +368,9 @@ const filter = (Filter) => {
         booking.Status == Filter.Status) &&
       (!Filter.StartDate ||
         new Date(booking.StartDate) >= new Date(Filter.StartDate)) &&
-      (!Filter.EndDate || new Date(booking.EndDate) <= new Date(Filter.EndDate))
+      (!Filter.EndDate ||
+        new Date(booking.EndDate) <= new Date(Filter.EndDate)) &&
+      (!Filter.TourName || matchEachWord) // Áp dụng lọc tên
     );
   });
 };
@@ -168,7 +378,6 @@ const filter = (Filter) => {
 const fetchBookings = async () => {
   try {
     const response = await axios.get('api/booking');
-    console.log(response.data);
     bookings = response.data.reverse();
     bookings.map((item) => {
       item.StartDate = new Date(item.StartDate).toLocaleDateString('en-US', {
@@ -198,10 +407,30 @@ const fetchBookings = async () => {
 const fetchTours = async () => {
   try {
     const response = await axios.get(`/api/tour`);
-    console.log(response.data);
     tours.value = response.data.reverse();
   } catch (error) {
     console.error('Error fetching tour:', error);
+  }
+};
+
+const getDetailOfSpecificedBooking = async (booking) => {
+  try {
+    const response = await axios.get(
+      `/api/detail_booking/${booking.BookingID}`
+    );
+    BookingDetail.value = response.data;
+  } catch (err) {
+    console.log('err of getDetailOfSpecificedBooking', err);
+  }
+};
+
+const bookedServices = async (bookingId) => {
+  try {
+    const response = await axios.get(`/api/booked_service/${bookingId}`);
+    console.log(response.data);
+    bookServices.value = response.data;
+  } catch (error) {
+    console.log('Error bookedServices', error);
   }
 };
 

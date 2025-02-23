@@ -725,6 +725,20 @@ app.get('/api/tour/:tourid/service', (req, res) => {
     }
   });
 });
+
+// API dùng để xóa tour tạm thời
+app.put('/api/tour/:tourID', (req, res) => {
+  const tourID = req.params.tourID;
+  console.log(tourID);
+  const query = `UPDATE tour SET IsDeleted = TRUE WHERE TourID = ?`;
+  db.query(query, [tourID], (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error delete tour' });
+    } else {
+      res.status(200).json({ message: 'Tour was deleted successfully' });
+    }
+  });
+});
 ////////////////////////////////////////////////////////////////////////////////////
 // API tạo service
 app.post('/api/create_service', (req, res) => {
@@ -789,17 +803,25 @@ app.put('/api/restore_service/:serviceId', (req, res) => {
   });
 });
 
-app.put('/api/tour/:tourID', (req, res) => {
-  const tourID = req.params.tourID;
-  console.log(tourID);
-  const query = `UPDATE tour SET IsDeleted = TRUE WHERE TourID = ?`;
-  db.query(query, [tourID], (err, results) => {
-    if (err) {
-      res.status(500).json({ message: 'Error delete tour' });
-    } else {
-      res.status(200).json({ message: 'Tour was deleted successfully' });
+// API dùng để edit service
+app.put('/api/update_service', (req, res) => {
+  const query = `UPDATE service SET ServiceName = ?, Price = ?, Description = ? WHERE ServiceID = ?`;
+  db.query(
+    query,
+    [
+      req.body.ServiceName,
+      req.body.Price,
+      req.body.Description,
+      req.body.ServiceID,
+    ],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ message: 'Error update service' });
+      } else {
+        res.status(200).json({ message: 'Service updated successfully' });
+      }
     }
-  });
+  );
 });
 
 // API dùng để lấy danh sách các booking
@@ -836,7 +858,7 @@ app.post('/api/create_booking', (req, res) => {
         const bookingID = result.insertId;
 
         participants.map((part) => {
-          const query = `INSERT INTO participant (BookingID, Email, FullName, FullNameOnPassport, Nationality, PassportNumber, DateOfBirth) VALUES (?,?,?,?,?,?,?)`;
+          const query = `INSERT INTO participant (BookingID, Email, FullName, FullNameOnPassport, Nationality, PassportNumber, DateOfBirth, Gender, PhoneNumber) VALUES (?,?,?,?,?,?,?,?,?)`;
 
           db.query(
             query,
@@ -848,6 +870,8 @@ app.post('/api/create_booking', (req, res) => {
               part.nationality,
               part.passportNumber,
               part.dateOfBirth,
+              part.gender,
+              part.phoneNumber,
             ],
             (err, result) => {
               if (err) {
@@ -881,6 +905,57 @@ app.post('/api/create_booking', (req, res) => {
       }
     }
   );
+});
+
+//API dùng để lấy thông tin tri tiết về participant của booking
+app.get('/api/detail_booking/:bookingId', (req, res) => {
+  const bookingId = req.params.bookingId;
+  const query = `SELECT * from booking 
+join participant on booking.BookingID = participant.BookingID
+join schedule on schedule.ScheduleID = booking.ScheduleID 
+join tour on tour.TourID = schedule.TourID where booking.BookingID = ?`;
+  db.query(query, bookingId, (err, result) => {
+    if (err) {
+      res.status(500).json({ message: 'Error get detail of booking' });
+    } else {
+      res.status(200).json(result);
+    }
+  });
+});
+
+// API dùng để lấy thông tin tri tiết của participant theo từng tour
+app.get('/api/participant/:tourId/:scheduleId', (req, res) => {
+  const tourId = req.params.tourId;
+  const scheduleId = req.params.scheduleId;
+  const query = `SELECT participant.* FROM booking 
+                 JOIN schedule ON booking.ScheduleID = schedule.ScheduleID
+                 JOIN tour ON schedule.TourID = tour.TourID 
+                 join participant on booking.BookingID = participant.BookingID
+                 WHERE tour.TourID = ? AND schedule.ScheduleID = ?`;
+
+  db.query(query, [tourId, scheduleId], async (err, result) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ message: 'Error getting participant of tour' });
+    }
+    res.status(200).json(result);
+  });
+});
+
+// API dùng để lấy thông tin các service đã booked theo bookingId
+app.get('/api/booked_service/:bookingId', (req, res) => {
+  const bookingId = req.params.bookingId;
+  const query = `SELECT * FROM booking
+  join booking_service bs on booking.BookingID = bs.BookingID
+  join service on bs.ServiceID = service.ServiceID where booking.BookingID = ?`;
+  db.query(query, bookingId, (err, result) => {
+    if (err) {
+      res.status(500).json({ message: 'Error get booked service of booking' });
+    } else {
+      res.status(200).json(result);
+    }
+  });
 });
 
 // API dùng để tạo tour
@@ -1016,6 +1091,7 @@ app.post('/api/promote', (req, res) => {
   });
 });
 
+// API dùng để xóa user
 app.put('/api/delete_user', (req, res) => {
   console.log(req.body);
   const query = `UPDATE user SET IsDeleted = true WHERE UserID = ?`;
@@ -1028,6 +1104,7 @@ app.put('/api/delete_user', (req, res) => {
   });
 });
 
+// APi dùng để chỉnh sửa thông tin user
 app.put('/api/update_user', (req, res) => {
   const query = `UPDATE user SET FullName = ?, Email = ?, Password = ?, PhoneNumber = ? WHERE UserID = ?`;
   db.query(
@@ -1049,6 +1126,7 @@ app.put('/api/update_user', (req, res) => {
   );
 });
 
+// API dùng để gián chức user
 app.delete('/api/dismissal/:UserID', (req, res) => {
   console.log(req.params.UserID);
   const query = `DELETE FROM role WHERE UserID = ?`;

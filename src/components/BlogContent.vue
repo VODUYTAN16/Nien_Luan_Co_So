@@ -108,7 +108,6 @@ const user = ref({});
 const props = defineProps({
   blog: {
     type: Object,
-    required: true,
   },
 });
 

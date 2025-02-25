@@ -65,7 +65,7 @@
                   :key="`participant-${bookingPackageIndex}-${index}`"
                   :class="
                     (index === 0 ? 'text-danger' : '',
-                    getColor(bookingPackageIndex))
+                    getColor(bookingPackageIndex, participant.Status))
                   "
                 >
                   <td>
@@ -103,7 +103,7 @@
                     .length === 0
                 "
               >
-                <td colspan="7" class="text-center">No data</td>
+                <td colspan="10" class="text-center">No data</td>
               </tr>
             </tbody>
           </table>
@@ -126,8 +126,9 @@ const loadingSchedule = ref(null);
 const bookedSers = ref([{}]);
 
 // Lấy màu từ danh sách sách màu sắc
-const getColor = (index) => {
-  const colors = ['table-info', 'table-light'];
+const getColor = (index, status) => {
+  if (status == 'Cancelled') return 'table-warning';
+  const colors = ['table-light', 'table-info'];
   return colors[index % colors.length]; // Lặp lại màu nếu hết danh sách
 };
 
@@ -217,6 +218,8 @@ const fetchParticipants = async (tourId, scheduleId) => {
         };
       })
     );
+
+    console.log(participants.value[key]);
   } catch (error) {
     console.error('Lỗi khi tải danh sách người tham gia:', error);
     participants.value[key] = [];

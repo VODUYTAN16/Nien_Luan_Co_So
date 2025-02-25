@@ -125,8 +125,48 @@
               >
                 Detail
               </button>
-              <button class="btn btn-sm btn-outline-danger mx-2">Delete</button>
-              <button class="btn btn-sm btn-outline-primary">Approve</button>
+              <button
+                class="btn btn-sm btn-outline-danger mx-2"
+                @click="deleteBooking(item.BookingID)"
+              >
+                Delete
+              </button>
+              <div class="btn-group">
+                <button
+                  type="button"
+                  class="btn btn-primary dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  Status
+                </button>
+                <ul class="dropdown-menu text-center">
+                  <li
+                    class="dropdown-items"
+                    @click="changeStatus(item.BookingID, 'Pending')"
+                  >
+                    Pending
+                  </li>
+                  <li
+                    class="dropdown-items"
+                    @click="changeStatus(item.BookingID, 'Booked')"
+                  >
+                    Booked
+                  </li>
+                  <li
+                    class="dropdown-items"
+                    @click="changeStatus(item.BookingID, 'Paid')"
+                  >
+                    Paid
+                  </li>
+                  <li
+                    class="dropdown-items"
+                    @click="changeStatus(item.BookingID, 'Cancelled')"
+                  >
+                    Cancelled
+                  </li>
+                </ul>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -316,10 +356,10 @@ const Filter = reactive({
   TourID: '',
   Status: '',
   TourName: '', // Thêm trường mới
+  BookingID: '',
 });
 
 const currentStep = ref(1);
-const tours = ref([]); // Lưu thông tin những tour hiện tại
 const BookingDetail = ref([{}]);
 const bookServices = ref([{}]);
 
@@ -404,15 +444,6 @@ const fetchBookings = async () => {
   }
 };
 
-const fetchTours = async () => {
-  try {
-    const response = await axios.get(`/api/tour`);
-    tours.value = response.data.reverse();
-  } catch (error) {
-    console.error('Error fetching tour:', error);
-  }
-};
-
 const getDetailOfSpecificedBooking = async (booking) => {
   try {
     const response = await axios.get(
@@ -427,16 +458,59 @@ const getDetailOfSpecificedBooking = async (booking) => {
 const bookedServices = async (bookingId) => {
   try {
     const response = await axios.get(`/api/booked_service/${bookingId}`);
-    console.log(response.data);
     bookServices.value = response.data;
   } catch (error) {
     console.log('Error bookedServices', error);
   }
 };
 
+const changeStatus = async (bookingId, status) => {
+  try {
+    const isConfirmed = confirm(`Are you sure you want change to ${status} `);
+    if (!isConfirmed) {
+      console.log('Deletion canceled by user.');
+      return;
+    }
+
+    const response = await axios.post(`/api/change_status`, {
+      bookingId,
+      status,
+    });
+    if (response.status == 200) {
+      alert('Change status successfully');
+    } else {
+      alert('Change status failed');
+    }
+
+    fetchBookings();
+  } catch (error) {
+    console.log('Error changeStatus', error);
+  }
+};
+
+const deleteBooking = async (bookingId) => {
+  try {
+    const isConfirmed = confirm(
+      'Are you sure you want to delete this booking?'
+    );
+    if (!isConfirmed) {
+      console.log('Deletion canceled by user.');
+      return;
+    }
+    const response = await axios.put(`/api/delete_booking`, { bookingId });
+    if (response.status == 200) {
+      alert('Delete booking successfully');
+    } else {
+      alert('Delete booking failed');
+    }
+    fetchBookings();
+  } catch (err) {
+    console.log(`error deleteBooking: ${err}`);
+  }
+};
+
 onMounted(() => {
   fetchBookings();
-  fetchTours();
 });
 </script>
 
@@ -456,5 +530,11 @@ onMounted(() => {
 
 table {
   margin-top: 20px;
+}
+
+.dropdown-items:hover {
+  cursor: pointer;
+  background-color: blue;
+  color: white;
 }
 </style>

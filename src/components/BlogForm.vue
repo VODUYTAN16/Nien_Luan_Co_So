@@ -20,53 +20,66 @@
                 <option disabled value="">Select Author</option>
                 <option
                   v-for="author in admins"
-                  :key="author.AdminID"
-                  :value="author.AdminID"
+                  :key="author.UserID"
+                  :value="author.UserID"
                 >
                   {{ author.FullName }}
                 </option>
               </select>
             </div>
             <div class="form-group col">
-              <label for="category_id">Category</label>
-              <select
+              <label for="tourimg" class="form-label">Image of tour</label>
+              <input
+                type="file"
+                id="tourimg"
                 class="form-control"
-                id="category_id"
-                v-model="formData.category_id"
+                placeholder="Your Anwer"
+                @change="handleImage"
                 required
-              >
-                <option disabled value="">Select a Category</option>
-                <option
-                  v-for="category in categories"
-                  :key="category.id"
-                  :value="category.id"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="category_id">Category</label>
+                <select
+                  class="form-control"
+                  id="category_id"
+                  v-model="formData.category_id"
+                  required
                 >
-                  {{ category.name }}
-                </option>
-              </select>
+                  <option disabled value="">Select a Category</option>
+                  <option
+                    v-for="category in categories"
+                    :key="category.CategoryID"
+                    :value="category.CategoryID"
+                  >
+                    {{ category.Name }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="title">Title</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="title"
+                  v-model="formData.title"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col">
+              <img
+                class="rounded border border-4 order-light-subtle"
+                :src="formData.image_url"
+                alt=""
+                style="height: 200px"
+              />
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="image_url">Image URL</label>
-            <input
-              type="text"
-              class="form-control"
-              id="image_url"
-              v-model="formData.image_url"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <label for="title">Title</label>
-            <input
-              type="text"
-              class="form-control"
-              id="title"
-              v-model="formData.title"
-              required
-            />
-          </div>
           <div v-if="formData.category_id == 1" class="form-group">
             <label for="subtitle">Subtitle</label>
             <input
@@ -292,6 +305,20 @@ const fetchUser = () => {
   }
 };
 
+const handleImage = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file); // Chuyển đổi file sang Base64
+    reader.onload = () => {
+      formData.image_url = reader.result; // Gán Base64 cho imagePreview
+      console.log(formData.image_url);
+    };
+    reader.onerror = (error) => {
+      console.error('Lỗi khi đọc file:', error);
+    };
+  }
+};
 onMounted(() => {
   fetchCategogy();
   fetchAdmin();

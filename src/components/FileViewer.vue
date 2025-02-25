@@ -6,7 +6,7 @@
     </header> -->
     <main>
       <div class="pdfFile container">
-        <h1 class="text-center my-4">{{ file.title }}</h1>
+        <h1 class="text-center my-4">{{ file.Title }}</h1>
 
         <!-- Hiển thị trạng thái loading nếu chưa tải xong iframe -->
         <div v-if="loading" class="text-center">
@@ -49,11 +49,11 @@ const fetchReportage = (postId) => {
     })
     .then((response) => {
       const link = response.data.filter((item) => {
-        return item.id == postId;
+        return item.PostID == postId;
       })[0];
 
       pdfViewerUrl.value = `http://localhost:3000/proxy?url=${encodeURIComponent(
-        link.link
+        link.Link
       )}`;
       file.value = link;
     })

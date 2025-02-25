@@ -12,13 +12,13 @@
         style="margin-bottom: 20px"
       >
         <div class="roportage">
-          <router-link :to="`/view-file/${file.id}`">
+          <router-link :to="`/view-file/${file.PostID}`">
             <pdf-card :file="file"></pdf-card>
           </router-link>
           <button
             v-if="formData.admin"
             class="btn btn-link text-danger p-0 mt-2"
-            @click="deleteBlog(file.id, file.post_content_id)"
+            @click="deleteBlog(file.PostID, file.post_content_id)"
           >
             <i class="fa-solid fa-rectangle-xmark fs-5"></i>
           </button>

@@ -52,16 +52,27 @@ db.connect((err) => {
 // API tìm bài viết mới nhất
 app.get('/api/posts/related', (req, res) => {
   const query = `
-    SELECT posts.id, posts.created_at, posts.views, 
-           users.username AS author, users.image_avatar AS authorAvatar, categories.name AS category,
-           post_content.title, post_content.subtitle, post_content.content_intro, post_content.quote, post_content.content_body, post_content.image_url
-    FROM posts
-    INNER JOIN users ON posts.author_id = users.id
-    INNER JOIN categories ON posts.category_id = categories.id
-    INNER JOIN post_content ON posts.id = post_content.post_id
-    WHERE categories.name = 'blog'
-    ORDER BY posts.created_at DESC
-    LIMIT 3`;
+   SELECT 
+    Posts.PostID, 
+    Posts.CreatedAt, 
+    Posts.Views, 
+    User.FullName AS Author, 
+    User.AvatarUrl AS AuthorAvatar, 
+    Categories.Name AS Category,
+    PostContent.Title, 
+    PostContent.Subtitle, 
+    PostContent.ContentIntro, 
+    PostContent.Quote, 
+    PostContent.ContentBody, 
+    PostContent.ImageUrl
+FROM Posts
+INNER JOIN User ON Posts.AuthorID = User.UserID
+INNER JOIN Categories ON Posts.CategoryID = Categories.CategoryID
+INNER JOIN PostContent ON Posts.PostID = PostContent.PostID
+WHERE Categories.Name = 'blog'
+ORDER BY Posts.CreatedAt DESC
+LIMIT 3
+`;
 
   db.query(query, (err, results) => {
     if (err) {
@@ -73,44 +84,39 @@ app.get('/api/posts/related', (req, res) => {
   });
 });
 
-// API lấy danh sách bài viết (kết hợp posts và post_content)
-// app.get('/api/posts', (req, res) => {
-//   const query = `SELECT posts.id, posts.created_at, posts.views,
-//            users.username AS author, users.image_avatar AS authorAvatar, categories.name AS category,
-//            post_content.title, post_content.subtitle, post_content.content_intro, post_content.quote, post_content.content_body, post_content.image_url
-//     FROM posts
-//     INNER JOIN users ON posts.author_id = users.id
-//     INNER JOIN categories ON posts.category_id = categories.id
-//     INNER JOIN post_content ON posts.id = post_content.post_id
-//     ORDER BY posts.created_at DESC;`;
-//   db.query(query, (err, results) => {
-//     if (err) {
-//       res.status(500).json({ message: 'Error retrieving posts' });
-//     } else {
-//       res.json(results);
-//     }
-//   });
-// });
-
 app.get('/api/posts', (req, res) => {
   const category_name = req.query.category_name; // Lấy category_id từ tham số query
   // Xây dựng phần WHERE trong câu truy vấn
-  let query = `SELECT posts.id, posts.created_at, posts.views, 
-           users.username AS author, users.image_avatar AS authorAvatar, categories.name AS category,
-           post_content.title, post_content.subtitle, post_content.content_intro, post_content.quote, post_content.content_body, post_content.link, post_content.image_url, post_content.id as post_content_id
-    FROM posts
-    INNER JOIN users ON posts.author_id = users.id
-    INNER JOIN categories ON posts.category_id = categories.id
-    INNER JOIN post_content ON posts.id = post_content.post_id`;
+  let query = `
+  SELECT 
+      Posts.PostID, 
+      Posts.CreatedAt, 
+      Posts.Views, 
+      User.FullName AS Author, 
+      User.AvatarUrl AS AuthorAvatar, 
+      Categories.Name AS Category,
+      PostContent.Title, 
+      PostContent.Subtitle, 
+      PostContent.ContentIntro, 
+      PostContent.Quote, 
+      PostContent.ContentBody, 
+      PostContent.Link, 
+      PostContent.ImageUrl, 
+      PostContent.ContentID AS PostContentID
+  FROM Posts
+  INNER JOIN User ON Posts.AuthorID = User.UserID
+  INNER JOIN Categories ON Posts.CategoryID = Categories.CategoryID
+  INNER JOIN PostContent ON Posts.PostID = PostContent.PostID
+`;
 
-  // Nếu có category_id, thêm điều kiện WHERE vào câu truy vấn
+  // Nếu có category_name, thêm điều kiện WHERE vào câu truy vấn
   if (category_name) {
-    query += ` WHERE categories.name = ?`;
+    query += ` WHERE Categories.Name = ?`;
   } else {
-    query += ` WHERE categories.name = 'blog'`;
+    query += ` WHERE Categories.Name = 'blog'`;
   }
 
-  query += ` ORDER BY posts.created_at DESC;`; // Sắp xếp theo thời gian tạo mới nhất
+  query += ` ORDER BY Posts.CreatedAt DESC;`; // Sắp xếp theo thời gian tạo mới nhất
 
   // Thực thi truy vấn
   db.query(query, [category_name], (err, results) => {
@@ -230,10 +236,11 @@ app.post('/api/posts', (req, res) => {
     content_body,
     link,
   } = req.body;
+  console.log(req.body);
 
   // Thêm vào bảng posts
   const insertPostQuery = `
-    INSERT INTO posts (author_id, category_id)
+    INSERT INTO posts (AuthorID, CategoryID)
     VALUES (?, ?)
   `;
 
@@ -246,8 +253,9 @@ app.post('/api/posts', (req, res) => {
 
     // Thêm chi tiết bài viết vào bảng post_content
     const insertContentQuery = `
-      INSERT INTO post_content (post_id, title, subtitle, content_intro, quote, content_body, image_url, link)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO PostContent (PostID, Title, Subtitle, ContentIntro, Quote, ContentBody, ImageUrl, Link)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
     `;
 
     db.query(
@@ -281,6 +289,18 @@ app.post('/api/posts', (req, res) => {
 // API lấy danh sách danh mục
 app.get('/api/categories', (req, res) => {
   const query = 'SELECT * FROM categories';
+  db.query(query, (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error retrieving categories' });
+    } else {
+      res.status(200).json(results);
+    }
+  });
+});
+
+// API lấy danh sách admin
+app.get('/api/users/admin', (req, res) => {
+  const query = `SELECT * from User join role on User.UserID = role.UserID`;
   db.query(query, (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving categories' });
@@ -828,7 +848,7 @@ app.put('/api/update_service', (req, res) => {
 app.get('/api/booking', (req, res) => {
   const query = `SELECT booking.*, s.StartDate, s.EndDate, tour.* FROM booking JOIN Schedule ts on ts.ScheduleID = booking.ScheduleID 
 join schedule s on s.ScheduleID = ts.ScheduleID 
-join tour on tour.TourID = ts.TourID`;
+join tour on tour.TourID = ts.TourID WHERE booking.IsDeleted = FALSE`;
   db.query(query, (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving booking' });
@@ -907,6 +927,35 @@ app.post('/api/create_booking', (req, res) => {
   );
 });
 
+// API dùng để xóa tạm thời booking
+app.put('/api/delete_booking', (req, res) => {
+  const bookingID = req.body.bookingId;
+  const query = `UPDATE booking SET IsDeleted = true WHERE BookingID = ?`;
+  db.query(query, [bookingID], (err, result) => {
+    if (err) {
+      console.log('Error delete booking');
+      return res.status(500).json({ message: 'Error delete booking' });
+    }
+    res.status(200).json({
+      message: 'Booking deleted successfully',
+    });
+  });
+});
+//API dùng để approve booking
+app.post('/api/change_status', (req, res) => {
+  const bookingId = req.body.bookingId;
+  const status = req.body.status;
+
+  const query = `UPDATE booking SET Status = ? WHERE BookingID = ?`;
+  db.query(query, [status, bookingId], (err, result) => {
+    if (err) {
+      console.log('Error approve booking');
+      return res.status(500).json({ message: 'Error approve booking' });
+    }
+    res.status(200).json({ message: 'Booking Approved Successfuly' });
+  });
+});
+
 //API dùng để lấy thông tin tri tiết về participant của booking
 app.get('/api/detail_booking/:bookingId', (req, res) => {
   const bookingId = req.params.bookingId;
@@ -927,11 +976,11 @@ join tour on tour.TourID = schedule.TourID where booking.BookingID = ?`;
 app.get('/api/participant/:tourId/:scheduleId', (req, res) => {
   const tourId = req.params.tourId;
   const scheduleId = req.params.scheduleId;
-  const query = `SELECT participant.* FROM booking 
+  const query = `SELECT participant.*, booking.* FROM booking 
                  JOIN schedule ON booking.ScheduleID = schedule.ScheduleID
                  JOIN tour ON schedule.TourID = tour.TourID 
                  join participant on booking.BookingID = participant.BookingID
-                 WHERE tour.TourID = ? AND schedule.ScheduleID = ?`;
+                 WHERE tour.TourID = ? AND schedule.ScheduleID = ? AND booking.Status != 'Pending' AND booking.IsDeleted = FALSE`;
 
   db.query(query, [tourId, scheduleId], async (err, result) => {
     if (err) {
@@ -1083,7 +1132,7 @@ app.post('/api/promote', (req, res) => {
           if (err) {
             res.status(500).json({ message: 'Error promote user' });
           } else {
-            res.json({ message: 'User promoted successfully' });
+            res.status(200).json({ message: 'User promoted successfully' });
           }
         });
       }

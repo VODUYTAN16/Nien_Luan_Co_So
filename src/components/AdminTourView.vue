@@ -11,14 +11,14 @@
           :class="{ active: currentStep === 1 }"
           @click="goBack"
         >
-          Create Tour
+          <h4>Create Tour</h4>
         </li>
         <li
           class="breadcrumb-item px-2 rounded"
           :class="{ active: currentStep === 2 }"
           @click="goNext"
         >
-          List Tour
+          <h4 style="width: 300px">List Tour</h4>
         </li>
       </ol>
     </nav>
@@ -115,8 +115,19 @@
         </div>
         <hr />
         <div class="tourSchedule my-3">
-          <h4>Tour Schedule</h4>
-          <div class="row">
+          <div class="d-flex">
+            <h4>Tour Schedule</h4>
+            <button
+              style="max-width: 200px"
+              type="button"
+              class="btn btn-primary mx-3"
+              @click="addForm(dateForms)"
+            >
+              ADD
+            </button>
+          </div>
+
+          <div class="row my-3">
             <div
               v-for="(form, index) in dateForms"
               :key="index"
@@ -190,20 +201,22 @@
               </div>
             </div>
           </div>
-          <button
-            style="max-width: 200px"
-            type="button"
-            class="btn btn-primary"
-            @click="addForm(dateForms)"
-          >
-            ADD
-          </button>
           <hr />
         </div>
 
         <div class="tourServices">
-          <h4>Tour Services</h4>
-          <div class="row">
+          <div class="d-flex">
+            <h4>Tour Services</h4>
+            <button
+              type="button"
+              id="btn"
+              class="btn btn-primary mx-3"
+              @click="addForm(serviceForms)"
+            >
+              ADD
+            </button>
+          </div>
+          <div class="row my-3">
             <div
               v-for="(service, index) in serviceForms"
               :key="index"
@@ -273,14 +286,7 @@
               </div>
             </div>
           </div>
-          <button
-            type="button"
-            id="btn"
-            class="btn btn-primary"
-            @click="addForm(serviceForms)"
-          >
-            ADD
-          </button>
+
           <hr />
         </div>
 

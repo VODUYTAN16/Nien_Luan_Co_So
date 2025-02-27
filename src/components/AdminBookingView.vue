@@ -11,86 +11,108 @@
           :class="{ active: currentStep === 1 }"
           @click="goBack"
         >
-          Booking
+          <h4>Bookings List</h4>
         </li>
         <li
           class="breadcrumb-item px-2 rounded"
           :class="{ active: currentStep === 2 }"
           @click="goNext"
         >
-          List of participant of tour
+          <h4 style="width: 300px">Tour Participants List</h4>
         </li>
       </ol>
     </nav>
-    <div v-if="currentStep == 1">
-      <div class="input-group mb-3 col">
-        <span class="input-group-text">Tour Name</span>
-        <input
-          type="text"
-          class="form-control"
-          v-model="Filter.TourName"
-          placeholder="Search by tour name"
-        />
-      </div>
 
-      <form class="row">
-        <div class="input-group mb-3 col">
-          <span class="input-group-text" id="basic-addon1">Start Date</span>
-          <VDatePicker v-model="Filter.StartDate">
-            <template #default="{ inputValue, inputEvents }">
-              <input
-                class="form-control"
-                :value="inputValue"
-                v-on="inputEvents"
-              />
-            </template>
-          </VDatePicker>
-        </div>
-        <div class="input-group mb-3 col">
-          <span class="input-group-text" id="basic-addon1">End Date</span>
-          <VDatePicker v-model="Filter.EndDate">
-            <template #default="{ inputValue, inputEvents }">
-              <input
-                class="form-control"
-                :value="inputValue"
-                v-on="inputEvents"
-              />
-            </template>
-          </VDatePicker>
-        </div>
-        <div class="form-floating col">
-          <select
-            v-model="Filter.TourID"
-            class="form-select"
-            id="floatingSelect"
-            aria-label="Floating label select example"
+    <div v-if="currentStep == 1">
+      <div>
+        <p class="d-inline-flex gap-1">
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapseExample"
+            aria-expanded="false"
+            aria-controls="collapseExample"
           >
-            <option value="-1">All</option>
-            <option
-              v-for="(item, index) in tourNameList"
-              :key="index"
-              :value="item.TourID"
-            >
-              {{ item.TourName }}
-            </option>
-          </select>
-          <label for="floatingSelect">Select Tour</label>
+            <i class="bx bx-filter-alt"></i>
+            Filter
+          </button>
+        </p>
+        <div class="collapse" id="collapseExample">
+          <div class="card card-body">
+            <div class="input-group mb-3 col">
+              <span class="input-group-text">Tour Name</span>
+              <input
+                type="text"
+                class="form-control"
+                v-model="Filter.TourName"
+                placeholder="Search by tour name"
+              />
+            </div>
+
+            <form class="row">
+              <div class="input-group mb-3 col">
+                <span class="input-group-text" id="basic-addon1"
+                  >Start Date</span
+                >
+                <VDatePicker v-model="Filter.StartDate">
+                  <template #default="{ inputValue, inputEvents }">
+                    <input
+                      class="form-control"
+                      :value="inputValue"
+                      v-on="inputEvents"
+                    />
+                  </template>
+                </VDatePicker>
+              </div>
+              <div class="input-group mb-3 col">
+                <span class="input-group-text" id="basic-addon1">End Date</span>
+                <VDatePicker v-model="Filter.EndDate">
+                  <template #default="{ inputValue, inputEvents }">
+                    <input
+                      class="form-control"
+                      :value="inputValue"
+                      v-on="inputEvents"
+                    />
+                  </template>
+                </VDatePicker>
+              </div>
+              <div class="form-floating col">
+                <select
+                  v-model="Filter.TourID"
+                  class="form-select"
+                  id="floatingSelect"
+                  aria-label="Floating label select example"
+                >
+                  <option value="-1">All</option>
+                  <option
+                    v-for="(item, index) in tourNameList"
+                    :key="index"
+                    :value="item.TourID"
+                  >
+                    {{ item.TourName }}
+                  </option>
+                </select>
+                <label for="floatingSelect">Select Tour</label>
+              </div>
+              <div class="form-floating col-3">
+                <select
+                  class="form-select"
+                  id="floatingSelect"
+                  aria-label="Floating label select example"
+                  v-model="Filter.Status"
+                >
+                  <option selected>All</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Booked">Booked</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <label for="floatingSelect">Status</label>
+              </div>
+            </form>
+          </div>
         </div>
-        <div class="form-floating col-3">
-          <select
-            class="form-select"
-            id="floatingSelect"
-            aria-label="Floating label select example"
-            v-model="Filter.Status"
-          >
-            <option selected>All</option>
-            <option value="Pending">Pending</option>
-            <option value="Booked">Booked</option>
-            <option value="Cancel">Cancel</option>
-          </select>
-          <label for="floatingSelect">Status</label>
-        </div>
-      </form>
+      </div>
       <table class="table table-striped table-bordered table-hover table-sm">
         <thead class="table-light">
           <tr>
@@ -203,6 +225,7 @@
               <div class="col">
                 <h5 class="text-success">Info Of Tour</h5>
                 <h6>Name of tour: {{ BookingDetail[0].TourName }}</h6>
+                <h6>Price of tour: ${{ BookingDetail[0].Price }}</h6>
                 <h6>Start Location: {{ BookingDetail[0].StartLocation }}</h6>
                 <h6>Destination: {{ BookingDetail[0].Destination }}</h6>
 
@@ -236,6 +259,7 @@
               <div class="col">
                 <h5 class="text-success">Whose Booking</h5>
                 <h6>FullName: {{ BookingDetail[0].FullName }}</h6>
+                <h6>Phone Number: {{ BookingDetail[0].PhoneNumber }}</h6>
                 <h6>
                   Booking Date:
                   {{
@@ -252,10 +276,20 @@
                 <h6>
                   Number of participant: {{ BookingDetail[0].NumberOfGuests }}
                 </h6>
+                <h6>
+                  Services price total: ${{ ServicePriceTotal(bookServices) }}
+                </h6>
+                <h6>
+                  Trip Price: ${{ BookingDetail[0].Price }} *
+                  {{ BookingDetail[0].NumberOfGuests }} = ${{
+                    BookingDetail[0].Price * BookingDetail[0].NumberOfGuests
+                  }}
+                </h6>
                 <h6>Total Amount: ${{ BookingDetail[0].TotalAmount }}</h6>
               </div>
               <div class="col">
                 <h5 class="text-success">Booked Services</h5>
+
                 <table
                   class="table table-striped table-bordered table-hover table-sm"
                 >
@@ -263,20 +297,25 @@
                     <tr>
                       <th class="fw-bold">#</th>
                       <th class="fw-bold">Service</th>
+                      <th class="fw-bold">Price</th>
                       <th class="fw-bold">Quantity</th>
+                      <th class="fw-bold">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="(service, index) in bookServices" :key="index">
                       <td>{{ index + 1 }}</td>
                       <td>{{ service.ServiceName }}</td>
+                      <td>${{ service.Price }}</td>
                       <td>{{ service.Quantity }}</td>
+                      <td>${{ service.Quantity * service.Price }}</td>
                     </tr>
                     <tr v-if="bookServices && bookServices.length === 0">
                       <td colspan="7" class="text-center">No data</td>
                     </tr>
                   </tbody>
                 </table>
+                <h6></h6>
               </div>
             </div>
 
@@ -382,19 +421,15 @@ const removeDiacritics = (str) => {
 };
 
 const filter = (Filter) => {
+  console.log(Filter);
   const query = removeDiacritics(Filter.TourName || '').trim();
 
   return bookings.filter((booking) => {
-    const tourName = removeDiacritics(booking.TourName);
+    const tourName = removeDiacritics(booking.TourName).trim();
+    const queryWords = query.split(/\s+/); // Tách từ theo khoảng trắng
+    const tourWords = tourName.split(/\s+/);
 
-    // ✅ Kiểm tra nếu toàn bộ query nằm trong tên tour
-    if (tourName.includes(query)) return true;
-
-    // ✅ Tách query thành các từ nhỏ hơn
-    const queryWords = query.split(' ');
-    const tourWords = tourName.split(' ');
-
-    // ✅ Kiểm tra nếu mọi từ trong query đều có trong tên tour
+    // ✅ Kiểm tra nếu mọi từ trong query đều xuất hiện trong bất kỳ từ nào của tên tour
     const matchEachWord = queryWords.every((q) =>
       tourWords.some((word) => word.includes(q))
     );
@@ -404,13 +439,13 @@ const filter = (Filter) => {
         Filter.TourID == -1 ||
         booking.TourID == Filter.TourID) &&
       (!Filter.Status ||
-        Filter.Status == 'All' ||
-        booking.Status == Filter.Status) &&
+        Filter.Status === 'All' ||
+        booking.Status === Filter.Status) &&
       (!Filter.StartDate ||
         new Date(booking.StartDate) >= new Date(Filter.StartDate)) &&
       (!Filter.EndDate ||
         new Date(booking.EndDate) <= new Date(Filter.EndDate)) &&
-      (!Filter.TourName || matchEachWord) // Áp dụng lọc tên
+      (!Filter.TourName || matchEachWord) // Chỉ lọc theo tên nếu có TourName
     );
   });
 };
@@ -459,6 +494,7 @@ const bookedServices = async (bookingId) => {
   try {
     const response = await axios.get(`/api/booked_service/${bookingId}`);
     bookServices.value = response.data;
+    console.log(bookServices.value);
   } catch (error) {
     console.log('Error bookedServices', error);
   }
@@ -507,6 +543,12 @@ const deleteBooking = async (bookingId) => {
   } catch (err) {
     console.log(`error deleteBooking: ${err}`);
   }
+};
+
+const ServicePriceTotal = (bookServices) => {
+  return bookServices.reduce((acc, service) => {
+    return acc + service.Price * service.Quantity;
+  }, 0);
 };
 
 onMounted(() => {

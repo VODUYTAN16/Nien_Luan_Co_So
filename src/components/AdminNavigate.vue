@@ -9,7 +9,11 @@
           <div>
             <img
               class="avatar router-link-hover"
-              :src="user.avatarurl"
+              :src="
+                user.avatarurl
+                  ? user.avatarurl
+                  : 'https://i.pinimg.com/736x/f6/d5/fe/f6d5fe0a4ce89d111b60cf8f7a552502.jpg'
+              "
               alt="Avatar"
               @click="handleClick"
             />
@@ -87,6 +91,14 @@
           type="button"
         >
           User
+        </router-link>
+        <router-link
+          to="/statistics"
+          class="btn border my-2"
+          active-class="active"
+          type="button"
+        >
+          Statistics
         </router-link>
       </div>
     </div>

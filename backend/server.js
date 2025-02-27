@@ -287,7 +287,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 });
 
 // API lấy danh sách danh mục
-app.get('/api/categories', (req, res) => {
+app.get('D', (req, res) => {
   const query = 'SELECT * FROM categories';
   db.query(query, (err, results) => {
     if (err) {
@@ -1111,7 +1111,7 @@ app.get('/api/admins_list', (req, res) => {
 
 // API promote admin hay manager
 app.post('/api/promote', (req, res) => {
-  const user = req.body;
+  const user = req.body.user;
   const query = `SELECT * FROM user join role on user.UserID = role.UserID WHERE email = ?`;
   db.query(query, [user.Email], (err, results) => {
     if (err) {
@@ -1119,7 +1119,7 @@ app.post('/api/promote', (req, res) => {
     } else {
       if (results.length === 0) {
         const query = `INSERT INTO role (UserID, Role) VALUES (?, ?)`;
-        db.query(query, [user.UserID, user.Role], (err, results) => {
+        db.query(query, [user.UserID, req.body.role], (err, results) => {
           if (err) {
             res.status(500).json({ message: 'Error promote user' });
           } else {
@@ -1128,7 +1128,7 @@ app.post('/api/promote', (req, res) => {
         });
       } else {
         const query = `UPDATE role SET Role = ? WHERE UserID = ?`;
-        db.query(query, [user.Role, user.UserID], (err, results) => {
+        db.query(query, [req.body.Role, user.UserID], (err, results) => {
           if (err) {
             res.status(500).json({ message: 'Error promote user' });
           } else {
@@ -1142,7 +1142,6 @@ app.post('/api/promote', (req, res) => {
 
 // API dùng để xóa user
 app.put('/api/delete_user', (req, res) => {
-  console.log(req.body);
   const query = `UPDATE user SET IsDeleted = true WHERE UserID = ?`;
   db.query(query, [req.body.UserID], (err, results) => {
     if (err) {

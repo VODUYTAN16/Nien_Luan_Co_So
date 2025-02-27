@@ -1,12 +1,31 @@
 <template>
   <div>
-    <!-- Ô nhập để tìm kiếm tour -->
-    <input
-      v-model="searchQuery"
-      type="text"
-      class="form-control mb-3"
-      placeholder="Finding by name of tour..."
-    />
+    <p class="d-inline-flex gap-1">
+      <button
+        class="btn btn-primary"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#collapseExample"
+        aria-expanded="false"
+        aria-controls="collapseExample"
+      >
+        <i class="bx bx-filter-alt"></i>
+        Filter
+      </button>
+    </p>
+    <div class="collapse" id="collapseExample">
+      <div class="card card-body">
+        <div class="input-group mb-3 col">
+          <span class="input-group-text">Tour Name</span>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="form-control"
+            placeholder="Finding by name of tour..."
+          />
+        </div>
+      </div>
+    </div>
 
     <div v-for="tour in filteredTours" :key="tour.TourID" class="mb-4">
       <h4 class="text-center">{{ tour.TourName }}</h4>
@@ -127,8 +146,8 @@ const bookedSers = ref([{}]);
 
 // Lấy màu từ danh sách sách màu sắc
 const getColor = (index, status) => {
-  if (status == 'Cancelled') return 'table-warning';
-  const colors = ['table-light', 'table-info'];
+  if (status == 'Cancelled') return 'table-danger';
+  const colors = ['table-light', 'table-secondary'];
   return colors[index % colors.length]; // Lặp lại màu nếu hết danh sách
 };
 

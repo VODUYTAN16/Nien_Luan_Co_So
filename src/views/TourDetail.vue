@@ -555,6 +555,9 @@
         </div>
       </div>
 
+      <routerLink to="/tour" class="backPage fs-1"
+        ><i class="bx bx-arrow-back"></i
+      ></routerLink>
       <Tour_Information
         :Schedules="schedules"
         :Tour="tour"
@@ -972,5 +975,17 @@ onBeforeRouteUpdate(() => {
 
 .page-left::-webkit-scrollbar-track {
   background: #f1f1f1; /* Màu nền của thanh cuộn */
+}
+
+.backPage {
+  position: absolute;
+}
+
+.backPage:hover {
+  cursor: pointer;
+}
+
+a {
+  background: none;
 }
 </style>

@@ -1,44 +1,5 @@
 <template>
   <div class="userView">
-    <div v-if="user.Role == 'Admin'">
-      <h4 class="m-2">Promote User</h4>
-      <form id="form_promote" class="form row mb-5" @submit.prevent="promote()">
-        <div class="col-2">
-          <label class="form-label"> User Id</label>
-          <input
-            type="text"
-            required
-            class="form-control"
-            v-model="form.UserID"
-          />
-        </div>
-        <div class="col-5">
-          <label class="form-label">Email</label>
-          <input
-            type="email"
-            required
-            class="form-control"
-            v-model="form.Email"
-          />
-        </div>
-        <div class="col-2">
-          <label class="form-label">Role</label>
-          <select
-            required
-            class="form-select"
-            aria-label="Default select example"
-            v-model="form.Role"
-          >
-            <option value="Admin">Admin</option>
-            <option value="Manager">Manager</option>
-          </select>
-        </div>
-        <div class="col-1 d-flex align-items-end">
-          <button type="submit" class="btn btn-primary">Promote</button>
-        </div>
-      </form>
-      <hr />
-    </div>
     <div>
       <h4 class="m-2">Add User</h4>
       <form id="form_adduser" class="form row mb-5" @submit.prevent="addUser()">
@@ -114,7 +75,6 @@
         <thead class="table-light">
           <tr>
             <th class="fw-bold">#</th>
-            <th class="fw-bold">UserID</th>
             <th class="fw-bold">Full Name</th>
             <th class="fw-bold">Email</th>
             <th class="fw-bold">Phone Number</th>
@@ -125,7 +85,6 @@
         <tbody>
           <tr v-for="(item, index) in usersList" :key="index">
             <td>{{ index + 1 }}</td>
-            <td>{{ item.UserID }}</td>
             <td v-if="editableRow !== item.UserID">{{ item.FullName }}</td>
             <td v-else>
               <input v-model="editedData.FullName" class="form-control" />
@@ -165,6 +124,27 @@
                 >
                   Delete
                 </button>
+                <div class="btn-group">
+                  <button
+                    type="button"
+                    class="btn btn-primary dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Promote
+                  </button>
+                  <ul class="dropdown-menu text-center">
+                    <li class="dropdown-items" @click="promote(item, 'Admin')">
+                      Admin
+                    </li>
+                    <li
+                      class="dropdown-items"
+                      @click="promote(item, 'Manager')"
+                    >
+                      Manager
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               <div v-else>
@@ -280,7 +260,6 @@ const adminsList = ref([]); // Lưu danh sách người dùng có quyền quản
 const currentStep = ref(1);
 const user = ref({}); // Lưu Thông tin người dùng đang đăng nhập hiện tại
 const newUser = ref({});
-const form = reactive({});
 const goNext = () => {
   if (currentStep.value < 2) currentStep.value++;
 };
@@ -315,14 +294,19 @@ const fetchAdminsList = async () => {
   }
 };
 
-const promote = async () => {
+const promote = async (user, role) => {
   try {
-    const response = await axios.post('/api/promote', form);
+    const isConfirmed = confirm('Are you sure you want promote this user');
+    if (!isConfirmed) {
+      console.log('promote canceled by user.');
+      return;
+    }
+
+    const response = await axios.post('/api/promote', { user, role });
     console.log(response.data);
     if (response.status == 200) {
       alert(response.data.message);
       fetchAdminsList();
-      form.value = {};
       document.getElementById('form_promote').reset();
     }
   } catch (error) {
@@ -443,5 +427,10 @@ onMounted(() => {
 <style scoped>
 .userView {
   background-color: #f5f7f8;
+}
+.dropdown-items:hover {
+  cursor: pointer;
+  background-color: blue;
+  color: white;
 }
 </style>

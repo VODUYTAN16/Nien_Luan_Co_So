@@ -11,14 +11,14 @@
           :class="{ active: currentStep === 1 }"
           @click="goBack"
         >
-          Create Blog
+          <h4>Create Blog</h4>
         </li>
         <li
           class="breadcrumb-item px-2 rounded"
           :class="{ active: currentStep === 2 }"
           @click="goNext"
         >
-          List Blog
+          <h4 style="width: 300px">List Blog</h4>
         </li>
       </ol>
     </nav>

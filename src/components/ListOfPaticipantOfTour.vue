@@ -83,7 +83,7 @@
                   v-for="(participant, index) in bookingPackage.items"
                   :key="`participant-${bookingPackageIndex}-${index}`"
                   :class="
-                    (index === 0 ? 'text-danger' : '',
+                    (index === 0 ? 'text-danger ' : '',
                     getColor(bookingPackageIndex, participant.Status))
                   "
                 >
@@ -92,6 +92,10 @@
                   </td>
                   <td :class="index === 0 ? 'text-danger' : ''">
                     {{ participant.FullName }}
+                    <i
+                      class="bx bx-money text-success fs-5"
+                      v-if="(participant.Status === 'Paid') & (index === 0)"
+                    ></i>
                   </td>
                   <td>{{ formatDate(participant.DateOfBirth) }}</td>
                   <td>{{ participant.Gender }}</td>
@@ -142,7 +146,6 @@ const searchQuery = ref('');
 const expandedSchedule = ref(null);
 const participants = ref([{}]);
 const loadingSchedule = ref(null);
-const bookedSers = ref([{}]);
 
 // Lấy màu từ danh sách sách màu sắc
 const getColor = (index, status) => {

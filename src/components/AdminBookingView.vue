@@ -113,7 +113,7 @@
           </div>
         </div>
       </div>
-      <table class="table table-striped table-bordered table-hover table-sm">
+      <table class="table table-bordered table-hover table-sm">
         <thead class="table-light">
           <tr>
             <th class="fw-bold">#</th>
@@ -121,17 +121,40 @@
             <th class="fw-bold">Start Date</th>
             <th class="fw-bold">End Date</th>
             <th class="fw-bold">Quantity</th>
+            <th class="fw-bold">Booking Date</th>
             <th class="fw-bold">Status</th>
             <th class="fw-bold">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in filter(Filter)" :key="index">
+          <tr
+            v-for="(item, index) in filter(Filter).filter((item) => {
+              return item.Status != 'Paid';
+            })"
+            :key="index"
+            :class="{
+              'table-danger': item.Status === 'Cancelled',
+              'table-light': item.Status === 'Pending',
+              'table-success': item.Status === 'Booked',
+            }"
+          >
             <td>{{ index + 1 }}</td>
             <td>{{ item.TourName }}</td>
             <td>{{ item.StartDate }}</td>
             <td>{{ item.EndDate }}</td>
             <td>{{ item.NumberOfGuests }}</td>
+            <td>
+              {{
+                new Date(item.BookingDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                })
+              }}
+            </td>
             <td>{{ item.Status }}</td>
             <td>
               <!-- Button trigger modal -->
@@ -164,24 +187,28 @@
                 </button>
                 <ul class="dropdown-menu text-center">
                   <li
+                    v-if="item.Status != 'Pending'"
                     class="dropdown-items"
                     @click="changeStatus(item.BookingID, 'Pending')"
                   >
                     Pending
                   </li>
                   <li
+                    v-if="item.Status != 'Booked'"
                     class="dropdown-items"
                     @click="changeStatus(item.BookingID, 'Booked')"
                   >
                     Booked
                   </li>
                   <li
+                    v-if="item.Status != 'Paid'"
                     class="dropdown-items"
                     @click="changeStatus(item.BookingID, 'Paid')"
                   >
                     Paid
                   </li>
                   <li
+                    v-if="item.Status != 'Cancelled'"
                     class="dropdown-items"
                     @click="changeStatus(item.BookingID, 'Cancelled')"
                   >
@@ -269,6 +296,9 @@
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
                       }
                     )
                   }}

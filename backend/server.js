@@ -859,75 +859,104 @@ join tour on tour.TourID = ts.TourID WHERE booking.IsDeleted = FALSE`;
 });
 
 // API dùng để tạo booking
-app.post('/api/create_booking', (req, res) => {
+app.post('/api/create_booking', async (req, res) => {
   const buyer = req.body.Buyer;
   const participants = req.body.Participant;
   const schedulePicked = req.body.schedulePicked;
   const selectedOptions = req.body.selectedOptions;
   const total = req.body.total;
 
-  const query = `INSERT INTO booking (NumberOfGuests, ScheduleID, UserID, TotalAmount) VALUES (?,?,?,?)`;
-  db.query(
-    query,
-    [participants.length, schedulePicked.ScheduleID, buyer.UserID, total],
-    (err, result) => {
-      if (err) {
-        console.log('Error create booking');
-        return res.status(500).json({ message: 'Error create booking' });
-      } else {
-        const bookingID = result.insertId;
+  const queryAsync = (sql, values) => {
+    return new Promise((resolve, reject) => {
+      db.query(sql, values, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+  };
 
-        participants.map((part) => {
-          const query = `INSERT INTO participant (BookingID, Email, FullName, FullNameOnPassport, Nationality, PassportNumber, DateOfBirth, Gender, PhoneNumber) VALUES (?,?,?,?,?,?,?,?,?)`;
+  try {
+    // 1️⃣ Tạo booking
+    const bookingResult = await queryAsync(
+      `INSERT INTO booking (NumberOfGuests, ScheduleID, UserID, TotalAmount) VALUES (?,?,?,?)`,
+      [participants.length, schedulePicked.ScheduleID, buyer.UserID, total]
+    );
+    const bookingID = bookingResult.insertId;
 
-          db.query(
-            query,
-            [
-              bookingID,
-              part.email,
-              part.firstName + '' + part.lastName,
-              part.fullNameOnPassport,
-              part.nationality,
-              part.passportNumber,
-              part.dateOfBirth,
-              part.gender,
-              part.phoneNumber,
-            ],
-            (err, result) => {
-              if (err) {
-                console.log('Error create participant');
-                return res
-                  .status(500)
-                  .json({ message: 'Error create participant' });
-              }
-            }
-          );
-        });
-
-        selectedOptions.map((option) => {
-          const query = `INSERT INTO booking_service (BookingID, ServiceID, Quantity) VALUES (?,?,?)`;
-          db.query(
-            query,
-            [bookingID, option.ServiceID, option.Quantity],
-            (err, result) => {
-              if (err) {
-                console.log('Error create booking service');
-                return res
-                  .status(500)
-                  .json({ message: 'Error create booking service' });
-              }
-            }
-          );
-        });
-        res.status(200).json({
-          message: 'Tour Booked Successfuly',
-        });
-      }
+    // 2️⃣ Lấy thông tin Schedule
+    const scheduleResult = await queryAsync(
+      `SELECT * FROM schedule WHERE ScheduleID = ?`,
+      [schedulePicked.ScheduleID]
+    );
+    if (!scheduleResult.length) {
+      return res.status(404).json({ message: 'Schedule not found' });
     }
-  );
+
+    // 3️⃣ Giảm số lượng AvailableSpots
+    const availableSpots =
+      scheduleResult[0].AvailableSpots - participants.length;
+
+    const query =
+      availableSpots === 0
+        ? `UPDATE schedule SET AvailableSpots = ?, Status = 'Full' WHERE ScheduleID = ?`
+        : `UPDATE schedule SET AvailableSpots = ? WHERE ScheduleID = ?`;
+    db.query(
+      query,
+      [availableSpots, schedulePicked.ScheduleID],
+      (err, result) => {}
+    );
+    // 4️⃣ Thêm thông tin Participant (Chạy song song với Promise.all)
+    const participantPromises = participants.map((part) => {
+      return queryAsync(
+        `INSERT INTO participant (BookingID, Email, FullName, FullNameOnPassport, Nationality, PassportNumber, DateOfBirth, Gender, PhoneNumber) VALUES (?,?,?,?,?,?,?,?,?)`,
+        [
+          bookingID,
+          part.email,
+          part.firstName + ' ' + part.lastName,
+          part.fullNameOnPassport,
+          part.nationality,
+          part.passportNumber,
+          part.dateOfBirth,
+          part.gender,
+          part.phoneNumber,
+        ]
+      );
+    });
+
+    // 5️⃣ Thêm booking services (Chạy song song với Promise.all)
+    const servicePromises = selectedOptions.map((option) => {
+      return queryAsync(
+        `INSERT INTO booking_service (BookingID, ServiceID, Quantity) VALUES (?,?,?)`,
+        [bookingID, option.ServiceID, option.Quantity]
+      );
+    });
+
+    // Giảm số lượng available của service đã chọn của tour
+    const servicePromises2 = selectedOptions.map((option) => {
+      return queryAsync(
+        `UPDATE tour_service SET AvailableSpots = ? WHERE ServiceID = ? AND TourID = ?`,
+        [
+          option.AvailableSpots - option.Quantity,
+          option.ServiceID,
+          schedulePicked.TourID,
+        ]
+      );
+    });
+
+    // Chạy các truy vấn INSERT song song để tăng tốc độ xử lý
+    await Promise.all([
+      ...participantPromises,
+      ...servicePromises,
+      ...servicePromises2,
+    ]);
+
+    res.status(200).json({ message: 'Tour Booked Successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
 
-// API dùng để xóa tạm thời booking
 app.put('/api/delete_booking', (req, res) => {
   const bookingID = req.body.bookingId;
   const query = `UPDATE booking SET IsDeleted = true WHERE BookingID = ?`;
@@ -942,9 +971,44 @@ app.put('/api/delete_booking', (req, res) => {
   });
 });
 //API dùng để approve booking
-app.post('/api/change_status', (req, res) => {
+app.post('/api/change_status', async (req, res) => {
   const bookingId = req.body.bookingId;
   const status = req.body.status;
+  const queryAsync = (sql, values) => {
+    return new Promise((resolve, reject) => {
+      db.query(sql, values, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+  };
+
+  if (status === 'Cancelled') {
+    const query = `SELECT * FROM booking
+    join participant on booking.BookingID = participant.BookingID WHERE booking.BookingID = ?`;
+    db.query(query, [bookingId], async (err, result) => {
+      if (err) {
+        console.log('Error get booking');
+        return res.status(500).json({ message: 'Error get booking' });
+      }
+      const scheduleResult = await queryAsync(
+        `SELECT * FROM schedule WHERE ScheduleID = ?`,
+        [result[0].ScheduleID]
+      );
+      if (!scheduleResult.length) {
+        return res.status(404).json({ message: 'Schedule not found' });
+      }
+
+      db.query(
+        `UPDATE schedule SET AvailableSpots = ? WHERE ScheduleID = ?`,
+        [
+          scheduleResult[0].AvailableSpots + result.length,
+          result[0].ScheduleID,
+        ],
+        (err, result) => {}
+      );
+    });
+  }
 
   const query = `UPDATE booking SET Status = ? WHERE BookingID = ?`;
   db.query(query, [status, bookingId], (err, result) => {
@@ -1176,7 +1240,6 @@ app.put('/api/update_user', (req, res) => {
 
 // API dùng để gián chức user
 app.delete('/api/dismissal/:UserID', (req, res) => {
-  console.log(req.params.UserID);
   const query = `DELETE FROM role WHERE UserID = ?`;
   db.query(query, [req.params.UserID], (err, results) => {
     if (err) {
@@ -1187,6 +1250,176 @@ app.delete('/api/dismissal/:UserID', (req, res) => {
       });
     }
   });
+});
+
+// API lấy thống kê đặt tour theo năm/quý
+app.get('/api/statistics', async (req, res) => {
+  const { year, quarter } = req.query;
+
+  let condition = '';
+  let params = [];
+
+  // Nếu có năm
+  if (year) {
+    condition += ` YEAR(b.BookingDate) = ?`;
+    params.push(year);
+  }
+
+  // Nếu có quý (quarter = 1,2,3,4 hoặc 5 là cả năm)
+  if (quarter && quarter != 5) {
+    condition += ` AND QUARTER(b.BookingDate) = ?`;
+    params.push(quarter);
+  }
+
+  // Nếu có điều kiện, thêm WHERE vào SQL
+  condition = condition ? ` WHERE ${condition.replace(/^ AND/, '')}` : '';
+
+  const sql = `
+    SELECT 
+      COUNT(b.BookingID) AS totalBookings, 
+      SUM(b.TotalAmount) AS totalRevenue, 
+      SUM(b.NumberOfGuests) AS totalGuests
+    FROM Booking b ${condition}
+  `;
+
+  const query = `
+    SELECT AVG(DATEDIFF(CURDATE(), p.DateOfBirth) / 365) AS avgAge
+    FROM Booking b 
+    LEFT JOIN Participant p ON b.BookingID = p.BookingID
+    ${condition}
+  `;
+
+  try {
+    db.query(sql, params, (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send({ message: 'Internal Server Error' });
+      }
+      const stats = result[0];
+      db.query(query, params, (err, result) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send({ message: 'Internal Server Error' });
+        }
+        const avgAge = result[0].avgAge;
+        res.status(200).json({ stats, avgAge });
+      });
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API lấy dữ liệu biểu đồ tỷ lệ lấp đầy tour
+app.get('/api/tour-capacity', async (req, res) => {
+  try {
+    const { year, quarter } = req.query;
+
+    if (!year || isNaN(year)) {
+      return res.status(400).json({ error: 'Vui lòng cung cấp năm hợp lệ' });
+    }
+
+    let startDate, endDate;
+
+    if (quarter >= 1 && quarter <= 4) {
+      // Xác định ngày đầu và cuối của quý
+      const startMonth = (quarter - 1) * 3 + 1; // Quý 1 -> tháng 1, Quý 2 -> tháng 4, ...
+      startDate = `${year}-${String(startMonth).padStart(2, '0')}-01`;
+      endDate = new Date(year, startMonth + 2, 0).toISOString().split('T')[0]; // Ngày cuối của tháng cuối trong quý
+    } else if (quarter == 5) {
+      // Nếu quarter = 5, lấy cả năm
+      startDate = `${year}-01-01`;
+      endDate = `${year}-12-31`;
+    } else {
+      return res
+        .status(400)
+        .json({ error: 'Quý không hợp lệ, chỉ nhận giá trị từ 1-5' });
+    }
+
+    const query = `
+      SELECT * FROM Schedule s
+      WHERE DATE(s.StartDate) BETWEEN ? AND ?;
+    `;
+
+    // Thực hiện truy vấn
+    const [result] = await db.promise().query(query, [startDate, endDate]);
+
+    const tourCapacity = result.reduce(
+      (acc, schedule) => {
+        acc[0] = schedule.AvailableSpots ? acc[0] + schedule.AvailableSpots : 0;
+        acc[1] = schedule.Capacity ? acc[1] + schedule.Capacity : 0;
+        return acc;
+      },
+      [0, 0]
+    );
+
+    // Tính toán tỷ lệ lấp đầy
+    res.json({
+      filled: tourCapacity[1] - tourCapacity[0],
+      notFilled: tourCapacity[0],
+      period: quarter == 5 ? `Năm ${year}` : `Quý ${quarter} năm ${year}`,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API dùng để lấy thông tin về sóo lượng khách và doanh thu theo từng tour
+app.get('/api/tour-statistics', async (req, res) => {
+  try {
+    const { year, quarter } = req.query;
+
+    let condition = '';
+    let params = [];
+
+    // Nếu có năm
+    if (year) {
+      condition += ` YEAR(b.BookingDate) = ?`;
+      params.push(year);
+    }
+
+    // Nếu có quý (quarter = 1,2,3,4 hoặc 5 là cả năm)
+    if (quarter && quarter != 5) {
+      condition += ` AND QUARTER(b.BookingDate) = ?`;
+      params.push(quarter);
+    }
+
+    condition = condition ? ` WHERE ${condition.replace(/^ AND/, '')}` : '';
+
+    const sql = `
+      SELECT 
+        s.ScheduleID, 
+        SUM(b.NumberOfGuests) AS totalGuests,
+        SUM(b.TotalAmount) AS totalRevenue
+      FROM Booking b
+      JOIN Schedule s ON b.ScheduleID = s.ScheduleID
+       ${condition}
+      GROUP BY s.ScheduleID 
+    `;
+
+    db.query(sql, params, (err, results) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+      }
+
+      const guestData = results.map((tour) => tour.totalGuests || 0);
+      const revenueData = results.map((tour) => tour.totalRevenue || 0); // Đổi đơn vị thành triệu VND
+
+      res.json({
+        datasets: [
+          {
+            data: revenueData,
+          },
+          {
+            data: guestData,
+          },
+        ],
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Khởi động server

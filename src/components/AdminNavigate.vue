@@ -94,7 +94,7 @@
         </router-link>
         <router-link
           to="/statistics"
-          class="btn border my-2"
+          class="btn border"
           active-class="active"
           type="button"
         >

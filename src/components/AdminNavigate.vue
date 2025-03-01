@@ -188,6 +188,7 @@ onBeforeRouteUpdate((to, from, next) => {
   top: 0;
   transition: all 0.3s ease-in-out;
   overflow: hidden;
+  min-height: 100vh;
 }
 
 .adminNavigate.open {

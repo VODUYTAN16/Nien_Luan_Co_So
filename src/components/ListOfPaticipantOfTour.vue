@@ -16,13 +16,31 @@
     <div class="collapse" id="collapseExample">
       <div class="card card-body">
         <div class="input-group mb-3 col">
-          <span class="input-group-text">Tour Name</span>
+          <span class="input-group-text"> Search by Tour Name</span>
           <input
             v-model="searchQuery"
             type="text"
             class="form-control"
             placeholder="Finding by name of tour..."
           />
+        </div>
+        <div class="form-floating col">
+          <select
+            v-model="Filter.TourID"
+            class="form-select"
+            id="floatingSelect"
+            aria-label="Floating label select example"
+          >
+            <option value="">All</option>
+            <option
+              v-for="(item, index) in tourNameList"
+              :key="index"
+              :value="item.TourID"
+            >
+              {{ item.TourName }}
+            </option>
+          </select>
+          <label for="floatingSelect">Select Tour</label>
         </div>
       </div>
     </div>
@@ -92,6 +110,7 @@
                   </td>
                   <td :class="index === 0 ? 'text-danger' : ''">
                     {{ participant.FullName }}
+
                     <i
                       class="bx bx-money text-success fs-5"
                       v-if="(participant.Status === 'Paid') & (index === 0)"
@@ -143,9 +162,23 @@ import { toRaw } from 'vue';
 
 const tours = ref([]);
 const searchQuery = ref('');
+
 const expandedSchedule = ref(null);
 const participants = ref([{}]);
 const loadingSchedule = ref(null);
+
+const props = defineProps({
+  tourNameList: [],
+});
+
+const Filter = reactive({
+  StartDate: '',
+  EndDate: '',
+  TourID: '',
+  Status: '',
+  TourName: '', // Thêm trường mới
+  BookingID: '',
+});
 
 // Lấy màu từ danh sách sách màu sắc
 const getColor = (index, status) => {
@@ -188,21 +221,27 @@ const removeDiacritics = (str) => {
 };
 
 const filteredTours = computed(() => {
-  const query = removeDiacritics(searchQuery.value.toLowerCase()).trim();
+  if (Filter.TourID) {
+    return tours.value.filter((tour) => tour.TourID === Filter.TourID);
+  } else {
+    const query = removeDiacritics(searchQuery.value.toLowerCase()).trim();
 
-  return tours.value.filter((tour) => {
-    const tourName = removeDiacritics(tour.TourName.toLowerCase());
+    return tours.value.filter((tour) => {
+      const tourName = removeDiacritics(tour.TourName.toLowerCase());
 
-    // Kiểm tra nếu toàn bộ query nằm trong tên tour
-    if (tourName.includes(query)) return true;
+      // Kiểm tra nếu toàn bộ query nằm trong tên tour
+      if (tourName.includes(query)) return true;
 
-    // Tách query thành các từ nhỏ hơn
-    const queryWords = query.split(' ');
-    const tourWords = tourName.split(' ');
+      // Tách query thành các từ nhỏ hơn
+      const queryWords = query.split(' ');
+      const tourWords = tourName.split(' ');
 
-    // Kiểm tra nếu mọi từ trong query đều có trong tên tour
-    return queryWords.every((q) => tourWords.some((word) => word.includes(q)));
-  });
+      // Kiểm tra nếu mọi từ trong query đều có trong tên tour
+      return queryWords.every((q) =>
+        tourWords.some((word) => word.includes(q))
+      );
+    });
+  }
 });
 
 // Hàm lấy danh sách người tham gia theo schedule

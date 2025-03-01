@@ -222,7 +222,9 @@
       </table>
     </div>
     <div v-if="currentStep == 2">
-      <ListOfPaticipantOfTour></ListOfPaticipantOfTour>
+      <ListOfPaticipantOfTour
+        :tourNameList="tourNameList"
+      ></ListOfPaticipantOfTour>
     </div>
 
     <!-- Modal -->

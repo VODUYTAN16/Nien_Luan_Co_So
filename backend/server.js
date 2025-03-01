@@ -1397,6 +1397,8 @@ app.get('/api/tour-statistics', async (req, res) => {
       GROUP BY s.ScheduleID 
     `;
 
+    console.log(sql);
+
     db.query(sql, params, (err, results) => {
       if (err) {
         console.error(err);

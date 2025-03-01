@@ -51,6 +51,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+} from 'chart.js';
 import { DoughnutChart, LineChart } from 'vue-chart-3';
 import { Chart, registerables } from 'chart.js';
 import axios from 'axios';

@@ -13,7 +13,7 @@
       >
         <div class="roportage">
           <router-link :to="`/view-file/${file.PostID}`">
-            <pdf-card :file="file"></pdf-card>
+            <pdfCard :file="file"></pdfCard>
           </router-link>
           <button
             v-if="formData.admin"

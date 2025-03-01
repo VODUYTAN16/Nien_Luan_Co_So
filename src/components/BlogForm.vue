@@ -177,6 +177,8 @@
           <!-- Show preview of Actical_card or BlogContent based on state -->
           <div v-if="showPreviewCard">
             <Actical_card
+              @click.stop
+              @click.native.stop
               :image="formData.image_url"
               :title="formData.title"
               :description="formData.content_intro.slice(0, 100)"
@@ -257,6 +259,10 @@ const createPost = async () => {
       'https://hook.eu2.make.com/7xzu3q45dgkbhi650m8idth9qmpmenr9',
       response.data
     );
+    // load lại trang
+
+    alert('Create post successfully');
+    window.location.reload();
   } catch (error) {
     message.value = error.response?.data?.message || 'Error creating post';
     success.value = false;
@@ -290,6 +296,7 @@ const fetchAdmin = async () => {
 const fetchCategogy = async () => {
   try {
     const response = await axios.get(`/api/categories`);
+    console.log(response.data);
     categories.value = response.data;
     formData.created_at = new Date().toISOString();
   } catch (error) {
@@ -300,25 +307,46 @@ const fetchCategogy = async () => {
 const fetchUser = () => {
   const userData = JSON.parse(localStorage.getItem('user'));
   if (userData) {
-    formData.author = userData.username;
-    formData.author_id = userData.id;
+    formData.author = userData.FullName;
+    formData.author_id = userData.UserID;
   }
 };
 
 const handleImage = (event) => {
   const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.readAsDataURL(file); // Chuyển đổi file sang Base64
-    reader.onload = () => {
-      formData.image_url = reader.result; // Gán Base64 cho imagePreview
-      console.log(formData.image_url);
-    };
-    reader.onerror = (error) => {
-      console.error('Lỗi khi đọc file:', error);
-    };
+  if (!file) return;
+
+  // Kiểm tra loại file (chỉ chấp nhận ảnh)
+  if (!file.type.startsWith('image/')) {
+    alert('file is not an image');
+    console.error('File không phải là hình ảnh');
+    return;
   }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64String = e.target.result;
+
+    // Kiểm tra xem Base64 có đúng định dạng không
+    if (!base64String.startsWith('data:image/')) {
+      console.error('Dữ liệu không phải hình ảnh hợp lệ');
+      alert('not suitable image');
+      return;
+    }
+
+    // Gán vào formData
+    formData.image_url = base64String;
+    console.log('Base64 hợp lệ:', formData.image_url);
+  };
+
+  reader.onerror = (error) => {
+    alert('Error reading file');
+    console.error('Error reading file:', error);
+  };
+
+  reader.readAsDataURL(file); // Đọc file dưới dạng Base64
 };
+
 onMounted(() => {
   fetchCategogy();
   fetchAdmin();

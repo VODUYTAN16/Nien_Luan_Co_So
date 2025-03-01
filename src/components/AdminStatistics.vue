@@ -42,7 +42,7 @@
         <DoughnutChart :chart-data="chartData" />
       </div>
       <div class="col-md-6">
-        <h5 class="text-center">Revenue & Number of Customers</h5>
+        <h5 class="text-center">Profit & Number of Customers per Tour</h5>
         <LineChart :chart-data="lineChartData" :chart-options="chartOptions" />
       </div>
     </div>

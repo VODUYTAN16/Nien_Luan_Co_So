@@ -5,15 +5,15 @@
       <!-- <p class="text-muted">
         {{ blog.created_at || 'N/A' }} • {{ blog.readTime || 'N/A' }} read
       </p> -->
-      <h1>{{ blog.title || 'No Title Available' }}</h1>
-      <p class="lead">{{ blog.subtitle || 'No Subtitle' }}</p>
+      <h1>{{ blog.Title || 'No Title Available' }}</h1>
+      <p class="lead">{{ blog.Subtitle || 'No Subtitle' }}</p>
     </div>
 
     <!-- Image Section -->
     <div class="text-center mb-4">
       <img
-        v-if="blog.image_url"
-        :src="blog.image_url"
+        v-if="blog.ImageUrl"
+        :src="blog.ImageUrl"
         alt="Blog Image"
         class="img-fluid rounded"
       />
@@ -27,11 +27,11 @@
 
     <!-- Main Content -->
     <div class="mb-4">
-      <p>{{ blog.content_intro || 'No introduction available.' }}</p>
-      <blockquote v-if="blog.quote" class="blockquote fst-italic px-3">
-        <p>{{ blog.quote }}</p>
+      <p>{{ blog.ContentIntro || 'No introduction available.' }}</p>
+      <blockquote v-if="blog.Quote" class="blockquote fst-italic px-3">
+        <p>{{ blog.Quote }}</p>
       </blockquote>
-      <p>{{ blog.content_body || 'No content available.' }}</p>
+      <p>{{ blog.ContentBody || 'No content available.' }}</p>
     </div>
 
     <!-- Share and Interaction Section -->
@@ -64,7 +64,7 @@
       <!-- Views -->
       <div>
         <span class="text-muted mb-0">
-          {{ blog.views !== undefined ? blog.views : 0 }}
+          {{ blog.Views !== undefined ? blog.Views : 0 }}
           <i class="fa-regular fa-eye"></i>
         </span>
 
@@ -144,7 +144,7 @@ const share = (platform) => {
 // Hàm tăng số lượt thích
 
 const likePost = async () => {
-  if (!user.value.id) {
+  if (!user.value.UserID) {
     alert('Vui long dang nhap');
     return;
   }
@@ -156,7 +156,7 @@ const likePost = async () => {
     // Gửi yêu cầu tới API
     const response = await axios.post(`/api/posts/${postId}/like`, {
       action: action,
-      userId: user.value.id,
+      userId: user.value.UserID,
     });
 
     // Cập nhật trạng thái nếu API thành công
@@ -201,7 +201,7 @@ const fetchCountComments = async (postId) => {
 
 const is_Liked_post = async (postId) => {
   try {
-    const userId = user.value.id;
+    const userId = user.value.UserID;
     const response = await axios.get(`/api/posts/${userId}/is-liked/${postId}`);
     state.isLiked = response.data.isLiked === true;
   } catch (error) {

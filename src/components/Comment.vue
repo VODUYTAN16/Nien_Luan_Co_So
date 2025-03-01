@@ -12,9 +12,11 @@
 
     <!-- Nội dung bình luận -->
     <div class="comment-content">
-      <h6 class="author-name mb-1">{{ comment.name || 'Unknown member' }}</h6>
+      <h6 class="author-name mb-1">
+        {{ comment.FullName || 'Unknown member' }}
+      </h6>
       <small class="text-muted">{{ timeAgo || 'a few seconds ago' }}</small>
-      <p class="comment-text mb-0">{{ comment.content }}</p>
+      <p class="comment-text mb-0">{{ comment.Content }}</p>
     </div>
   </div>
 </template>
@@ -36,7 +38,7 @@ const props = defineProps({
 // Tính toán thời gian
 const timeAgo = computed(() => {
   const currentTime = new Date();
-  const createdTime = new Date(props.comment.created_at);
+  const createdTime = new Date(props.comment.CreatedAt);
   const diffInSeconds = Math.floor((currentTime - createdTime) / 1000); // Chênh lệch tính bằng giây
 
   // Tính toán sự khác biệt và trả về chuỗi tương ứng
@@ -62,7 +64,7 @@ const timeAgo = computed(() => {
 
 // Avatar mặc định nếu không có avatar
 const computedAvatar = computed(() => {
-  return props.comment.author_avatar || 'https://via.placeholder.com/40';
+  return props.comment.AvatarUrl || 'https://via.placeholder.com/40';
 });
 </script>
 

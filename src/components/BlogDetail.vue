@@ -47,9 +47,9 @@
               <div class="comment">
                 <Comment :comment="comment" />
                 <button
-                  v-if="state.userId === comment.author_id"
+                  v-if="state.userId === comment.AuthorID"
                   class="btn btn-link text-danger p-0 mt-2"
-                  @click="deleteComment(comment.id, state.userId)"
+                  @click="deleteComment(comment.CommentID, state.userId)"
                 >
                   <i class="fa-solid fa-rectangle-xmark fs-5"></i>
                 </button>
@@ -85,14 +85,14 @@
               class="col-md-4 mb-4"
             >
               <Actical_card
-                :image="article.image_url"
-                :title="article.title"
-                :description="article.content_intro.slice(0, 100) + '...'"
-                :author="article.author"
-                :authorAvatar="article.authorAvatar"
-                :views="article.views"
-                :id="article.id"
-                :create_at="article.created_at"
+                :image="article.ImageUrl"
+                :title="article.Title"
+                :description="article.ContentIntro.slice(0, 100) + '...'"
+                :author="article.Author"
+                :authorAvatar="article.AuthorAvatar"
+                :views="article.Views"
+                :id="article.PostID"
+                :create_at="article.CreatedAt"
               ></Actical_card>
             </div>
           </div>
@@ -160,6 +160,7 @@ const fetchBlog = async (postId) => {
   try {
     const response = await axios.get(`/api/posts/${postId}`);
     blog.value = response.data;
+    console.log(blog.value);
     visibleCommentsCount.value = 3;
   } catch (error) {
     console.error('Error fetching blog:', error);
@@ -177,13 +178,14 @@ const fetchComments = async (postId) => {
 
 const fetchUser = () => {
   const userData = JSON.parse(localStorage.getItem('user'));
+  console.log(userData);
   if (userData) {
-    newComment.value.author_name = userData.name;
-    newComment.value.author_avatar = userData.image_avatar;
-    newComment.value.email = userData.email;
-    state.userId = userData.id;
+    newComment.value.author_id = userData.UserID;
+    newComment.value.author_avatar = userData.ImageAvatar;
+    newComment.value.email = userData.Email;
+    state.userId = userData.UserID;
   } else {
-    newComment.value.author_name = '';
+    newComment.value.author_id = '';
     newComment.value.author_avatar = '';
     newComment.value.email = '';
   }
@@ -200,6 +202,9 @@ const addComment = async () => {
       `/api/posts/${postId}/comments`,
       newComment.value
     );
+    if (response.status != 200) {
+      alert('Faile to add comment');
+    }
     // comments.value.push(response.data);
     fetchComments(postId);
     clearForm();
@@ -253,6 +258,7 @@ const fetchRelatedArticles = async () => {
   try {
     const response = await axios.get('/api/posts/related');
     relatedArticles.value = response.data;
+    console.log(response.data);
   } catch (error) {
     console.error('Error fetching related articles:', error);
   }

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2';
 import axios from 'axios';
+import util from 'util';
 
 const app = express();
 const port = 3000;
@@ -135,8 +136,8 @@ app.delete('/api/posts/:postId/contents/:postContentId', (req, res) => {
   // Kiểm tra sự tồn tại của bài đăng và nội dung bài đăng
   const checkQuery = `
     SELECT * FROM posts 
-    INNER JOIN post_content ON posts.id = post_content.post_id 
-    WHERE posts.id = ? AND post_content.id = ?
+    INNER JOIN PostContent ON posts.PostID = PostContent.PostID
+    WHERE posts.PostID = ? AND PostContent.PostID = ?
   `;
 
   db.query(checkQuery, [postId, postContentId], (err, result) => {
@@ -152,7 +153,7 @@ app.delete('/api/posts/:postId/contents/:postContentId', (req, res) => {
     }
 
     // Xóa nội dung bài đăng
-    const deleteContentQuery = 'DELETE FROM post_content WHERE id = ?';
+    const deleteContentQuery = 'DELETE FROM PostContent WHERE ContentID = ?';
     db.query(deleteContentQuery, [postContentId], (err) => {
       if (err) {
         return res
@@ -162,7 +163,7 @@ app.delete('/api/posts/:postId/contents/:postContentId', (req, res) => {
 
       // Xóa bài đăng nếu không còn nội dung nào liên kết
       const checkRemainingContentsQuery =
-        'SELECT * FROM post_content WHERE post_id = ?';
+        'SELECT * FROM PostContent WHERE PostID = ?';
       db.query(
         checkRemainingContentsQuery,
         [postId],
@@ -175,7 +176,7 @@ app.delete('/api/posts/:postId/contents/:postContentId', (req, res) => {
           }
 
           if (remainingContents.length === 0) {
-            const deletePostQuery = 'DELETE FROM posts WHERE id = ?';
+            const deletePostQuery = 'DELETE FROM posts WHERE PostID = ?';
             db.query(deletePostQuery, [postId], (err) => {
               if (err) {
                 return res
@@ -202,14 +203,12 @@ app.delete('/api/posts/:postId/contents/:postContentId', (req, res) => {
 app.get('/api/posts/:id', (req, res) => {
   const postId = req.params.id;
   const query = `
-    SELECT posts.id, posts.created_at, posts.views, users.id AS user_id,
-           users.username AS author, users.image_avatar AS authorAvatar, categories.name AS category,
-           post_content.title, post_content.subtitle, post_content.content_intro, post_content.quote, post_content.content_body, post_content.image_url
+    SELECT *
     FROM posts
-    INNER JOIN users ON posts.author_id = users.id
-    INNER JOIN categories ON posts.category_id = categories.id
-    INNER JOIN post_content ON posts.id = post_content.post_id
-    WHERE posts.id = ?`;
+    INNER JOIN user ON posts.AuthorID = user.UserID
+    INNER JOIN categories ON posts.CategoryID = categories.CategoryID
+    INNER JOIN PostContent ON posts.PostID = PostContent.PostID
+    WHERE posts.PostID = ?`;
   db.query(query, [postId], (err, results) => {
     if (err) {
       console.log('Error retrieving blog post');
@@ -287,7 +286,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 });
 
 // API lấy danh sách danh mục
-app.get('D', (req, res) => {
+app.get('/api/categories', (req, res) => {
   const query = 'SELECT * FROM categories';
   db.query(query, (err, results) => {
     if (err) {
@@ -314,7 +313,7 @@ app.get('/api/users/admin', (req, res) => {
 app.post('/api/categories', (req, res) => {
   const { name } = req.body;
   const query = `
-    INSERT INTO categories (name)
+    INSERT INTO categories (Name)
     VALUES (?)
   `;
   db.query(query, [name], (err, result) => {
@@ -334,15 +333,10 @@ app.get('/api/posts/:postId/comments', (req, res) => {
   const { postId } = req.params;
   const query = `
     SELECT 
-      comments.id, 
-      comments.content, 
-      comments.author_id, 
-      comments.created_at,
-      users.image_avatar AS author_avatar,
-      users.username as name
+      *
     FROM comments
-    JOIN users ON comments.author_id = users.id
-    WHERE comments.post_id = ?
+    JOIN user ON comments.AuthorID = user.UserID
+    WHERE comments.PostID = ?
   `;
   db.query(query, [postId], (err, results) => {
     if (err) {
@@ -356,41 +350,23 @@ app.get('/api/posts/:postId/comments', (req, res) => {
 // API thêm bình luận cho bài viết
 app.post('/api/posts/:postId/comments', (req, res) => {
   const { postId } = req.params;
-  const { author_name, content, email } = req.body;
+  const { author_id, content, email } = req.body;
+  console.log(req.body);
 
-  // Truy vấn để lấy author_id từ bảng users dựa trên email
-  const getUserQuery = 'SELECT id FROM users WHERE email = ?';
+  // Tiến hành chèn bình luận vào bảng comments
+  const insertCommentQuery =
+    'INSERT INTO comments (PostID, AuthorID, Content) VALUES (?, ?, ?)';
 
-  db.query(getUserQuery, [email], (err, result) => {
+  console.log(postId, author_id, content);
+  db.query(insertCommentQuery, [postId, author_id, content], (err, result) => {
     if (err) {
-      return res.status(500).json({ message: 'Error fetching user data' });
+      return res.status(500).json({ message: 'Error creating comment' });
     }
 
-    if (result.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Lấy author_id từ kết quả truy vấn
-    const author_id = result[0].id;
-
-    // Tiến hành chèn bình luận vào bảng comments
-    const insertCommentQuery =
-      'INSERT INTO comments (post_id, author_id, content) VALUES (?, ?, ?)';
-
-    db.query(
-      insertCommentQuery,
-      [postId, author_id, content],
-      (err, result) => {
-        if (err) {
-          return res.status(500).json({ message: 'Error creating comment' });
-        }
-
-        res.status(200).json({
-          message: 'Comment created successfully',
-          commentId: result.insertId,
-        });
-      }
-    );
+    res.status(200).json({
+      message: 'Comment created successfully',
+      commentId: result.insertId,
+    });
   });
 });
 
@@ -401,7 +377,7 @@ app.delete('/api/posts/:postId/comments/:commentId', (req, res) => {
 
   // Truy vấn để xóa bình luận dựa trên `author_id`, `post_id` và `id`
   const deleteCommentQuery =
-    'DELETE FROM comments WHERE id = ? AND post_id = ? AND author_id = ?';
+    'DELETE FROM comments WHERE CommentID = ? AND PostID = ? AND AuthorID = ?';
 
   db.query(
     deleteCommentQuery,
@@ -430,7 +406,7 @@ app.get('/api/comments/:postId', (req, res) => {
     return res.status(400).json({ message: 'PostId is required' });
   }
 
-  const query = `SELECT COUNT(*) as count FROM comments Where post_id = ?`;
+  const query = `SELECT COUNT(*) as count FROM comments Where PostID = ?`;
 
   db.query(query, [postId], (err, results) => {
     if (err) {
@@ -456,9 +432,9 @@ app.post('/api/posts/:id/like', (req, res) => {
   // Thực hiện thêm hoặc xóa bản ghi trong bảng user_likes
   if (action === 'like') {
     const addLikeQuery = `
-        INSERT INTO user_likes (user_id, post_id)
+        INSERT INTO UserLikes (UserID, PostID)
         VALUES (?, ?)
-        ON DUPLICATE KEY UPDATE id=id; -- Đảm bảo không thêm trùng lặp
+        ON DUPLICATE KEY UPDATE LikeID=LikeID; -- Đảm bảo không thêm trùng lặp
       `;
     db.query(addLikeQuery, [userId, postId], (err) => {
       if (err) {
@@ -469,8 +445,8 @@ app.post('/api/posts/:id/like', (req, res) => {
     });
   } else if (action === 'unlike') {
     const removeLikeQuery = `
-        DELETE FROM user_likes
-        WHERE user_id = ? AND post_id = ?
+        DELETE FROM UserLikes
+        WHERE UserID = ? AND PostID = ?
       `;
     db.query(removeLikeQuery, [userId, postId], (err) => {
       if (err) {
@@ -492,7 +468,7 @@ app.get('/api/user_likes/:postId', (req, res) => {
     return res.status(400).json({ message: 'PostId is required' });
   }
 
-  const query = `SELECT COUNT(*) as count FROM user_likes Where post_id = ?`;
+  const query = `SELECT COUNT(*) as count FROM UserLikes Where PostID = ?`;
 
   db.query(query, [postId], (err, results) => {
     if (err) {
@@ -517,8 +493,8 @@ app.get('/api/posts/:userId/is-liked/:postId', (req, res) => {
 
   const query = `
     SELECT *
-    FROM user_likes
-    WHERE user_id = ? AND post_id = ?
+    FROM UserLikes
+    WHERE UserID = ? AND PostID = ?
   `;
 
   db.query(query, [userId, postId], (err, results) => {
@@ -534,6 +510,7 @@ app.get('/api/posts/:userId/is-liked/:postId', (req, res) => {
     }
   });
 });
+////////////////////////////////////////////////////////////////////////////////////
 
 // API đăng nhập bằng google
 app.post('/api/google-login', (req, res) => {
@@ -688,6 +665,52 @@ app.get('/proxy', async (req, res) => {
 });
 ////////////////////////////////////////////////////////////////////////////////
 
+// API lấy thông tin cơ bản của tour theo tourid
+// Chuyển db.query thành hàm Promise
+const queryAsync = util.promisify(db.query).bind(db);
+app.get('/api/basis_inf/:tourid', async (req, res) => {
+  try {
+    const tourid = req.params.tourid;
+
+    const query = `
+      SELECT * FROM tour 
+      JOIN schedule s ON tour.TourID = s.TourID
+      WHERE tour.TourID = ?`;
+
+    const sql = `
+      SELECT * FROM tour  
+      JOIN tour_service ts ON ts.TourID = tour.TourID 
+      WHERE tour.TourID = ?`;
+
+    // Thực hiện truy vấn
+    const results1 = await queryAsync(query, [tourid]);
+    const results2 = await queryAsync(sql, [tourid]);
+
+    // Xử lý dữ liệu
+    const tourInf = results1[0] || null;
+
+    const serviceForms = results2.map((service) => ({
+      ServiceID: service.ServiceID,
+      Capacity: service.Capacity,
+      Status: service.Status,
+    }));
+
+    const dateForms = results1.map((schedule) => ({
+      date: {
+        start: schedule.StartDate,
+        end: schedule.EndDate,
+      },
+      Capacity: schedule.Capacity,
+    }));
+
+    // Trả về kết quả JSON
+    res.status(200).json({ tourInf, serviceForms, dateForms });
+  } catch (err) {
+    console.error('Error fetching tour information:', err);
+    res.status(500).json({ message: 'Error fetching tour information' });
+  }
+});
+
 // API lấy danh sách các tour
 app.get('/api/tour', (req, res) => {
   const query = `select * from tour`;
@@ -695,12 +718,12 @@ app.get('/api/tour', (req, res) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving categories' });
     } else {
-      res.json(results);
+      res.status(200).json(results);
     }
   });
 });
 
-// API lấy thông tin tri tiết của tour
+// API lấy thông tin tri tiết của tour theo tourid
 app.get('/api/tour/:tourid/', (req, res) => {
   const tourid = req.params.tourid;
   const query = `select * from tour
@@ -759,7 +782,7 @@ app.put('/api/tour/:tourID', (req, res) => {
     }
   });
 });
-////////////////////////////////////////////////////////////////////////////////////
+
 // API tạo service
 app.post('/api/create_service', (req, res) => {
   const service = req.body;
@@ -1077,17 +1100,20 @@ app.post('/api/create_tour', (req, res) => {
   const dateForms = req.body.dateForms;
   const serviceForms = req.body.serviceForms;
 
+  console.log(req.body);
+  console.log(req.body.dateForms[0].date);
+
   const query = `INSERT INTO tour (TourName, Description, StartLocation, Destination, Price, Img_Tour) VALUES (?,?,?,?,?,?)`;
 
   db.query(
     query,
     [
-      tourInf.tourName,
-      tourInf.description,
-      tourInf.startLocation,
-      tourInf.destination,
-      tourInf.price,
-      tourInf.image,
+      tourInf.TourName,
+      tourInf.Description,
+      tourInf.StartLocation,
+      tourInf.Destination,
+      tourInf.Price,
+      tourInf.Img_Tour,
     ],
     (err, result) => {
       if (err) {
@@ -1103,8 +1129,8 @@ app.post('/api/create_tour', (req, res) => {
               tourID,
               date.date.start,
               date.date.end,
-              date.capacity,
-              date.capacity,
+              date.Capacity,
+              date.Capacity,
             ],
             (err, result) => {
               if (err) {
@@ -1124,10 +1150,10 @@ app.post('/api/create_tour', (req, res) => {
             query,
             [
               tourID,
-              service.serviceID,
-              service.capacity,
-              service.capacity,
-              service.status,
+              service.ServiceID,
+              service.Capacity,
+              service.Capacity,
+              service.Status,
             ],
             (err, result) => {
               if (err) {
@@ -1147,6 +1173,79 @@ app.post('/api/create_tour', (req, res) => {
       }
     }
   );
+});
+
+// API dùng để chỉnh sửa tour
+app.put('/api/edit_tour', async (req, res) => {
+  try {
+    const { tourInf, dateForms, serviceForms } = req.body;
+
+    // Kiểm tra tourID
+    if (!tourInf.TourID) {
+      return res.status(400).json({ message: 'Missing TourID' });
+    }
+
+    // Cập nhật thông tin tour
+    const updateTourQuery = `
+      UPDATE tour 
+      SET TourName = ?, Description = ?, StartLocation = ?, 
+          Destination = ?, Price = ?, Img_Tour = ?
+      WHERE TourID = ?
+    `;
+
+    await queryAsync(updateTourQuery, [
+      tourInf.TourName,
+      tourInf.Description,
+      tourInf.StartLocation,
+      tourInf.Destination,
+      tourInf.Price,
+      tourInf.Img_Tour,
+      tourInf.TourID,
+    ]);
+
+    // Xóa lịch trình cũ
+    await queryAsync(`DELETE FROM schedule WHERE TourID = ?`, [tourInf.TourID]);
+
+    // Chèn lịch trình mới
+    for (const date of dateForms) {
+      const insertScheduleQuery = `
+        INSERT INTO schedule (TourID, StartDate, EndDate, Capacity, AvailableSpots) 
+        VALUES (?, ?, ?, ?, ?)`;
+
+      await queryAsync(insertScheduleQuery, [
+        tourInf.TourID,
+        date.date.start,
+        date.date.end,
+        date.Capacity,
+        date.Capacity,
+      ]);
+    }
+
+    // Xóa dịch vụ cũ
+    await queryAsync(`DELETE FROM tour_service WHERE TourID = ?`, [
+      tourInf.TourID,
+    ]);
+
+    // Chèn dịch vụ mới
+    for (const service of serviceForms) {
+      const insertServiceQuery = `
+        INSERT INTO tour_service (TourID, ServiceID, AvailableSpots, Capacity, Status) 
+        VALUES (?, ?, ?, ?, ?)`;
+
+      await queryAsync(insertServiceQuery, [
+        tourInf.TourID,
+        service.ServiceID,
+        service.Capacity,
+        service.Capacity,
+        service.Status,
+      ]);
+    }
+
+    res.status(200).json({ message: 'Tour updated successfully' });
+  } catch (err) {
+    console.error('Error updating tour:', err);
+    res.status(500).json({ message: 'Error updating tour' });
+  }
 });
 
 // API lấy danh sách user
@@ -1396,8 +1495,6 @@ app.get('/api/tour-statistics', async (req, res) => {
        ${condition}
       GROUP BY s.ScheduleID 
     `;
-
-    console.log(sql);
 
     db.query(sql, params, (err, results) => {
       if (err) {

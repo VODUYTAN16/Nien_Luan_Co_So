@@ -5,24 +5,24 @@
       <div class="row">
         <div
           v-for="blog in pagedBlogs"
-          :key="blog.id"
+          :key="blog.PostID"
           class="col-xl-3 col-md-6 col-lg-4"
         >
           <div class="blog_card">
             <Actical_card
-              :image="blog.image_url"
-              :title="blog.title"
-              :description="blog.content_intro.slice(0, 100) + '...'"
-              :author="blog.author"
-              :authorAvatar="blog.authorAvatar"
-              :views="blog.views"
-              :id="blog.id"
-              :create_at="blog.created_at"
+              :image="blog.ImageUrl"
+              :title="blog.Title"
+              :description="blog.ContentIntro.slice(0, 100) + '...'"
+              :author="blog.Author"
+              :authorAvatar="blog.AuthorAvatar"
+              :views="blog.Views"
+              :id="blog.PostID"
+              :create_at="blog.CreatedAt"
             ></Actical_card>
             <button
               v-if="formData.admin"
               class="btn btn-link text-danger p-0 mt-2"
-              @click="deleteBlog(blog.id, blog.post_content_id)"
+              @click="deleteBlog(blog.PostID, blog.PostContentID)"
             >
               <i class="fa-solid fa-rectangle-xmark fs-5"></i>
             </button>

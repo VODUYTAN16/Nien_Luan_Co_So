@@ -1,6 +1,6 @@
 <template>
   <router-link
-    :to="`/blogs/${id}`"
+    :to="id ? `/blogs/${id}` : ''"
     class="card shadow-sm mb-3 blog-card"
     style="height: 400px"
   >

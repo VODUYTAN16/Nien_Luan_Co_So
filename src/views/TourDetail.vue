@@ -12,8 +12,8 @@
     </header> -->
     <div class="card-box">
       <div class="card text-center card-booking">
-        <h1 class="Card-title">${{ tour.Price }}</h1>
-        <h6>deposit ${{ tour.Price * 0.3 }}</h6>
+        <h1 class="Card-title">${{ parseFloat(tour.Price).toFixed(2) }}</h1>
+        <h6>deposit ${{ parseFloat(tour.Price * 0.3).toFixed(2) }}</h6>
         <hr />
         <div class="btn btn-success" @click="openPopup">Book Now</div>
         <hr />
@@ -196,7 +196,7 @@
 
                   <div v-else-if="currentStep === 2" class="col-md-8 page-left">
                     <h6>Buyer Information</h6>
-                    <form @submit.prevent="">
+                    <div>
                       <div class="row g-3">
                         <div class="col-6">
                           <label for="" class="form-label">First Name</label>
@@ -238,16 +238,26 @@
                             required
                           />
                         </div>
+                        <div class="col">
+                          <label for="" class="form-label">Phone Number</label>
+                          <input
+                            v-model="Buyer.phoneNumber"
+                            type="text"
+                            class="form-control"
+                            placeholder="Your Answer"
+                            required
+                          />
+                        </div>
                         <hr />
                       </div>
                       <div>
                         <h6>Participant Information</h6>
-                        <div v-for="number in selectedPakage" :key="number">
+                        <div v-for="(part, index) in Participant" :key="index">
                           <h5
                             class="bg-secondary rounded-circle text-center text-white"
                             style="width: 30px; height: 30px"
                           >
-                            {{ number }}
+                            {{ index + 1 }}
                           </h5>
                           <div>
                             <div class="row g-3">
@@ -256,7 +266,7 @@
                                   >First Name</label
                                 >
                                 <input
-                                  v-model="Participant.firstName"
+                                  v-model="part.firstName"
                                   type="text"
                                   class="form-control"
                                   placeholder="First Name"
@@ -268,17 +278,36 @@
                                   >Last Name</label
                                 >
                                 <input
-                                  v-model="Participant.lastName"
+                                  v-model="part.lastName"
                                   type="text"
                                   class="form-control"
                                   placeholder="Last Name"
                                   required
                                 />
                               </div>
+                              <div class="col-12">
+                                <label for="" class="form-label"
+                                  >Date of Birth
+                                </label>
+                                <VDatePicker
+                                  v-model="part.dateOfBirth"
+                                  :popover="popover"
+                                >
+                                  <template
+                                    #default="{ inputValue, inputEvents }"
+                                  >
+                                    <input
+                                      class="form-control"
+                                      :value="inputValue"
+                                      v-on="inputEvents"
+                                    />
+                                  </template>
+                                </VDatePicker>
+                              </div>
                               <div class="col">
                                 <label for="" class="form-label">Email</label>
                                 <input
-                                  v-model="Participant.email"
+                                  v-model="part.email"
                                   type="email"
                                   class="form-control"
                                   placeholder="Email"
@@ -294,7 +323,7 @@
                               >
                               <input
                                 id="inputNameOnPassport"
-                                v-model="Participant.fullNameOnPassport"
+                                v-model="part.fullNameOnPassport"
                                 type="text"
                                 class="form-control"
                                 placeholder="Your Answer"
@@ -309,7 +338,7 @@
                               >
                               <input
                                 id="inputPassportNumber"
-                                v-model="Participant.passportNumber"
+                                v-model="part.passportNumber"
                                 type="number"
                                 class="form-control"
                                 placeholder="Your Answer"
@@ -325,7 +354,7 @@
                                   type="radio"
                                   class="form-check-input"
                                   id="male"
-                                  v-model="Participant.gender"
+                                  v-model="part.gender"
                                   value="male"
                                 />
                                 <label for="male" class="form-check-label"
@@ -337,7 +366,7 @@
                                   type="radio"
                                   class="form-check-input"
                                   id="female"
-                                  v-model="Participant.gender"
+                                  v-model="part.gender"
                                   value="female"
                                 />
                                 <label for="female" class="form-check-label"
@@ -353,7 +382,7 @@
                               >
                               <input
                                 id="inputNationality"
-                                v-model="Participant.nationality"
+                                v-model="part.nationality"
                                 type="text"
                                 class="form-control"
                                 placeholder="Your Answer"
@@ -368,7 +397,7 @@
                               >
                               <input
                                 id="inputPhoneNumber"
-                                v-model="Participant.phoneNumber"
+                                v-model="part.phoneNumber"
                                 type="text"
                                 class="form-control"
                                 placeholder="Your Answer"
@@ -378,10 +407,10 @@
                           </div>
                         </div>
                       </div>
-                    </form>
+                    </div>
                     <!-- Add participant form here -->
                   </div>
-                  <div v-else-if="currentStep === 3" class="col-md-8 page-left">
+                  <!-- <div v-else-if="currentStep === 3" class="col-md-8 page-left">
                     <h6>Payment</h6>
                     <form>
                       <div class="mb-3">
@@ -491,7 +520,7 @@
                         </select>
                       </div>
                     </form>
-                  </div>
+                  </div> -->
 
                   <div class="col-md-4">
                     <h6>Your Booking</h6>
@@ -547,7 +576,7 @@
               <button type="button" class="btn btn-secondary" @click="goBack">
                 {{ currentStep > 1 ? 'Back' : 'Close' }}
               </button>
-              <button type="button" class="btn btn-primary" @click="goNext">
+              <button type="submit" class="btn btn-primary" @click="goNext">
                 {{ currentStep === 3 ? 'Confirm Booking' : 'Continue' }}
               </button>
             </div>
@@ -555,9 +584,6 @@
         </div>
       </div>
 
-      <routerLink to="/tour" class="backPage fs-1"
-        ><i class="bx bx-arrow-back"></i
-      ></routerLink>
       <Tour_Information
         :Schedules="schedules"
         :Tour="tour"
@@ -569,21 +595,19 @@
 </template>
 
 <script setup>
-// import Navigate from '@/components/Navigate.vue';
-// import HeroSection from '@/components/HeroSection.vue';
-// import Footer from '@/components/Footer.vue';
 import Tour_Information from '@/components/Tour_Information.vue';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useScreens } from 'vue-screen-utils';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 import axios, { all } from 'axios';
-import { differenceInDays } from 'date-fns';
+import { format } from 'date-fns';
 
 const route = useRoute();
 const schedules = ref([]); // Lưu trữ các lịch trình của tour
 const tour = ref({}); // Lưu thông tin của tour
 const services = ref([]); // Lưu các services của tour
 const currentStep = ref(1); // Lưu bước hiện tại của việc đặt tour
+const user = ref(); // Lưu thông tin của người dùng hiện tại
 
 const { mapCurrent } = useScreens({
   xs: '0px',
@@ -594,6 +618,14 @@ const { mapCurrent } = useScreens({
 const columns = mapCurrent({ lg: 2 }, 1);
 const expanded = mapCurrent({ lg: false }, true);
 const selectedColor = ref('blue');
+const attrs = ref([
+  {
+    key: 'test',
+    highlight: true,
+    dates: { start: new Date(2019, 3, 15), end: new Date(2019, 3, 19) },
+    // dates: new Date(),
+  },
+]);
 
 var minDate = ref();
 var maxDate = ref();
@@ -669,7 +701,6 @@ const calculateTotal = () => {
   // Tính tổng giá các dịch vụ đã chọn
   const servicesTotal = Object.values(selectedOptions.value).reduce(
     (total, option) => {
-      console.log(option);
       const price = parseFloat(option.Price) || 0; // Giá dịch vụ
       const quantity = option.Quantity || 0; // Số lượng dịch vụ
       return total + price * quantity; // Tích lũy tổng giá trị dịch vụ
@@ -682,13 +713,32 @@ const calculateTotal = () => {
 };
 
 const goNext = () => {
-  if (currentStep.value < 3) currentStep.value++;
-  else this.$emit('confirmBooking');
+  if (validateForm()) {
+    if (currentStep.value < 3) currentStep.value++;
+    else createBooking();
+  }
 };
 
 const goBack = () => {
   if (currentStep.value > 1) currentStep.value--;
   else closePopup();
+};
+
+const initializeParticipants = (number) => {
+  Participant.splice(0, Participant.length); // Xóa tất cả phần tử hiện tại
+  for (let i = 0; i < number; i++) {
+    Participant.push({
+      firstName: '',
+      lastName: '',
+      email: '',
+      fullNameOnPassport: '',
+      passportNumber: '',
+      dateOfBirth: '',
+      gender: '',
+      nationality: '',
+      phoneNumber: '',
+    });
+  }
 };
 
 // current =1
@@ -700,15 +750,14 @@ const schedulePicked = ref({}); // Lưu lịch trình đã chọn
 
 const _selectPackage = (value) => {
   selectedPakage.value = value; // Lưu giá trị đã chọn
+  initializeParticipants(value);
 };
 
 const selectOption = (optionId, Quantity) => {
   const service = services.value.find(
     (service) => service.ServiceID == optionId
   );
-  console.log(service);
   selectedOptions.value[optionId] = { Quantity, ...service }; // Cập nhật số lượng cho từng option
-  console.log('Selected Options:', selectedOptions.value);
 };
 
 const getSchedule = (date) => {
@@ -730,21 +779,10 @@ const Buyer = reactive({
   lastName: '',
   email: '',
   confirmEmail: '',
+  phoneNumber: '',
 });
 
-const Participant = reactive([
-  {
-    firstName: '',
-    lastName: '',
-    email: '',
-    fullNameOnPassport: '',
-    passportNumber: '',
-    dateOfBirth: '',
-    gender: '',
-    nationality: '',
-    phoneNumber: '',
-  },
-]);
+const Participant = reactive([{}]);
 
 // current = 3
 const payment = reactive({
@@ -758,9 +796,13 @@ const payment = reactive({
   postcode: '',
   country: 'Vietnam',
 });
-// Hàm loại bỏ n ngày liên tiếp sau ngày được chọn
+// Hàm loại bỏ 7 ngày liên tiếp sau ngày được chọn
 const removeSevenDaysAfterSelectedDate = async (datePicked) => {
-  selectedDate.value = new Date(datePicked);
+  selectedDate.value = new Date(datePicked).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
   try {
     // Lưu vào allAvailable
     if (allAvailableDates.value != null && allAvailableDates.value.length > 0) {
@@ -780,13 +822,9 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
       allAvailableDates.value.push(datePicked);
 
       const dayNumber =
-        differenceInDays(
-          new Date(schedules.value[index_StartDate].EndDate),
-          new Date(schedules.value[index_StartDate].StartDate)
-        ) + 1;
-
-      console.log(schedules.value[index_StartDate]);
-      console.log(dayNumber);
+        new Date(schedules.value[index_StartDate].EndDate).getDate() -
+        datePicked.getDate() +
+        1;
       for (let i = 0; i < dayNumber; i++) {
         const dateToRemove = new Date(startDate);
         dateToRemove.setDate(startDate.getDate() + i);
@@ -808,8 +846,9 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
 const fetchTourSchedule = async (tourid) => {
   try {
     const response = await axios.get(`/api/tour/${tourid}/schedule`);
-    console.log(response.data);
     schedules.value = response.data;
+
+    console.log(response.data);
 
     minDate = new Date(
       Math.min(...schedules.value.map((item) => new Date(item.StartDate)))
@@ -858,6 +897,7 @@ const fetchTourService = async (tourid) => {
 const groupedServices = () => {
   return services.value.reduce((acc, service) => {
     const status = service.Status;
+    console.log(status);
     if (!acc[status]) acc[status] = [];
     acc[status].push(service);
     return acc;
@@ -872,20 +912,123 @@ const caculateMount = (mount) => {
   return arr;
 };
 
-const createBooking = () => {};
+const validateForm = () => {
+  if (currentStep.value === 1) {
+    if (!selectedDate.value) {
+      alert('Please select a departure date.');
+      return false;
+    }
+    if (!selectedPakage.value) {
+      alert('Please select a package.');
+      return false;
+    }
+  }
+
+  if (currentStep.value === 2) {
+    if (
+      !Buyer.firstName ||
+      !Buyer.lastName ||
+      !Buyer.email ||
+      !Buyer.confirmEmail ||
+      !Buyer.phoneNumber
+    ) {
+      alert('Please fill in all buyer information.');
+      return false;
+    }
+    if (Buyer.email !== Buyer.confirmEmail) {
+      alert('Email and Confirm Email do not match.');
+      return false;
+    }
+    for (let participant of Participant) {
+      if (
+        !participant.firstName ||
+        !participant.lastName ||
+        !participant.email ||
+        !participant.fullNameOnPassport ||
+        !participant.gender ||
+        !participant.passportNumber ||
+        !participant.nationality ||
+        !participant.phoneNumber
+      ) {
+        alert('Please fill in all participant information.');
+        return false;
+      }
+    }
+  }
+
+  return true; // Nếu không có lỗi
+};
+
+const fetchUser = () => {
+  const userData = JSON.parse(localStorage.getItem('user'));
+  if (userData) {
+    user.value = userData;
+  }
+};
+
+const createBooking = async () => {
+  try {
+    Participant.map((part) => {
+      part.dateOfBirth = format(
+        new Date(part.dateOfBirth),
+        'yyyy-MM-dd HH:mm:ss'
+      );
+    });
+    const response = await axios.post('/api/create_booking', {
+      Buyer: user.value,
+      Participant: Participant,
+      schedulePicked: schedulePicked.value,
+      selectedOptions: Object.values(selectedOptions.value),
+      total: calculateTotal(),
+    });
+
+    if (response.status === 200) {
+      console.log('Booking created successfully:');
+      alert('Book Tour successfully');
+      location.reload();
+    } else {
+      alert('Booking Failed');
+    }
+  } catch (error) {
+    console.error(
+      'Error creating booking:',
+      error.response?.data || error.message
+    );
+  }
+};
+
+watch(
+  () => Participant[0],
+  (newVal) => {
+    if (newVal) {
+      Buyer.firstName = newVal.firstName;
+      Buyer.lastName = newVal.lastName;
+      Buyer.email = newVal.email;
+      Buyer.phoneNumber = newVal.phoneNumber;
+    }
+  },
+  { deep: true } // Theo dõi thay đổi sâu
+);
+
+watch(
+  () => Buyer,
+  (newVal) => {
+    if (Participant[0]) {
+      Participant[0].firstName = newVal.firstName;
+      Participant[0].lastName = newVal.lastName;
+      Participant[0].email = newVal.email;
+      Participant[0].phoneNumber = newVal.phoneNumber;
+    }
+  },
+  { deep: true }
+);
 
 onMounted(() => {
   const tourid = route.params.tourid;
   fetchTourSchedule(tourid);
   fetchTourService(tourid);
   fetchTourDetail(tourid);
-});
-
-onBeforeRouteUpdate(() => {
-  const tourid = route.params.tourid;
-  fetchTourSchedule(tourid);
-  fetchTourService(tourid);
-  fetchTourDetail(tourid);
+  fetchUser();
 });
 </script>
 
@@ -900,7 +1043,7 @@ onBeforeRouteUpdate(() => {
 
 .card-box {
   position: absolute; /* Phần tử cha cần có position khác "static" */
-  height: 180%;
+  height: 100%;
   right: 2%;
 }
 

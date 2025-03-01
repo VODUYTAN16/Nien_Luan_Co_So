@@ -151,6 +151,7 @@
           </table>
         </div>
       </div>
+      <hr />
     </div>
   </div>
 </template>
@@ -216,8 +217,10 @@ const fetchTourSchedule = async (tourId) => {
 // Lọc danh sách tour theo tên
 const removeDiacritics = (str) => {
   return str
-    .normalize('NFD') // Chuyển thành dạng Unicode tổ hợp
-    .replace(/[\u0300-\u036f]/g, ''); // Xóa dấu tiếng Việt
+    ? str
+        .normalize('NFD') // Chuyển thành dạng Unicode tổ hợp
+        .replace(/[\u0300-\u036f]/g, '')
+    : ''; // Xóa dấu tiếng Việt
 };
 
 const filteredTours = computed(() => {
@@ -227,7 +230,9 @@ const filteredTours = computed(() => {
     const query = removeDiacritics(searchQuery.value.toLowerCase()).trim();
 
     return tours.value.filter((tour) => {
-      const tourName = removeDiacritics(tour.TourName.toLowerCase());
+      const tourName = removeDiacritics(
+        tour.TourName ? tour.TourName.toLowerCase() : tour.TourName
+      );
 
       // Kiểm tra nếu toàn bộ query nằm trong tên tour
       if (tourName.includes(query)) return true;

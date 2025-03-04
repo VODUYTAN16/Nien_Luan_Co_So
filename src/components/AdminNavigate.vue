@@ -15,6 +15,7 @@
                   : 'https://i.pinimg.com/736x/f6/d5/fe/f6d5fe0a4ce89d111b60cf8f7a552502.jpg'
               "
               alt="Avatar"
+              style="width: 55px; height: 55px"
               @click="handleClick"
             />
           </div>

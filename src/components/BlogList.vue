@@ -193,6 +193,7 @@ async function deleteBlog(postId, postContentId) {
 
     // Kiểm tra phản hồi từ API
     if (response.status === 200) {
+      alert('Delete successful!');
       console.log(response.data.message);
       // Thực hiện cập nhật giao diện (ví dụ: xóa bài đăng khỏi danh sách hiện tại)
       // Hàm cập nhật danh sách bài đăng

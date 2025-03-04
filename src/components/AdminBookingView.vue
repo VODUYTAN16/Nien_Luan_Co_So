@@ -129,7 +129,7 @@
         <tbody>
           <tr
             v-for="(item, index) in filter(Filter).filter((item) => {
-              return item.Status != 'Paid';
+              return item.Status != 'Paid' || item.Status != 'Cancelled';
             })"
             :key="index"
             :class="{

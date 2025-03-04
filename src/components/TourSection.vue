@@ -133,6 +133,7 @@ async function deleteTour(tourID) {
 
     // Kiểm tra phản hồi từ API
     if (response.status === 200) {
+      alert('Delete Tour Successfully');
       console.log(response.data.message);
       fetchTours();
     }

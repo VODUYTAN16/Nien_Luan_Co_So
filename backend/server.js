@@ -225,15 +225,15 @@ app.get('/api/posts/:id', (req, res) => {
 // API đăng bài viết mới (posts và post_content)
 app.post('/api/posts', (req, res) => {
   const {
-    author_id,
-    category_id,
-    image_url,
-    title,
-    subtitle,
-    content_intro,
-    quote,
-    content_body,
-    link,
+    AuthorID,
+    CategoryID,
+    ImageUrl,
+    Title,
+    Subtitle,
+    ContentIntro,
+    Quote,
+    ContentBody,
+    Link,
   } = req.body;
   console.log(req.body);
 
@@ -243,7 +243,7 @@ app.post('/api/posts', (req, res) => {
     VALUES (?, ?)
   `;
 
-  db.query(insertPostQuery, [author_id, category_id], (err, result) => {
+  db.query(insertPostQuery, [AuthorID, CategoryID], (err, result) => {
     if (err) {
       return res.status(500).json({ message: 'Error creating post' });
     }
@@ -261,21 +261,21 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?);
       insertContentQuery,
       [
         postId,
-        title,
-        subtitle,
-        content_intro,
-        quote,
-        content_body,
-        image_url,
-        link,
+        Title,
+        Subtitle,
+        ContentIntro,
+        Quote,
+        ContentBody,
+        ImageUrl,
+        Link,
       ],
       (err, result) => {
         if (err) {
           res.status(500).json({ message: 'Error creating post content' });
         } else {
           res.status(200).json({
-            title,
-            image: image_url,
+            Title,
+            image: ImageUrl,
             message: 'Post created successfully',
             postId: postId,
           });
@@ -514,11 +514,11 @@ app.get('/api/posts/:userId/is-liked/:postId', (req, res) => {
 
 // API đăng nhập bằng google
 app.post('/api/google-login', (req, res) => {
-  const { email, name, avatarurl } = req.body;
+  const { Email, FullName, AvatarUrl } = req.body;
 
   // Kiểm tra xem user đã tồn tại chưa
   const queryCheck = 'SELECT * FROM user WHERE email = ?';
-  db.query(queryCheck, [email], (err, results) => {
+  db.query(queryCheck, [Email], (err, results) => {
     if (err) {
       console.error('Database error:', err); // Ghi lại lỗi cơ sở dữ liệu
       return res
@@ -534,7 +534,7 @@ app.post('/api/google-login', (req, res) => {
       // Nếu chưa tồn tại, thêm user vào database
       const queryInsert =
         'INSERT INTO user (fullname, email, avatarurl) VALUES (?, ?, ?)';
-      db.query(queryInsert, [name, email, avatarurl], (err, result) => {
+      db.query(queryInsert, [FullName, Email, AvatarUrl], (err, result) => {
         if (err) throw err;
         // Lấy id của user vừa thêm
         const queryGetId = result.insertId;
@@ -542,10 +542,10 @@ app.post('/api/google-login', (req, res) => {
           message: 'Tạo tài khoản mới và đăng nhập thành công!',
           user: {
             UserID: queryGetId,
-            FullName: name,
-            Email: email,
+            FullName: FullName,
+            Email: Email,
             Role: 'user',
-            AvatarUrl: avatarurl,
+            AvatarUrl: AvatarUrl,
           },
         });
       });
@@ -556,14 +556,14 @@ app.post('/api/google-login', (req, res) => {
 // API đăng ký (Register)
 app.post('/api/register', async (req, res) => {
   const { Email, Password, FullName, PhoneNumber } = req.body;
-
+  console.log(Email, Password, FullName, PhoneNumber);
   try {
     // Kiểm tra xem email đã tồn tại chưa
     db.query(`SELECT * FROM user WHERE Email = ?`, [Email], (err, results) => {
       if (err) {
         return res
           .status(500)
-          .json({ message: 'Database error', error: err.message });
+          .json({ message: 'Database error1', error: err.message });
       }
 
       if (results.length > 0) {
@@ -575,13 +575,13 @@ app.post('/api/register', async (req, res) => {
 
       // Nếu email chưa tồn tại, tiến hành tạo tài khoản
       db.query(
-        `INSERT INTO user (Email, Password, FullName, PhoneNumber) VALUE (?, ?, ?, ?)`,
+        `INSERT INTO user (Email, Password, FullName, PhoneNumber) VALUES (?, ?, ?, ?)`,
         [Email, Password, FullName, PhoneNumber],
         (err, result) => {
           if (err) {
             return res
               .status(500)
-              .json({ message: 'Database error', error: err.message });
+              .json({ message: 'Database error2', error: err.message });
           }
 
           res.status(200).json({
@@ -600,13 +600,13 @@ app.post('/api/register', async (req, res) => {
 
 // API đăng nhập (Login)
 app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
-
+  const { Email, Password } = req.body;
+  console.log(req.body);
   try {
     // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
     db.query(
-      `SELECT * FROM user join role on user.UserID = role.UserID WHERE email = ?`,
-      [email],
+      `SELECT * FROM user  WHERE Email = ?`,
+      [Email],
       async (err, results) => {
         if (err) {
           return res
@@ -621,7 +621,56 @@ app.post('/api/login', async (req, res) => {
         const user = results[0];
 
         // Kiểm tra mật khẩu
-        const isPasswordValid = password == user.Password;
+        const isPasswordValid = Password == user.Password;
+        if (!isPasswordValid) {
+          return res.status(400).json({
+            message:
+              "Invalid email or password or you register by google before, Let's login by google",
+          });
+        }
+
+        // Tạo token JWT
+        // const token = jwt.sign(
+        //   { id: user.id, email: user.email, role: user.role },
+        //   secretKey,
+        //   { expiresIn: '1h' } // Thời gian hết hạn token
+        // );
+
+        res.status(200).json({
+          message: 'Login successful',
+          user: results[0],
+        });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ message: 'Login failed', error: error.message });
+  }
+});
+
+// API đăng nhập (Login) của Admin
+app.post('/api/login/admin', async (req, res) => {
+  const { Email, Password } = req.body;
+  console.log(req.body);
+  try {
+    // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
+    db.query(
+      `SELECT * FROM user join role on user.UserID = role.UserID  WHERE Email = ?`,
+      [Email],
+      async (err, results) => {
+        if (err) {
+          return res
+            .status(500)
+            .json({ message: 'Database error', error: err.message });
+        }
+
+        if (results.length === 0) {
+          return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        const user = results[0];
+
+        // Kiểm tra mật khẩu
+        const isPasswordValid = Password == user.Password;
         if (!isPasswordValid) {
           return res.status(400).json({
             message:
@@ -713,7 +762,7 @@ app.get('/api/basis_inf/:tourid', async (req, res) => {
 
 // API lấy danh sách các tour
 app.get('/api/tour', (req, res) => {
-  const query = `select * from tour`;
+  const query = `select * from tour where tour.IsDeleted = 0`;
   db.query(query, (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving categories' });
@@ -743,7 +792,7 @@ app.get('/api/tour/:tourid/schedule', (req, res) => {
   const query = `select schedule.*, ts.* from tour
   join schedule ts on tour.tourid = ts.tourid
   join schedule on ts.ScheduleID = schedule.ScheduleID
-  where tour.tourid = ?`;
+  where tour.tourid = ? and tour.IsDeleted = 0`;
   db.query(query, [tourid], (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving categories' });
@@ -873,6 +922,21 @@ app.get('/api/booking', (req, res) => {
 join schedule s on s.ScheduleID = ts.ScheduleID 
 join tour on tour.TourID = ts.TourID WHERE booking.IsDeleted = FALSE`;
   db.query(query, (err, results) => {
+    if (err) {
+      res.status(500).json({ message: 'Error retrieving booking' });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+// API dùng để lấy danh sách các booking Của người dùng
+app.get('/api/booking/:userID', (req, res) => {
+  const userID = req.params.userID;
+  const query = `SELECT booking.*, s.StartDate, s.EndDate, tour.* FROM booking JOIN Schedule ts on ts.ScheduleID = booking.ScheduleID 
+join schedule s on s.ScheduleID = ts.ScheduleID 
+join tour on tour.TourID = ts.TourID AND booking.UserID = ?`;
+  db.query(query, [userID], (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving booking' });
     } else {

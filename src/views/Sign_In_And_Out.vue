@@ -81,11 +81,11 @@ const handleSubmit = async () => {
   console.log(email.value);
   try {
     const payload = {
-      email: email.value,
-      password: password.value,
+      Email: email.value,
+      Password: password.value,
     };
 
-    const response = await axios.post('/api/login', payload);
+    const response = await axios.post('/api/login/admin', payload);
     if (response.data.user) {
       localStorage.setItem('user', JSON.stringify(response.data.user));
       router.push('/');

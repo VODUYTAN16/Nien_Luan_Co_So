@@ -99,15 +99,15 @@
             style="max-width: 200px"
             type="button"
             class="btn btn-primary mx-3"
-            @click="addForm(dateForms)"
+            @click="addForm(props.dateForms)"
           >
-            ADD
+            Add More
           </button>
         </div>
 
         <div class="row my-3">
           <div
-            v-for="(form, index) in dateForms"
+            v-for="(form, index) in props.dateForms"
             :key="index"
             class="mb-3 col-lg-6 col-sm-12"
           >
@@ -171,7 +171,7 @@
                 <button
                   type="button"
                   class="btn btn-danger me-2"
-                  @click="removeForm(dateForms, index)"
+                  @click="removeForm(props.dateForms, index)"
                 >
                   Remove
                 </button>
@@ -189,14 +189,14 @@
             type="button"
             id="btn"
             class="btn btn-primary mx-3"
-            @click="addForm(serviceForms)"
+            @click="addForm(props.serviceForms)"
           >
-            ADD
+            Add More
           </button>
         </div>
         <div class="row my-3">
           <div
-            v-for="(service, index) in serviceForms"
+            v-for="(service, index) in props.serviceForms"
             :key="index"
             class="col-lg-6 col-sm-12"
           >
@@ -253,7 +253,7 @@
                   <button
                     type="button"
                     class="btn btn-danger me-2"
-                    @click="removeForm(serviceForms, index)"
+                    @click="removeForm(props.serviceForms, index)"
                   >
                     Remove
                   </button>

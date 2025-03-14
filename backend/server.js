@@ -3,6 +3,7 @@ import cors from 'cors';
 import mysql from 'mysql2';
 import axios from 'axios';
 import util from 'util';
+import { constrainedMemory } from 'process';
 
 const app = express();
 const port = 3000;
@@ -731,9 +732,13 @@ app.get('/api/basis_inf/:tourid', async (req, res) => {
       JOIN tour_service ts ON ts.TourID = tour.TourID 
       WHERE tour.TourID = ?`;
 
+    const query1 = `SELECT it.* FROM tour 
+    JOIN Itinerary it ON tour.TourID = it.TourID WHERE tour.TourID = ?`;
+
     // Thực hiện truy vấn
     const results1 = await queryAsync(query, [tourid]);
     const results2 = await queryAsync(sql, [tourid]);
+    const results3 = await queryAsync(query1, [tourid]);
 
     // Xử lý dữ liệu
     const tourInf = results1[0] || null;
@@ -745,15 +750,14 @@ app.get('/api/basis_inf/:tourid', async (req, res) => {
     }));
 
     const dateForms = results1.map((schedule) => ({
-      date: {
-        start: schedule.StartDate,
-        end: schedule.EndDate,
-      },
+      date: schedule.StartDate,
       Capacity: schedule.Capacity,
     }));
 
     // Trả về kết quả JSON
-    res.status(200).json({ tourInf, serviceForms, dateForms });
+    res
+      .status(200)
+      .json({ tourInf, serviceForms, dateForms, itinerary: results3 });
   } catch (err) {
     console.error('Error fetching tour information:', err);
     res.status(500).json({ message: 'Error fetching tour information' });
@@ -918,7 +922,7 @@ app.put('/api/update_service', (req, res) => {
 
 // API dùng để lấy danh sách các booking
 app.get('/api/booking', (req, res) => {
-  const query = `SELECT booking.*, s.StartDate, s.EndDate, tour.* FROM booking JOIN Schedule ts on ts.ScheduleID = booking.ScheduleID 
+  const query = `SELECT booking.*, s.StartDate, tour.* FROM booking JOIN Schedule ts on ts.ScheduleID = booking.ScheduleID 
 join schedule s on s.ScheduleID = ts.ScheduleID 
 join tour on tour.TourID = ts.TourID WHERE booking.IsDeleted = FALSE`;
   db.query(query, (err, results) => {
@@ -933,7 +937,7 @@ join tour on tour.TourID = ts.TourID WHERE booking.IsDeleted = FALSE`;
 // API dùng để lấy danh sách các booking Của người dùng
 app.get('/api/booking/:userID', (req, res) => {
   const userID = req.params.userID;
-  const query = `SELECT booking.*, s.StartDate, s.EndDate, tour.* FROM booking JOIN Schedule ts on ts.ScheduleID = booking.ScheduleID 
+  const query = `SELECT booking.*, s.StartDate, tour.* FROM booking JOIN Schedule ts on ts.ScheduleID = booking.ScheduleID 
 join schedule s on s.ScheduleID = ts.ScheduleID 
 join tour on tour.TourID = ts.TourID AND booking.UserID = ?`;
   db.query(query, [userID], (err, results) => {
@@ -1163,21 +1167,18 @@ app.post('/api/create_tour', (req, res) => {
   const tourInf = req.body.tourInf;
   const dateForms = req.body.dateForms;
   const serviceForms = req.body.serviceForms;
+  const itinerary = req.body.itinerary;
 
-  console.log(req.body);
-  console.log(req.body.dateForms[0].date);
-
-  const query = `INSERT INTO tour (TourName, Description, StartLocation, Destination, Price, Img_Tour) VALUES (?,?,?,?,?,?)`;
+  const query = `INSERT INTO tour (TourName, Description, Price, Img_Tour, Duration) VALUES (?,?,?,?,?)`;
 
   db.query(
     query,
     [
       tourInf.TourName,
       tourInf.Description,
-      tourInf.StartLocation,
-      tourInf.Destination,
       tourInf.Price,
       tourInf.Img_Tour,
+      tourInf.Duration,
     ],
     (err, result) => {
       if (err) {
@@ -1186,16 +1187,10 @@ app.post('/api/create_tour', (req, res) => {
       } else {
         const tourID = result.insertId;
         dateForms.map((date) => {
-          const query = `INSERT INTO schedule (TourID, StartDate, EndDate, Capacity, AvailableSpots) VALUES (?,?,?,?,?)`;
+          const query = `INSERT INTO schedule (TourID, StartDate, Capacity, AvailableSpots) VALUES (?,?,?,?)`;
           db.query(
             query,
-            [
-              tourID,
-              date.date.start,
-              date.date.end,
-              date.Capacity,
-              date.Capacity,
-            ],
+            [tourID, date.date, date.Capacity, date.Capacity],
             (err, result) => {
               if (err) {
                 console.log('Error create schedule', err);
@@ -1230,6 +1225,33 @@ app.post('/api/create_tour', (req, res) => {
             }
           );
         });
+        tourID;
+
+        itinerary.map((item) => {
+          const query = `INSERT INTO itinerary(DayNumber, Location, Activities,MealsIncluded, ImageUrl, Description, TourID) VALUES (?,?,?,?,?,?,?)`;
+
+          db.query(
+            query,
+            [
+              item.DayNumber,
+              item.Location,
+              item.Activities,
+              item.MealsIncluded,
+              item.ImageUrl,
+              item.Description,
+              tourID,
+            ],
+            (err, result) => {
+              if (err) {
+                console.log('Error create itinerary', err);
+
+                return res
+                  .status(500)
+                  .json({ message: 'Error create itinerary for tour' });
+              }
+            }
+          );
+        });
 
         res.status(200).json({
           message: 'schedule for tour created successfully',
@@ -1242,8 +1264,7 @@ app.post('/api/create_tour', (req, res) => {
 // API dùng để chỉnh sửa tour
 app.put('/api/edit_tour', async (req, res) => {
   try {
-    const { tourInf, dateForms, serviceForms } = req.body;
-
+    const { tourInf, dateForms, serviceForms, itinerary } = req.body;
     // Kiểm tra tourID
     if (!tourInf.TourID) {
       return res.status(400).json({ message: 'Missing TourID' });
@@ -1252,57 +1273,137 @@ app.put('/api/edit_tour', async (req, res) => {
     // Cập nhật thông tin tour
     const updateTourQuery = `
       UPDATE tour 
-      SET TourName = ?, Description = ?, StartLocation = ?, 
-          Destination = ?, Price = ?, Img_Tour = ?
+      SET TourName = ?, Description = ?, Price = ?, Img_Tour = ?, Duration = ?
       WHERE TourID = ?
     `;
 
     await queryAsync(updateTourQuery, [
       tourInf.TourName,
       tourInf.Description,
-      tourInf.StartLocation,
-      tourInf.Destination,
       tourInf.Price,
       tourInf.Img_Tour,
+      tourInf.Duration,
       tourInf.TourID,
     ]);
 
-    // Xóa lịch trình cũ
-    await queryAsync(`DELETE FROM schedule WHERE TourID = ?`, [tourInf.TourID]);
+    if (dateForms) {
+      for (const date of dateForms) {
+        // Kiểm tra xem lịch trình có tồn tại không
+        const checkScheduleQuery = `SELECT * FROM schedule WHERE TourID = ? AND StartDate = ?`;
+        const existingSchedule = await queryAsync(checkScheduleQuery, [
+          tourInf.TourID,
+          date.date,
+        ]);
 
-    // Chèn lịch trình mới
-    for (const date of dateForms) {
-      const insertScheduleQuery = `
-        INSERT INTO schedule (TourID, StartDate, EndDate, Capacity, AvailableSpots) 
-        VALUES (?, ?, ?, ?, ?)`;
-
-      await queryAsync(insertScheduleQuery, [
-        tourInf.TourID,
-        date.date.start,
-        date.date.end,
-        date.Capacity,
-        date.Capacity,
-      ]);
+        if (existingSchedule.length > 0) {
+          // Nếu tồn tại, cập nhật số lượng chỗ trống
+          const updateScheduleQuery = `
+          UPDATE schedule 
+          SET Capacity = ?, AvailableSpots = ?
+          WHERE TourID = ? AND StartDate = ?
+        `;
+          await queryAsync(updateScheduleQuery, [
+            date.Capacity,
+            date.AvailableSpots,
+            tourInf.TourID,
+            date.date,
+          ]);
+        } else {
+          // Nếu chưa tồn tại, chèn mới
+          const insertScheduleQuery = `
+          INSERT INTO schedule (TourID, StartDate, Capacity, AvailableSpots) 
+          VALUES (?, ?, ?, ?)
+        `;
+          await queryAsync(insertScheduleQuery, [
+            tourInf.TourID,
+            date.date,
+            date.Capacity,
+            date.AvailableSpots,
+          ]);
+        }
+      }
     }
 
-    // Xóa dịch vụ cũ
-    await queryAsync(`DELETE FROM tour_service WHERE TourID = ?`, [
-      tourInf.TourID,
-    ]);
+    if (serviceForms) {
+      for (const service of serviceForms) {
+        const checkServiceQuery = `SELECT * FROM tour_service WHERE TourID = ? AND ServiceID = ?`;
+        const existingService = await queryAsync(checkServiceQuery, [
+          tourInf.TourID,
+          service.ServiceID,
+        ]);
 
-    // Chèn dịch vụ mới
-    for (const service of serviceForms) {
-      const insertServiceQuery = `
-        INSERT INTO tour_service (TourID, ServiceID, AvailableSpots, Capacity, Status) 
-        VALUES (?, ?, ?, ?, ?)`;
+        if (existingService.length > 0) {
+          // Nếu dịch vụ đã tồn tại, cập nhật lại
+          const updateServiceQuery = `
+          UPDATE tour_service 
+          SET AvailableSpots = ?, Capacity = ?, Status = ?
+          WHERE TourID = ? AND ServiceID = ?
+        `;
+          await queryAsync(updateServiceQuery, [
+            service.AvailableSpots,
+            service.Capacity,
+            service.Status,
+            tourInf.TourID,
+            service.ServiceID,
+          ]);
+        } else {
+          // Nếu chưa tồn tại, chèn mới
+          const insertServiceQuery = `
+          INSERT INTO tour_service (TourID, ServiceID, AvailableSpots, Capacity, Status) 
+          VALUES (?, ?, ?, ?, ?)
+        `;
+          await queryAsync(insertServiceQuery, [
+            tourInf.TourID,
+            service.ServiceID,
+            service.AvailableSpots,
+            service.Capacity,
+            service.Status,
+          ]);
+        }
+      }
+    }
 
-      await queryAsync(insertServiceQuery, [
-        tourInf.TourID,
-        service.ServiceID,
-        service.Capacity,
-        service.Capacity,
-        service.Status,
-      ]);
+    if (itinerary) {
+      for (const item of itinerary) {
+        const checkItineraryQuery = `SELECT * FROM itinerary WHERE TourID = ? AND DayNumber = ?`;
+        const existingItinerary = await queryAsync(checkItineraryQuery, [
+          tourInf.TourID,
+          item.DayNumber,
+        ]);
+
+        if (existingItinerary.length > 0) {
+          // Nếu đã tồn tại, cập nhật thông tin
+          const updateItineraryQuery = `
+          UPDATE itinerary 
+          SET Location = ?, Activities = ?, MealsIncluded = ?, ImageUrl = ?, Description = ?
+          WHERE TourID = ? AND DayNumber = ?
+        `;
+          await queryAsync(updateItineraryQuery, [
+            item.Location,
+            item.Activities,
+            item.MealsIncluded,
+            item.ImageUrl,
+            item.Description,
+            tourInf.TourID,
+            item.DayNumber,
+          ]);
+        } else {
+          // Nếu chưa tồn tại, chèn mới
+          const insertItineraryQuery = `
+          INSERT INTO itinerary (DayNumber, Location, Activities, MealsIncluded, ImageUrl, Description, TourID) 
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+          await queryAsync(insertItineraryQuery, [
+            item.DayNumber,
+            item.Location,
+            item.Activities,
+            item.MealsIncluded,
+            item.ImageUrl,
+            item.Description,
+            tourInf.TourID,
+          ]);
+        }
+      }
     }
 
     res.status(200).json({ message: 'Tour updated successfully' });
@@ -1585,6 +1686,22 @@ app.get('/api/tour-statistics', async (req, res) => {
   }
 });
 
+// API lấy thông tin lịch trình itinerary
+app.get('/api/itinerary/:tourId', (req, res) => {
+  const tourId = req.params.tourId;
+  db.query(
+    `SELECT * FROM itinerary WHERE TourID = ?`,
+    [tourId],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+      }
+
+      res.status(200).json(results);
+    }
+  );
+});
 // Khởi động server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

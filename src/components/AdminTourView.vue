@@ -8,17 +8,17 @@
       <ol class="breadcrumb fw-bold">
         <li
           class="breadcrumb-item px-2 rounded"
-          :class="{ active: currentStep === 1 }"
-          @click="goBack"
-        >
-          <h4>Create Tour</h4>
-        </li>
-        <li
-          class="breadcrumb-item px-2 rounded"
           :class="{ active: currentStep === 2 }"
           @click="goNext"
         >
-          <h4 style="width: 300px">List Tour</h4>
+          <h4>List Tour</h4>
+        </li>
+        <li
+          class="breadcrumb-item px-2 rounded"
+          :class="{ active: currentStep === 1 }"
+          @click="goBack"
+        >
+          <h4 style="width: 300px">Create Tour</h4>
         </li>
       </ol>
     </nav>
@@ -26,6 +26,7 @@
       <CreateTour
         :tourInf="tourInf"
         :dateForms="dateForms"
+        :itineraty="itineraty"
         :serviceForms="serviceForms"
       ></CreateTour>
     </div>
@@ -40,7 +41,7 @@ import { onMounted, reactive, ref } from 'vue';
 import TourSection from './TourSection.vue';
 import CreateTour from './CreateTour.vue';
 
-const currentStep = ref(1);
+const currentStep = ref(2);
 
 const goNext = () => {
   if (currentStep.value < 2) currentStep.value++;
@@ -50,15 +51,15 @@ const goBack = () => {
   if (currentStep.value > 1) currentStep.value--;
 };
 
-const dateForms = reactive([{ date: {}, Capacity: '' }]);
+const dateForms = reactive([{ date: null, Capacity: '' }]);
 const serviceForms = reactive([{}]);
+const itineraty = reactive([{}]);
 const tourInf = reactive({
   TourName: '',
   Description: '',
   Price: '',
   Img_Tour: '',
-  StartLocation: '',
-  Destination: '',
+  Duration: '',
 });
 </script>
 <style scoped>

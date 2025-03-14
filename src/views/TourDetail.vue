@@ -590,6 +590,7 @@
         :Schedules="schedules"
         :Tour="tour"
         :Services="services"
+        :Itineraries="itineraries"
       ></Tour_Information>
       <Footer></Footer>
     </main>
@@ -756,6 +757,8 @@ const initializeParticipants = (number) => {
 const selectedPakage = ref(1); // Lưu số lượng người tham gia
 const selectedOptions = ref({}); // Lưu số lượng đã chọn cho từng option
 const schedulePicked = ref({}); // Lưu lịch trình đã chọn
+const itineraries = ref([]); // Lưu các lịch trình của tour
+
 //
 
 const _selectPackage = (value) => {
@@ -831,10 +834,8 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
       const startDate = new Date(datePicked);
       allAvailableDates.value.push(datePicked);
 
-      const dayNumber =
-        new Date(schedules.value[index_StartDate].EndDate).getDate() -
-        datePicked.getDate() +
-        1;
+      const dayNumber = tour.value.Duration;
+
       for (let i = 0; i < dayNumber; i++) {
         const dateToRemove = new Date(startDate);
         dateToRemove.setDate(startDate.getDate() + i);
@@ -975,6 +976,16 @@ const fetchUser = () => {
   }
 };
 
+const fetchItyneraty = async (tourid) => {
+  try {
+    const response = await axios.get(`/api/itinerary/${tourid}`);
+    console.log(response.data);
+    itineraries.value = response.data;
+  } catch (error) {
+    console.error('Error fetching Tour Detail:', error);
+  }
+};
+
 const createBooking = async () => {
   try {
     Participant.map((part) => {
@@ -1051,6 +1062,8 @@ onMounted(() => {
   fetchTourSchedule(tourid);
   fetchTourService(tourid);
   fetchTourDetail(tourid);
+  fetchItyneraty(tourid);
+
   fetchUser();
 });
 </script>

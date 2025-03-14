@@ -4,7 +4,7 @@
     <h2 v-else class="text-center">Modify Tour</h2>
     <form
       id="form"
-      @submit.prevent="createTour(tourInf, dateForms, serviceForms)"
+      @submit.prevent="createTour(tourInf, dateForms, serviceForms, itinerary)"
     >
       <h4>Tour Infomation</h4>
       <div class="tourInfo">
@@ -26,38 +26,39 @@
               id="tourimg"
               class="form-control"
               placeholder="Your Anwer"
-              @change="handleImage"
+              @change="(event) => handleImage(event, props.tourInf, 'Img_Tour')"
             />
           </div>
         </div>
 
         <div class="row">
           <div class="col">
-            <div>
-              <label for="price" class="form-label"> Price of tour </label>
-              <input
-                type="number"
-                id="price"
-                class="form-control"
-                v-model="tourInf.Price"
-                required
-                placeholder="$0"
-              />
+            <div class="row">
+              <div class="col">
+                <label for="price" class="form-label"> Price of tour </label>
+                <input
+                  type="number"
+                  id="price"
+                  class="form-control"
+                  v-model="tourInf.Price"
+                  required
+                  placeholder="$0"
+                />
+              </div>
+              <div class="col">
+                <label for="duration" class="form-label">Duration</label>
+                <input
+                  id="duration"
+                  type="text"
+                  class="form-control"
+                  placeholder="Ex: 7 days"
+                  required
+                  v-model="tourInf.Duration"
+                />
+              </div>
             </div>
-            <div class="my-2">
-              <label for="startLocation" class="form-label"
-                >Start Location</label
-              >
-              <input
-                id="startLocation"
-                type="text"
-                class="form-control"
-                placeholder="Your Answer"
-                required
-                v-model="tourInf.StartLocation"
-              />
-            </div>
-            <div>
+
+            <!-- <div>
               <label for="destination" class="form-label">Destination</label>
               <input
                 type="text"
@@ -67,14 +68,14 @@
                 required
                 v-model="tourInf.Destination"
               />
-            </div>
+            </div> -->
           </div>
           <div class="col">
             <img
               class="rounded border border-4 order-light-subtle"
               :src="tourInf.Img_Tour"
               alt="Image of Tour"
-              style="height: 250px"
+              style="height: 200px"
             />
           </div>
         </div>
@@ -91,6 +92,107 @@
           ></textarea>
         </div>
       </div>
+      <hr />
+      <div class="itinerary">
+        <div class="d-flex justify-content-between align-items-center">
+          <h4>Itinerary</h4>
+          <button
+            type="button"
+            id="btn"
+            class="btn btn-primary"
+            @click="addForm(props.itinerary)"
+          >
+            Add More
+          </button>
+        </div>
+
+        <div class="row my-3">
+          <div
+            v-for="(item, index) in props.itinerary"
+            :key="index"
+            class="col-lg-6 col-sm-12 mb-4"
+          >
+            <div class="card p-3 shadow-sm">
+              <div class="d-flex">
+                <h5 class="text-primary mx-2">Day {{ item.DayNumber }}</h5>
+
+                <button
+                  type="button"
+                  class="btn btn-danger me-2 mx-5"
+                  @click="removeForm(props.itinerary, index)"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="form-label">Day Number</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    v-model="item.DayNumber"
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Image</label>
+                  <input
+                    type="file"
+                    id="tourimg"
+                    class="form-control"
+                    placeholder="Your Anwer"
+                    @change="(event) => handleImage(event, item, 'ImageUrl')"
+                  />
+                </div>
+                <div class="row">
+                  <div class="col">
+                    <div class="mt-2">
+                      <label class="form-label">Meals Included</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="item.MealsIncluded"
+                      />
+                    </div>
+
+                    <div class="mt-2">
+                      <label class="form-label">Activities</label>
+                      <input
+                        class="form-control"
+                        rows="2"
+                        v-model="item.Activities"
+                      />
+                    </div>
+
+                    <div class="mt-2">
+                      <label class="form-label">Location</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="item.Location"
+                      />
+                    </div>
+                  </div>
+                  <div class="col">
+                    <img :src="item.ImageUrl" alt="" style="width: 250px" />
+                  </div>
+                </div>
+
+                <div class="col-md-12 mt-2">
+                  <label class="form-label">Description</label>
+                  <textarea
+                    type="text"
+                    class="form-control"
+                    v-model="item.Description"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <hr />
       <div class="tourSchedule my-3">
         <div class="d-flex">
@@ -115,11 +217,8 @@
               <div>
                 <VDatePicker
                   v-model="form.date"
-                  is-range
                   timezone="UTC"
                   :min-date="new Date()"
-                  :columns="columns"
-                  :expanded="expanded"
                   :color="selectedColor"
                   borderless
                   is-required
@@ -131,19 +230,8 @@
                       <div class="input-group mb-3">
                         <span class="input-group-text">Start</span>
                         <input
-                          :value="inputValue.start"
-                          v-on="inputEvents.start"
-                          type="text"
-                          class="form-control"
-                        />
-                      </div>
-                      <i class="bx bx-right-arrow-alt fs-3"></i>
-
-                      <div class="input-group mb-3">
-                        <span class="input-group-text">End</span>
-                        <input
-                          :value="inputValue.end"
-                          v-on="inputEvents.end"
+                          :value="inputValue"
+                          v-on="inputEvents"
                           type="text"
                           class="form-control"
                         />
@@ -284,10 +372,6 @@ import { format } from 'date-fns';
 
 const services = ref([]); // Lưu các services của tour
 
-const range = ref({
-  start: new Date(2020, 0, 6),
-  end: new Date(2020, 0, 10),
-});
 const { mapCurrent } = useScreens({
   xs: '0px',
   sm: '640px',
@@ -295,21 +379,19 @@ const { mapCurrent } = useScreens({
   lg: '1024px',
 });
 
-const columns = mapCurrent({ lg: 2 }, 1);
-const expanded = mapCurrent({ lg: false }, true);
 const selectedColor = ref('blue');
 
 const props = defineProps({
-  dateForms: reactive([{ date: {}, Capacity: '' }]),
+  dateForms: reactive([{ date: null, Capacity: '' }]),
   serviceForms: reactive([{}]),
   tourInf: reactive({
     TourName: '',
     Description: '',
     Price: '',
     Img_Tour: '',
-    StartLocation: '',
-    Destination: '',
+    Duration: '',
   }),
+  itinerary: reactive([{}]),
   editable: false,
 });
 
@@ -341,41 +423,42 @@ const removeForm = (form, index) => {
   }
 };
 
-const handleImage = (event) => {
+const handleImage = (event, targetObject, imageKey) => {
   const file = event.target.files[0];
+  console.log('Hello');
   if (file) {
     const reader = new FileReader();
     reader.readAsDataURL(file); // Chuyển đổi file sang Base64
+
     reader.onload = () => {
-      props.tourInf.Img_Tour = reader.result; // Gán Base64 cho imagePreview
-      console.log(props.tourInf.image);
+      targetObject[imageKey] = reader.result; // Gán giá trị Base64 vào key tương ứng
+      console.log(`Image uploaded for ${imageKey}:`, reader.result);
     };
+
     reader.onerror = (error) => {
       console.error('Lỗi khi đọc file:', error);
     };
   }
 };
 
-const createTour = async (tourInf, dateForms, serviceForms) => {
+const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
   try {
+    console.log(dateForms);
     dateForms.map((date) => {
       console.log(date.date);
-      date.date.start = format(
-        new Date(date.date.start),
-        'yyyy-MM-dd HH:mm:ss'
-      );
-      date.date.end = format(new Date(date.date.end), 'yyyy-MM-dd HH:mm:ss');
+      date.date = format(new Date(date.date), 'yyyy-MM-dd HH:mm:ss');
     });
 
     const confirm = window.confirm('Are you sure you want to create new tour?');
     if (!confirm) {
       return;
     } else {
-      console.log(tourInf, dateForms, serviceForms);
+      console.log(tourInf, dateForms, serviceForms, itinerary);
       const response = await axios.post('/api/create_tour', {
         tourInf,
         dateForms,
         serviceForms,
+        itinerary,
       });
       if (response.status != 200) {
         alert(response.data.message);

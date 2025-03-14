@@ -55,6 +55,7 @@
               :tourInf="infEditTour.tourInf"
               :dateForms="infEditTour.dateForms"
               :serviceForms="infEditTour.serviceForms"
+              :itinerary="infEditTour.itinerary"
               :editable="true"
             ></CreateTour>
           </div>
@@ -73,7 +74,8 @@
                 saveEditTour(
                   infEditTour.tourInf,
                   infEditTour.dateForms,
-                  infEditTour.serviceForms
+                  infEditTour.serviceForms,
+                  infEditTour.itinerary
                 )
               "
             >
@@ -95,15 +97,15 @@ import { format } from 'date-fns';
 
 const tours = ref([]);
 let infEditTour = ref({
-  dateForms: reactive([{ date: {}, Capacity: '' }]),
+  dateForms: reactive([{ date: null, Capacity: '' }]),
   serviceForms: reactive([{}]),
+  itinerary: reactive([{}]),
   tourInf: reactive({
     TourName: '',
     Description: '',
     Price: '',
+    Duration: '',
     Img_Tour: '',
-    StartLocation: '',
-    Destination: '',
   }),
 });
 
@@ -155,22 +157,19 @@ async function editTour(tourID) {
   try {
     const response = await axios.get(`/api/basis_inf/${tourID}`);
     infEditTour.value = response.data;
+    console.log(infEditTour.value);
     console.log(response.data);
   } catch (err) {
     console.log('Error edit tour:', err);
   }
 }
 
-const saveEditTour = async (tourInf, dateForms, serviceForms) => {
-  console.log(tourInf, dateForms, serviceForms);
+const saveEditTour = async (tourInf, dateForms, serviceForms, itinerary) => {
+  console.log(tourInf, dateForms, serviceForms, itinerary);
 
   try {
     dateForms.map((date) => {
-      date.date.start = format(
-        new Date(date.date.start),
-        'yyyy-MM-dd HH:mm:ss'
-      );
-      date.date.end = format(new Date(date.date.end), 'yyyy-MM-dd HH:mm:ss');
+      date.date = format(new Date(date.date), 'yyyy-MM-dd HH:mm:ss');
     });
 
     const confirm = window.confirm(
@@ -179,11 +178,12 @@ const saveEditTour = async (tourInf, dateForms, serviceForms) => {
     if (!confirm) {
       return;
     } else {
-      console.log(tourInf, dateForms, serviceForms);
+      console.log(tourInf, dateForms, serviceForms, itinerary);
       const response = await axios.put('/api/edit_tour', {
         tourInf,
         dateForms,
         serviceForms,
+        itinerary,
       });
       if (response.status != 200) {
         alert(response.data.message);
@@ -192,7 +192,7 @@ const saveEditTour = async (tourInf, dateForms, serviceForms) => {
       location.reload();
     }
   } catch (error) {
-    alert('Faile to save modification');
+    alert('Can not modify because of appointments');
     console.error('Lỗi khi lưu chỉnh sửa tour:', error);
   }
 };
@@ -213,7 +213,10 @@ a {
 
 .nav-button {
   position: absolute;
-  bottom: 20px;
+  top: 30px;
   right: 20px;
+  background-color: white;
+  border-radius: 10px;
+  padding-inline: 5px;
 }
 </style>

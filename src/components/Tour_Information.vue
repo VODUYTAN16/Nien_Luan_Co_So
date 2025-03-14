@@ -118,6 +118,54 @@
         </div>
       </div>
     </div>
+    <h2>Itinerary</h2>
+    <div class="container my-4" style="width: 80%">
+      <div
+        id="carouselExampleCaptions"
+        class="carousel slide"
+        data-bs-ride="carousel"
+      >
+        <div class="carousel-inner" style="border-radius: 10px">
+          <div
+            class="carousel-item"
+            data-bs-interval="2000"
+            v-for="(item, index) in Itineraries"
+            :key="index"
+            :class="{ active: index === 0 }"
+          >
+            <div class="image-container">
+              <img :src="item.ImageUrl" class="d-block w-100" alt="..." />
+              <!-- Lớp phủ mờ -->
+              <div class="overlay"></div>
+            </div>
+            <div class="carousel-caption d-none d-md-block">
+              <h5>Day {{ item.DayNumber }}: {{ item.Location }}</h5>
+              <p><strong>Activities:</strong> {{ item.Activities }}</p>
+              <p><strong>Meals Included:</strong> {{ item.MealsIncluded }}</p>
+              <p>{{ item.Description }}</p>
+            </div>
+          </div>
+        </div>
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -127,6 +175,7 @@ const props = defineProps({
   Tour: {},
   Schedules: [],
   Services: [],
+  Itineraries: [],
 });
 
 const groupedSchedules = computed(() => {
@@ -161,5 +210,31 @@ span,
 i,
 div {
   font-size: 18px;
+}
+
+.image-container {
+  position: relative;
+  max-height: 400px;
+  margin: auto;
+  overflow: hidden;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Lớp phủ mờ */
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+  pointer-events: none;
 }
 </style>

@@ -255,8 +255,6 @@
                 <h5 class="text-success">Info Of Tour</h5>
                 <h6>Name of tour: {{ BookingDetail[0].TourName }}</h6>
                 <h6>Price of tour: ${{ BookingDetail[0].Price }}</h6>
-                <h6>Start Location: {{ BookingDetail[0].StartLocation }}</h6>
-                <h6>Destination: {{ BookingDetail[0].Destination }}</h6>
 
                 <h6>
                   Start Date:
@@ -274,14 +272,16 @@
                 <h6>
                   End Date:
                   {{
-                    new Date(BookingDetail[0].EndDate).toLocaleDateString(
-                      'en-US',
-                      {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      }
-                    )
+                    new Date(
+                      new Date(BookingDetail[0].StartDate).setDate(
+                        new Date(BookingDetail[0].StartDate).getDate() +
+                          BookingDetail[0].Duration
+                      )
+                    ).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
                   }}
                 </h6>
               </div>

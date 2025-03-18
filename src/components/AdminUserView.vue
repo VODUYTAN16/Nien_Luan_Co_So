@@ -59,6 +59,7 @@
           @click="goBack"
         >
           List Of User
+          <div class="fs-6 text-dark">Total User: {{ usersList.length }}</div>
         </li>
         <li
           class="breadcrumb-item px-2 rounded"
@@ -66,6 +67,7 @@
           @click="goNext"
         >
           List of Admin
+          <div class="fs-6 text-dark">Total Admin: {{ adminsList.length }}</div>
         </li>
       </ol>
     </nav>
@@ -78,7 +80,6 @@
             <th class="fw-bold">Full Name</th>
             <th class="fw-bold">Email</th>
             <th class="fw-bold">Phone Number</th>
-            <th class="fw-bold">Password</th>
             <th class="fw-bold">Actions</th>
           </tr>
         </thead>
@@ -102,11 +103,6 @@
             <td v-if="editableRow !== item.UserID">{{ item.PhoneNumber }}</td>
             <td v-else>
               <input v-model="editedData.PhoneNumber" class="form-control" />
-            </td>
-
-            <td v-if="editableRow !== item.UserID">{{ item.Password }}</td>
-            <td v-else>
-              <input v-model="editedData.Password" class="form-control" />
             </td>
 
             <td>
@@ -171,11 +167,9 @@
         <thead class="table-light">
           <tr>
             <th class="fw-bold">#</th>
-            <th class="fw-bold">UserID</th>
             <th class="fw-bold">Full Name</th>
             <th class="fw-bold">Email</th>
             <th class="fw-bold">Phone Number</th>
-            <th class="fw-bold">Password</th>
             <th class="fw-bold">Role</th>
             <th class="fw-bold">Actions</th>
           </tr>
@@ -183,7 +177,6 @@
         <tbody>
           <tr v-for="(item, index) in adminsList" :key="index">
             <td>{{ index + 1 }}</td>
-            <td>{{ item.UserID }}</td>
             <td v-if="editableRow !== item.UserID">{{ item.FullName }}</td>
             <td v-else>
               <input v-model="editedData.FullName" class="form-control" />
@@ -203,10 +196,6 @@
               <input v-model="editedData.PhoneNumber" class="form-control" />
             </td>
 
-            <td v-if="editableRow !== item.UserID">{{ item.Password }}</td>
-            <td v-else>
-              <input v-model="editedData.Password" class="form-control" />
-            </td>
             <td>{{ item.Role }}</td>
             <td v-if="user.Role === 'Admin'">
               <div v-if="editableRow !== item.UserID">
@@ -259,7 +248,10 @@ const usersList = ref([]); // Lưu danh sách người dùng có trong hệ th�
 const adminsList = ref([]); // Lưu danh sách người dùng có quyền quản trị
 const currentStep = ref(1);
 const user = ref({}); // Lưu Thông tin người dùng đang đăng nhập hiện tại
-const newUser = ref({});
+const newUser = ref({
+  AvatarUrl:
+    'https://i.pinimg.com/474x/5a/b9/cb/5ab9cb1209e019c66aa0687bbfc69f98.jpg',
+});
 const goNext = () => {
   if (currentStep.value < 2) currentStep.value++;
 };
@@ -285,7 +277,9 @@ const fetchUsersList = async () => {
 const fetchAdminsList = async () => {
   try {
     const response = await axios.get('/api/admins_list');
-    adminsList.value = response.data;
+    adminsList.value = response.data.filter((user) => {
+      return user.IsDeleted == 0;
+    });
     console.log(response.data);
   } catch (error) {
     if (error) {

@@ -26,7 +26,7 @@
       <CreateTour
         :tourInf="tourInf"
         :dateForms="dateForms"
-        :itineraty="itineraty"
+        :itinerary="itinerary"
         :serviceForms="serviceForms"
       ></CreateTour>
     </div>
@@ -53,7 +53,7 @@ const goBack = () => {
 
 const dateForms = reactive([{ date: null, Capacity: '' }]);
 const serviceForms = reactive([{}]);
-const itineraty = reactive([{}]);
+const itinerary = reactive([{}]);
 const tourInf = reactive({
   TourName: '',
   Description: '',

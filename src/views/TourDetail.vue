@@ -848,6 +848,8 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
           allDisabledDates.value.splice(index, 1);
         }
       }
+    } else {
+      selectedDate.value = null;
     }
   } catch (error) {
     console.error('Error remove 7 days after selected date:', error);
@@ -1079,7 +1081,7 @@ onMounted(() => {
 
 .card-box {
   position: absolute; /* Phần tử cha cần có position khác "static" */
-  height: 100%;
+  height: 250%;
   right: 2%;
 }
 

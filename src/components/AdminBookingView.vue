@@ -65,7 +65,7 @@
                   </template>
                 </VDatePicker>
               </div>
-              <div class="input-group mb-3 col">
+              <!-- <div class="input-group mb-3 col">
                 <span class="input-group-text" id="basic-addon1">End Date</span>
                 <VDatePicker v-model="Filter.EndDate">
                   <template #default="{ inputValue, inputEvents }">
@@ -76,7 +76,7 @@
                     />
                   </template>
                 </VDatePicker>
-              </div>
+              </div> -->
               <div class="form-floating col">
                 <select
                   v-model="Filter.TourID"
@@ -129,7 +129,7 @@
         <tbody>
           <tr
             v-for="(item, index) in filter(Filter).filter((item) => {
-              return item.Status != 'Paid' || item.Status != 'Cancelled';
+              return item.Status != 'Paid' && item.Status != 'Cancelled';
             })"
             :key="index"
             :class="{
@@ -141,7 +141,19 @@
             <td>{{ index + 1 }}</td>
             <td>{{ item.TourName }}</td>
             <td>{{ item.StartDate }}</td>
-            <td>{{ item.EndDate }}</td>
+            <td>
+              {{
+                new Date(
+                  new Date(item.StartDate).setDate(
+                    new Date(item.StartDate).getDate() + item.Duration - 1
+                  )
+                ).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+              }}
+            </td>
             <td>{{ item.NumberOfGuests }}</td>
             <td>
               {{
@@ -222,9 +234,7 @@
       </table>
     </div>
     <div v-if="currentStep == 2">
-      <ListOfPaticipantOfTour
-        :tourNameList="tourNameList"
-      ></ListOfPaticipantOfTour>
+      <ListOfPaticipantOfTour></ListOfPaticipantOfTour>
     </div>
 
     <!-- Modal -->
@@ -275,7 +285,8 @@
                     new Date(
                       new Date(BookingDetail[0].StartDate).setDate(
                         new Date(BookingDetail[0].StartDate).getDate() +
-                          BookingDetail[0].Duration
+                          BookingDetail[0].Duration -
+                          1
                       )
                     ).toLocaleDateString('en-US', {
                       year: 'numeric',
@@ -343,7 +354,7 @@
                       <td>${{ service.Quantity * service.Price }}</td>
                     </tr>
                     <tr v-if="bookServices && bookServices.length === 0">
-                      <td colspan="7" class="text-center">No data</td>
+                      <td colspan="7" class="text-center">Nothing</td>
                     </tr>
                   </tbody>
                 </table>
@@ -475,8 +486,6 @@ const filter = (Filter) => {
         booking.Status === Filter.Status) &&
       (!Filter.StartDate ||
         new Date(booking.StartDate) >= new Date(Filter.StartDate)) &&
-      (!Filter.EndDate ||
-        new Date(booking.EndDate) <= new Date(Filter.EndDate)) &&
       (!Filter.TourName || matchEachWord) // Chỉ lọc theo tên nếu có TourName
     );
   });

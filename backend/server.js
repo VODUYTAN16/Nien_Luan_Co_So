@@ -4,6 +4,7 @@ import mysql from 'mysql2';
 import axios from 'axios';
 import util from 'util';
 import { constrainedMemory } from 'process';
+import bcrypt from 'bcrypt';
 
 const app = express();
 const port = 3000;
@@ -513,6 +514,30 @@ app.get('/api/posts/:userId/is-liked/:postId', (req, res) => {
 });
 ////////////////////////////////////////////////////////////////////////////////////
 
+// Số vòng lặp để tăng độ phức tạp của thuật toán băm
+const saltRounds = 10;
+
+// Hàm băm mật khẩu
+async function hashPassword(password) {
+  try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
+  } catch (error) {
+    console.error('Lỗi khi băm mật khẩu:', error);
+    throw error;
+  }
+}
+
+async function comparePassword(password, hashedPassword) {
+  try {
+    const match = await bcrypt.compare(password, hashedPassword);
+    return match; // Trả về true nếu mật khẩu khớp, false nếu sai
+  } catch (error) {
+    console.error('Lỗi khi so sánh mật khẩu:', error);
+    throw error;
+  }
+}
+
 // API đăng nhập bằng google
 app.post('/api/google-login', (req, res) => {
   const { Email, FullName, AvatarUrl } = req.body;
@@ -556,9 +581,16 @@ app.post('/api/google-login', (req, res) => {
 
 // API đăng ký (Register)
 app.post('/api/register', async (req, res) => {
-  const { Email, Password, FullName, PhoneNumber } = req.body;
-  console.log(Email, Password, FullName, PhoneNumber);
+  const { Email, FullName, PhoneNumber, AvatarUrl } = req.body;
+  let { Password } = req.body;
   try {
+    try {
+      if (!Password) throw new Error('Mật khẩu không hợp lệ!');
+      Password = await hashPassword(Password.trim());
+    } catch (error) {
+      console.error('Lỗi khi băm mật khẩu:', error);
+    }
+
     // Kiểm tra xem email đã tồn tại chưa
     db.query(`SELECT * FROM user WHERE Email = ?`, [Email], (err, results) => {
       if (err) {
@@ -570,14 +602,14 @@ app.post('/api/register', async (req, res) => {
       if (results.length > 0) {
         // Nếu email đã tồn tại
         return res.status(400).json({
-          message: "This Account is already, let's Sign In",
+          message: "This Account is already exist, let's Sign In",
         });
       }
 
       // Nếu email chưa tồn tại, tiến hành tạo tài khoản
       db.query(
-        `INSERT INTO user (Email, Password, FullName, PhoneNumber) VALUES (?, ?, ?, ?)`,
-        [Email, Password, FullName, PhoneNumber],
+        `INSERT INTO user (Email, Password, FullName, PhoneNumber, AvatarUrl) VALUES (?, ?, ?, ?, ?)`,
+        [Email, Password, FullName, PhoneNumber, AvatarUrl],
         (err, result) => {
           if (err) {
             return res
@@ -586,7 +618,7 @@ app.post('/api/register', async (req, res) => {
           }
 
           res.status(200).json({
-            message: 'Account created successfully',
+            message: 'Account created successfully!',
             user: result[0],
           });
         }
@@ -601,8 +633,8 @@ app.post('/api/register', async (req, res) => {
 
 // API đăng nhập (Login)
 app.post('/api/login', async (req, res) => {
-  const { Email, Password } = req.body;
-  console.log(req.body);
+  const { Email } = req.body;
+  let { Password } = req.body;
   try {
     // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
     db.query(
@@ -622,20 +654,13 @@ app.post('/api/login', async (req, res) => {
         const user = results[0];
 
         // Kiểm tra mật khẩu
-        const isPasswordValid = Password == user.Password;
+        const isPasswordValid = await comparePassword(Password, user.Password);
         if (!isPasswordValid) {
           return res.status(400).json({
             message:
               "Invalid email or password or you register by google before, Let's login by google",
           });
         }
-
-        // Tạo token JWT
-        // const token = jwt.sign(
-        //   { id: user.id, email: user.email, role: user.role },
-        //   secretKey,
-        //   { expiresIn: '1h' } // Thời gian hết hạn token
-        // );
 
         res.status(200).json({
           message: 'Login successful',
@@ -650,8 +675,9 @@ app.post('/api/login', async (req, res) => {
 
 // API đăng nhập (Login) của Admin
 app.post('/api/login/admin', async (req, res) => {
-  const { Email, Password } = req.body;
-  console.log(req.body);
+  const { Email } = req.body;
+  let { Password } = req.body;
+  Password = Password.trim();
   try {
     // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
     db.query(
@@ -671,20 +697,13 @@ app.post('/api/login/admin', async (req, res) => {
         const user = results[0];
 
         // Kiểm tra mật khẩu
-        const isPasswordValid = Password == user.Password;
+        const isPasswordValid = await comparePassword(Password, user.Password);
         if (!isPasswordValid) {
           return res.status(400).json({
             message:
               "Invalid email or password or you register by google before, Let's login by google",
           });
         }
-
-        // Tạo token JWT
-        // const token = jwt.sign(
-        //   { id: user.id, email: user.email, role: user.role },
-        //   secretKey,
-        //   { expiresIn: '1h' } // Thời gian hết hạn token
-        // );
 
         res.status(200).json({
           message: 'Login successful',
@@ -987,6 +1006,7 @@ app.post('/api/create_booking', async (req, res) => {
     const availableSpots =
       scheduleResult[0].AvailableSpots - participants.length;
 
+    console.log('availableSpots:', availableSpots);
     const query =
       availableSpots === 0
         ? `UPDATE schedule SET AvailableSpots = ?, Status = 'Full' WHERE ScheduleID = ?`
@@ -1585,6 +1605,31 @@ app.get('/api/tour-capacity', async (req, res) => {
 
     let startDate, endDate;
 
+    // const today = new Date().toISOString().split('T')[0];
+
+    // if (quarter >= 1 && quarter <= 4) {
+    //   // Xác định ngày đầu và cuối của quý
+    //   const startMonth = (quarter - 1) * 3 + 1;
+    //   startDate = `${year}-${String(startMonth).padStart(2, '0')}-01`;
+    //   let calculatedEndDate = new Date(year, startMonth + 2, 0)
+    //     .toISOString()
+    //     .split('T')[0];
+
+    //   // Đảm bảo endDate không vượt quá ngày hiện tại
+    //   endDate = calculatedEndDate > today ? today : calculatedEndDate;
+    // } else if (quarter == 5) {
+    //   // Nếu quarter = 5, lấy cả năm nhưng không vượt quá ngày hiện tại
+    //   startDate = `${year}-01-01`;
+    //   let calculatedEndDate = `${year}-12-31`;
+
+    //   // Đảm bảo endDate không vượt quá ngày hiện tại
+    //   endDate = calculatedEndDate > today ? today : calculatedEndDate;
+    // } else {
+    //   return res
+    //     .status(400)
+    //     .json({ error: 'Quý không hợp lệ, chỉ nhận giá trị từ 1-5' });
+    // }
+
     if (quarter >= 1 && quarter <= 4) {
       // Xác định ngày đầu và cuối của quý
       const startMonth = (quarter - 1) * 3 + 1; // Quý 1 -> tháng 1, Quý 2 -> tháng 4, ...
@@ -1610,8 +1655,10 @@ app.get('/api/tour-capacity', async (req, res) => {
 
     const tourCapacity = result.reduce(
       (acc, schedule) => {
-        acc[0] = schedule.AvailableSpots ? acc[0] + schedule.AvailableSpots : 0;
-        acc[1] = schedule.Capacity ? acc[1] + schedule.Capacity : 0;
+        acc[0] = schedule.AvailableSpots
+          ? acc[0] + schedule.AvailableSpots
+          : acc[0] + 0;
+        acc[1] = schedule.Capacity ? acc[1] + schedule.Capacity : acc[1] + 0;
         return acc;
       },
       [0, 0]

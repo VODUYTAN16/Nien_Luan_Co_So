@@ -167,10 +167,7 @@ const searchQuery = ref('');
 const expandedSchedule = ref(null);
 const participants = ref([{}]);
 const loadingSchedule = ref(null);
-
-const props = defineProps({
-  tourNameList: [],
-});
+const tourNameList = ref([]);
 
 const Filter = reactive({
   StartDate: '',
@@ -192,6 +189,9 @@ const getColor = (index, status) => {
 const fetchTours = async () => {
   try {
     const { data } = await axios.get('/api/tour');
+    tourNameList.value = data.reduce((acc, tourName) => [...acc, tourName], []);
+
+    console.log('tourName: ', tourNameList);
     return data.reverse();
   } catch (error) {
     console.error('Lỗi khi tải danh sách tour:', error);

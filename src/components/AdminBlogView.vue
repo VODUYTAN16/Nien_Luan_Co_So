@@ -8,17 +8,17 @@
       <ol class="breadcrumb fw-bold">
         <li
           class="breadcrumb-item px-2 rounded"
-          :class="{ active: currentStep === 1 }"
-          @click="goBack"
-        >
-          <h4>Create Blog</h4>
-        </li>
-        <li
-          class="breadcrumb-item px-2 rounded"
           :class="{ active: currentStep === 2 }"
           @click="goNext"
         >
-          <h4 style="width: 300px">List Blog</h4>
+          <h4>List Blog</h4>
+        </li>
+        <li
+          class="breadcrumb-item px-2 rounded"
+          :class="{ active: currentStep === 1 }"
+          @click="goBack"
+        >
+          <h4 style="width: 300px">Create Blog</h4>
         </li>
       </ol>
     </nav>
@@ -36,7 +36,7 @@ import BlogList from './BlogList.vue';
 import PdfViewer from './PdfViewer.vue';
 import { ref } from 'vue';
 
-const currentStep = ref(1);
+const currentStep = ref(2);
 const goNext = () => {
   if (currentStep.value < 2) currentStep.value++;
 };

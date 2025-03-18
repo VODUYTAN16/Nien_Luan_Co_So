@@ -1,19 +1,15 @@
 <template>
   <div class="discription">
     <div class="d-flex mx-5 justify-content-end">
-      <div>
+      <!-- <div>
         <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
         ><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i
         ><i class="fa-solid fa-star"></i>
         67 reviews
-      </div>
+      </div> -->
       <div class="mx-5">
         <i class="fa-solid fa-calendar-days"></i> Duration:
-        {{
-          new Date(Schedules[0]?.EndDate).getDate() -
-            new Date(Schedules[0]?.StartDate).getDate() +
-            1 || 0
-        }}
+        {{ Tour.Duration }}
         days
       </div>
       <div><i class="fa-regular fa-user"></i> Group size: 6 - 18</div>

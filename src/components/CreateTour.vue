@@ -17,6 +17,7 @@
               class="form-control"
               placeholder="Your Anwer"
               v-model="tourInf.TourName"
+              required
             />
           </div>
           <div class="col mb-2">
@@ -26,6 +27,7 @@
               id="tourimg"
               class="form-control"
               placeholder="Your Anwer"
+              required
               @change="(event) => handleImage(event, props.tourInf, 'Img_Tour')"
             />
           </div>
@@ -39,6 +41,7 @@
                 <input
                   type="number"
                   id="price"
+                  min="0"
                   class="form-control"
                   v-model="tourInf.Price"
                   required
@@ -50,6 +53,7 @@
                 <input
                   id="duration"
                   type="text"
+                  min="0"
                   class="form-control"
                   placeholder="Ex: 7 days"
                   required
@@ -72,10 +76,14 @@
           </div>
           <div class="col">
             <img
-              class="rounded border border-4 order-light-subtle"
-              :src="tourInf.Img_Tour"
+              class="rounded order-light-subtle"
+              :src="
+                tourInf.Img_Tour?.preview
+                  ? tourInf.Img_Tour.preview
+                  : tourInf.Img_Tour
+              "
               alt="Image of Tour"
-              style="height: 200px"
+              style="height: 200px; border-radius: 10px"
             />
           </div>
         </div>
@@ -87,19 +95,18 @@
             id="description"
             class="form-control"
             v-model="tourInf.Description"
-            required
             placeholder="Description about some interesting of the tour"
           ></textarea>
         </div>
       </div>
       <hr />
       <div class="itinerary">
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex">
           <h4>Itinerary</h4>
           <button
             type="button"
             id="btn"
-            class="btn btn-primary"
+            class="btn btn-primary mx-3"
             @click="addForm(props.itinerary)"
           >
             Add More
@@ -130,6 +137,9 @@
                   <label class="form-label">Day Number</label>
                   <input
                     type="number"
+                    min="0"
+                    :max="tourInf?.Duration"
+                    required
                     class="form-control"
                     v-model="item.DayNumber"
                   />
@@ -141,6 +151,7 @@
                     type="file"
                     id="tourimg"
                     class="form-control"
+                    required
                     placeholder="Your Anwer"
                     @change="(event) => handleImage(event, item, 'ImageUrl')"
                   />
@@ -159,7 +170,9 @@
                     <div class="mt-2">
                       <label class="form-label">Activities</label>
                       <input
+                        type="text"
                         class="form-control"
+                        required
                         rows="2"
                         v-model="item.Activities"
                       />
@@ -169,13 +182,22 @@
                       <label class="form-label">Location</label>
                       <input
                         type="text"
+                        required
                         class="form-control"
                         v-model="item.Location"
                       />
                     </div>
                   </div>
                   <div class="col">
-                    <img :src="item.ImageUrl" alt="" style="width: 250px" />
+                    <img
+                      :src="
+                        item.ImageUrl?.preview
+                          ? item.ImageUrl.preview
+                          : item.ImageUrl
+                      "
+                      alt=""
+                      style="width: 250px; border-radius: 5px; margin: 5px"
+                    />
                   </div>
                 </div>
 
@@ -211,7 +233,7 @@
           <div
             v-for="(form, index) in props.dateForms"
             :key="index"
-            class="mb-3 col-lg-6 col-sm-12"
+            class="mb-3 col-lg-3 col-sm-12"
           >
             <div class="d-flex">
               <div>
@@ -242,12 +264,12 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-3">
+              <div class="col-5">
                 <label for="capacity" class="form-label">Capacity</label>
                 <input
                   type="number"
                   class="form-control"
-                  placeholder="Your Answer"
+                  min="0"
                   id="capacity"
                   v-model="form.Capacity"
                   required
@@ -286,7 +308,7 @@
           <div
             v-for="(service, index) in props.serviceForms"
             :key="index"
-            class="col-lg-6 col-sm-12"
+            class="col-lg-6 col-sm-12 my-2"
           >
             <div>
               <div class="row">
@@ -330,6 +352,7 @@
                     type="number"
                     class="form-control"
                     required
+                    min="0"
                     placeholder="Your Answer"
                     id="availableSpot"
                     v-model="service.Capacity"
@@ -350,8 +373,6 @@
             </div>
           </div>
         </div>
-
-        <hr />
       </div>
 
       <div v-if="!editable" class="text-end">
@@ -388,7 +409,7 @@ const props = defineProps({
     TourName: '',
     Description: '',
     Price: '',
-    Img_Tour: '',
+    Img_Tour: new FormData(),
     Duration: '',
   }),
   itinerary: reactive([{}]),
@@ -423,27 +444,82 @@ const removeForm = (form, index) => {
   }
 };
 
+// const handleImage = (event, targetObject, imageKey) => {
+//   const file = event.target.files[0];
+//   if (file) {
+//     const reader = new FileReader();
+//     reader.readAsDataURL(file); // Chuyển đổi file sang Base64
+
+//     reader.onload = () => {
+//       targetObject[imageKey] = reader.result; // Gán giá trị Base64 vào key tương ứng
+//       console.log(`Image uploaded for ${imageKey}:`, reader.result);
+//     };
+
+//     reader.onerror = (error) => {
+//       console.error('Lỗi khi đọc file:', error);
+//     };
+//   }
+// };
+
 const handleImage = (event, targetObject, imageKey) => {
   const file = event.target.files[0];
-  console.log('Hello');
+
   if (file) {
-    const reader = new FileReader();
-    reader.readAsDataURL(file); // Chuyển đổi file sang Base64
+    // Tạo URL preview
+    const objectUrl = URL.createObjectURL(file);
 
-    reader.onload = () => {
-      targetObject[imageKey] = reader.result; // Gán giá trị Base64 vào key tương ứng
-      console.log(`Image uploaded for ${imageKey}:`, reader.result);
+    // Lưu cả file và preview URL
+    targetObject[imageKey] = {
+      file,
+      preview: objectUrl,
     };
+    console.log(targetObject[imageKey]);
+  }
+};
 
-    reader.onerror = (error) => {
-      console.error('Lỗi khi đọc file:', error);
-    };
+const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file); // Append File object vào FormData
+
+  try {
+    const response = await axios.post('/api/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
+      },
+    });
+    return response.data.imageUrl;
+  } catch (error) {
+    console.error('Lỗi upload ảnh:', error);
+    throw error;
   }
 };
 
 const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
   try {
-    console.log(dateForms);
+    // tiền xử lý
+    //xử lý ảnh
+    const [mainImage, ...itineraryResults] = await Promise.all([
+      uploadImage(tourInf.Img_Tour.file).catch((error) => {
+        console.error('Lỗi upload ảnh chính:', error);
+        return null;
+      }),
+      ...itinerary.map((item, index) =>
+        item.ImageUrl?.file
+          ? uploadImage(item.ImageUrl.file).catch((error) => {
+              console.error(`Lỗi upload ảnh ngày ${index + 1}:`, error);
+              return null;
+            })
+          : Promise.resolve(null)
+      ),
+    ]);
+
+    // Gán kết quả
+    console.log(mainImage, itineraryResults);
+    tourInf.Img_Tour = mainImage || '';
+    itinerary.forEach((item, index) => {
+      item.ImageUrl = itineraryResults[index] || '';
+    });
+    // Xử lý form date
     dateForms.map((date) => {
       console.log(date.date);
       date.date = format(new Date(date.date), 'yyyy-MM-dd HH:mm:ss');
@@ -467,6 +543,7 @@ const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
       location.reload();
     }
   } catch (error) {
+    alert('Error Create Tour');
     console.error('Lỗi khi tạo tour:', error);
   }
 };

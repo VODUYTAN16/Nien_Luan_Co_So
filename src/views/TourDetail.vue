@@ -1081,7 +1081,7 @@ onMounted(() => {
 
 .card-box {
   position: absolute; /* Phần tử cha cần có position khác "static" */
-  height: 250%;
+  height: 100%;
   right: 2%;
 }
 

@@ -320,15 +320,22 @@
                   Number of participant: {{ BookingDetail[0].NumberOfGuests }}
                 </h6>
                 <h6>
-                  Services price total: ${{ ServicePriceTotal(bookServices) }}
+                  <span class="fst-italic text-nowrap">
+                    Services Price Total:
+                  </span>
+                  ${{ ServicePriceTotal(bookServices) }}
                 </h6>
                 <h6>
-                  Trip Price: ${{ BookingDetail[0].Price }} *
+                  <span class="fst-italic text-nowrap">Trip Price:</span>
+                  ${{ BookingDetail[0].Price }} *
                   {{ BookingDetail[0].NumberOfGuests }} = ${{
                     BookingDetail[0].Price * BookingDetail[0].NumberOfGuests
                   }}
                 </h6>
-                <h6>Total Amount: ${{ BookingDetail[0].TotalAmount }}</h6>
+                <h6>
+                  <span class="fst-italic text-nowrap">Total Amount:</span>
+                  ${{ BookingDetail[0].TotalAmount }}
+                </h6>
               </div>
               <div class="col">
                 <h5 class="text-success">Booked Services</h5>

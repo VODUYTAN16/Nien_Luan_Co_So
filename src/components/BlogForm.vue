@@ -238,6 +238,10 @@ const showPreviewCard = ref(true); // Trạng thái hiển thị Actical Card
 
 const createPost = async () => {
   try {
+    if (formData.ImageUrl) {
+      formData.ImageUrl = await uploadImage(formData.ImageUrl);
+      console.log(formData.ImageUrl);
+    }
     if (formData.Link) {
       const fileId = getDriveFileId(formData.Link);
       // Tạo URL tải xuống
@@ -308,39 +312,61 @@ const fetchUser = () => {
   }
 };
 
+// const handleImage = (event) => {
+//   const file = event.target.files[0];
+//   if (!file) return;
+
+//   // Kiểm tra loại file (chỉ chấp nhận ảnh)
+//   if (!file.type.startsWith('image/')) {
+//     alert('file is not an image');
+//     console.error('File không phải là hình ảnh');
+//     return;
+//   }
+
+//   const reader = new FileReader();
+//   reader.onload = (e) => {
+//     const base64String = e.target.result;
+
+//     // Kiểm tra xem Base64 có đúng định dạng không
+//     if (!base64String.startsWith('data:image/')) {
+//       console.error('Dữ liệu không phải hình ảnh hợp lệ');
+//       alert('not suitable image');
+//       return;
+//     }
+
+//     // Gán vào formData
+//     formData.ImageUrl = base64String;
+//     console.log('Base64 hợp lệ:', formData.ImageUrl);
+//   };
+
+//   reader.onerror = (error) => {
+//     alert('Error reading file');
+//     console.error('Error reading file:', error);
+//   };
+
+//   reader.readAsDataURL(file); // Đọc file dưới dạng Base64
+// };
+
+const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file); // Append File object vào FormData
+
+  try {
+    const response = await axios.post('/api/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
+      },
+    });
+    return response.data.imageUrl;
+  } catch (error) {
+    console.error('Lỗi upload ảnh:', error);
+    throw error;
+  }
+};
+
 const handleImage = (event) => {
   const file = event.target.files[0];
-  if (!file) return;
-
-  // Kiểm tra loại file (chỉ chấp nhận ảnh)
-  if (!file.type.startsWith('image/')) {
-    alert('file is not an image');
-    console.error('File không phải là hình ảnh');
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const base64String = e.target.result;
-
-    // Kiểm tra xem Base64 có đúng định dạng không
-    if (!base64String.startsWith('data:image/')) {
-      console.error('Dữ liệu không phải hình ảnh hợp lệ');
-      alert('not suitable image');
-      return;
-    }
-
-    // Gán vào formData
-    formData.ImageUrl = base64String;
-    console.log('Base64 hợp lệ:', formData.ImageUrl);
-  };
-
-  reader.onerror = (error) => {
-    alert('Error reading file');
-    console.error('Error reading file:', error);
-  };
-
-  reader.readAsDataURL(file); // Đọc file dưới dạng Base64
+  formData.ImageUrl = file;
 };
 
 onMounted(() => {

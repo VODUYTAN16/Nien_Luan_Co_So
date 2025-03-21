@@ -153,6 +153,23 @@ async function deleteTour(tourID) {
   }
 }
 
+const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file); // Append File object vào FormData
+
+  try {
+    const response = await axios.post('/api/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
+      },
+    });
+    return response.data.imageUrl;
+  } catch (error) {
+    console.error('Lỗi upload ảnh:', error);
+    throw error;
+  }
+};
+
 async function editTour(tourID) {
   try {
     const response = await axios.get(`/api/basis_inf/${tourID}`);
@@ -168,6 +185,36 @@ const saveEditTour = async (tourInf, dateForms, serviceForms, itinerary) => {
   console.log(tourInf, dateForms, serviceForms, itinerary);
 
   try {
+    // tiền xử lý
+    //xử lý ảnh
+
+    if (tourInf.Img_Tour.file) {
+      tourInf.Img_Tour = await uploadImage(tourInf.Img_Tour.file).catch(
+        (error) => {
+          console.error('Lỗi upload ảnh chính:', error);
+          return null;
+        }
+      );
+    }
+
+    itinerary = await Promise.all(
+      itinerary.map(async (item, index) => {
+        if (item.ImageUrl?.file) {
+          try {
+            // Gọi hàm uploadImage để lấy link ảnh
+            const imageUrl = await uploadImage(item.ImageUrl.file);
+            item.ImageUrl = imageUrl; // Cập nhật link ảnh mới
+          } catch (error) {
+            console.error(`Lỗi upload ảnh ngày ${index + 1}:`, error);
+            item.ImageUrl = null; // Xử lý lỗi bằng cách gán null hoặc giá trị mặc định
+          }
+        }
+        return item; // Trả về item đã được cập nhật
+      })
+    );
+
+    console.log(tourInf, itinerary);
+    // Xử lý form date
     dateForms.map((date) => {
       date.date = format(new Date(date.date), 'yyyy-MM-dd HH:mm:ss');
     });

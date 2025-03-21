@@ -5,6 +5,8 @@ import axios from 'axios';
 import util from 'util';
 import { constrainedMemory } from 'process';
 import bcrypt from 'bcrypt';
+import multer from 'multer';
+import path from 'path';
 
 const app = express();
 const port = 3000;
@@ -24,6 +26,16 @@ app.use(
 );
 
 app.use(express.json());
+
+// Cấu hình Multer để lưu file vào thư mục uploads
+const storage = multer.diskStorage({
+  destination: 'uploads/', // Thư mục lưu ảnh
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Đặt tên file theo timestamp
+  },
+});
+
+const upload = multer({ storage });
 
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
@@ -51,6 +63,19 @@ db.connect((err) => {
   }
 });
 ////////////////////////////////////////////////////////////////////////////////
+
+// API để upload ảnh
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image uploaded' });
+  }
+  console.log(req.body);
+
+  const imagePath = `http://localhost:${port}/uploads/${req.file.filename}`;
+  res
+    .status(200)
+    .json({ message: 'Upload succsessfully', imageUrl: imagePath });
+});
 
 // API tìm bài viết mới nhất
 app.get('/api/posts/related', (req, res) => {
@@ -812,7 +837,7 @@ app.get('/api/tour/:tourid/', (req, res) => {
 // API lấy danh sách schedule của tourID
 app.get('/api/tour/:tourid/schedule', (req, res) => {
   const tourid = req.params.tourid;
-  const query = `select schedule.*, ts.* from tour
+  const query = `select schedule.*, tour.* from tour
   join schedule ts on tour.tourid = ts.tourid
   join schedule on ts.ScheduleID = schedule.ScheduleID
   where tour.tourid = ? and tour.IsDeleted = 0`;
@@ -1183,7 +1208,7 @@ app.get('/api/booked_service/:bookingId', (req, res) => {
 });
 
 // API dùng để tạo tour
-app.post('/api/create_tour', (req, res) => {
+app.post('/api/create_tour', async (req, res) => {
   const tourInf = req.body.tourInf;
   const dateForms = req.body.dateForms;
   const serviceForms = req.body.serviceForms;
@@ -1749,6 +1774,9 @@ app.get('/api/itinerary/:tourId', (req, res) => {
     }
   );
 });
+
+// Cấu hình để có thể truy cập ảnh từ thư mục uploads
+app.use('/uploads', express.static('uploads'));
 // Khởi động server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

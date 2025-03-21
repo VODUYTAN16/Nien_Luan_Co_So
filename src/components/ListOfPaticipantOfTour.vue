@@ -203,10 +203,15 @@ const fetchTours = async () => {
 const fetchTourSchedule = async (tourId) => {
   try {
     const { data } = await axios.get(`/api/tour/${tourId}/schedule`);
+    console.log(data);
     return data.map((item) => ({
       ...item,
       StartDate: formatDate(item.StartDate),
-      EndDate: formatDate(item.EndDate),
+      EndDate: formatDate(
+        new Date(item.StartDate).setDate(
+          new Date(item.StartDate).getDate() + item.Duration - 1
+        )
+      ),
     }));
   } catch (error) {
     console.error('Lỗi khi tải lịch trình:', error);
@@ -228,7 +233,7 @@ const filteredTours = computed(() => {
     return tours.value.filter((tour) => tour.TourID === Filter.TourID);
   } else {
     const query = removeDiacritics(searchQuery.value.toLowerCase()).trim();
-
+    console.log(tours.value);
     return tours.value.filter((tour) => {
       const tourName = removeDiacritics(
         tour.TourName ? tour.TourName.toLowerCase() : tour.TourName

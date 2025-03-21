@@ -30,6 +30,7 @@
         <label for="description" class="form-label">Description</label>
         <textarea
           id="description"
+          type="text"
           v-model="service.Description"
           class="form-control"
           placeholder=""

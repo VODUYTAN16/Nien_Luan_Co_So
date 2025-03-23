@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-5">
+  <div class="container py-3">
     <div class="row">
       <div
         class="col-xl-3 col-md-6 col-lg-4 tour-item"

@@ -33,7 +33,7 @@
           type="text"
           v-model="service.Description"
           class="form-control"
-          placeholder=""
+          placeholder="Description about service"
           required
         ></textarea>
       </div>

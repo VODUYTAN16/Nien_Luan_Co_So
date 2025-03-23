@@ -120,15 +120,28 @@
             class="col-lg-6 col-sm-12 mb-4"
           >
             <div class="card p-3 shadow-sm">
-              <div class="d-flex">
-                <h5 class="text-primary mx-2">Day {{ item.DayNumber }}</h5>
+              <div class="d-flex my-2">
+                <h5
+                  class="text-primary mx-2 text-center d-flex align-items-center"
+                >
+                  Day {{ item.DayNumber }}
+                </h5>
 
                 <button
+                  v-if="!editable"
                   type="button"
-                  class="btn btn-danger me-2 mx-5"
+                  class="btn btn-danger me-2 mx-2"
                   @click="removeForm(props.itinerary, index)"
                 >
                   Remove
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="btn btn-danger me-2 mx-2"
+                  @click="deleteForm(props, index, 'iti')"
+                >
+                  Delete
                 </button>
               </div>
 
@@ -138,6 +151,7 @@
                   <input
                     type="number"
                     min="0"
+                    placeholder="Day order in tour"
                     :max="tourInf?.Duration"
                     required
                     class="form-control"
@@ -163,6 +177,7 @@
                       <input
                         type="text"
                         class="form-control"
+                        placeholder="Your Anwer"
                         v-model="item.MealsIncluded"
                       />
                     </div>
@@ -173,6 +188,7 @@
                         type="text"
                         class="form-control"
                         required
+                        placeholder="Your Anwer"
                         rows="2"
                         v-model="item.Activities"
                       />
@@ -183,6 +199,7 @@
                       <input
                         type="text"
                         required
+                        placeholder="Your Anwer"
                         class="form-control"
                         v-model="item.Location"
                       />
@@ -205,6 +222,7 @@
                   <label class="form-label">Description</label>
                   <textarea
                     type="text"
+                    placeholder="Description about the interesting of that place"
                     class="form-control"
                     v-model="item.Description"
                   ></textarea>
@@ -235,56 +253,69 @@
             :key="index"
             class="mb-3 col-lg-3 col-sm-12"
           >
-            <div class="d-flex">
-              <div>
-                <VDatePicker
-                  v-model="form.date"
-                  timezone="UTC"
-                  :min-date="new Date()"
-                  :color="selectedColor"
-                  borderless
-                  is-required
-                >
-                  <template #default="{ inputValue, inputEvents }">
-                    <div
-                      class="d-flex justify-content-center align-items-center"
-                    >
-                      <div class="input-group mb-3">
-                        <span class="input-group-text">Start</span>
-                        <input
-                          :value="inputValue"
-                          v-on="inputEvents"
-                          type="text"
-                          class="form-control"
-                        />
+            <div class="card p-3 shadow-sm">
+              <div class="d-flex">
+                <div>
+                  <VDatePicker
+                    v-model="form.date"
+                    timezone="UTC"
+                    :min-date="new Date()"
+                    :color="selectedColor"
+                    borderless
+                    is-required
+                  >
+                    <template #default="{ inputValue, inputEvents }">
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <div class="input-group mb-3">
+                          <span class="input-group-text">Start</span>
+                          <input
+                            :value="inputValue"
+                            v-on="inputEvents"
+                            placeholder="Departure Date"
+                            type="text"
+                            class="form-control"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </template>
-                </VDatePicker>
+                    </template>
+                  </VDatePicker>
+                </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col-5">
-                <label for="capacity" class="form-label">Capacity</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  min="0"
-                  id="capacity"
-                  v-model="form.Capacity"
-                  required
-                />
-              </div>
-              <div
-                class="col-1 d-flex justify-content-start align-items-end p-0"
-              >
-                <button
-                  type="button"
-                  class="btn btn-danger me-2"
-                  @click="removeForm(props.dateForms, index)"
+              <div class="row">
+                <div class="col-6">
+                  <label for="capacity" class="form-label">Capacity</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    min="0"
+                    placeholder="Your Anwer"
+                    id="capacity"
+                    v-model="form.Capacity"
+                    required
+                  />
+                </div>
+                <div
+                  class="col-1 d-flex justify-content-start align-items-end p-0"
                 >
-                  Remove
-                </button>
+                  <button
+                    v-if="!editable"
+                    type="button"
+                    class="btn btn-danger me-2"
+                    @click="removeForm(props.dateForms, index)"
+                  >
+                    Remove
+                  </button>
+                  <button
+                    v-else
+                    type="button"
+                    class="btn btn-danger me-2"
+                    @click="deleteForm(props, index, 'sch')"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -310,7 +341,7 @@
             :key="index"
             class="col-lg-6 col-sm-12 my-2"
           >
-            <div>
+            <div class="card p-3 shadow-sm">
               <div class="row">
                 <div class="col">
                   <label for="servicename" class="form-label"
@@ -332,7 +363,7 @@
                     </option>
                   </select>
                 </div>
-                <div class="col-3">
+                <div class="col-4">
                   <label for="status" class="form-label">Status</label>
                   <select
                     required
@@ -346,33 +377,84 @@
                 </div>
               </div>
               <div class="row my-2">
-                <div class="col-3">
-                  <label for="availableSpot" class="form-label">Capacity</label>
-                  <input
-                    type="number"
-                    class="form-control"
-                    required
-                    min="0"
-                    placeholder="Your Answer"
-                    id="availableSpot"
-                    v-model="service.Capacity"
-                  />
-                </div>
                 <div
-                  class="col-1 d-flex justify-content-start align-items-end p-0"
+                  class="col-2 d-flex justify-content-end align-items-end p-0"
                 >
                   <button
+                    v-if="!editable"
                     type="button"
-                    class="btn btn-danger me-2"
+                    class="btn btn-danger me-3"
                     @click="removeForm(props.serviceForms, index)"
                   >
                     Remove
+                  </button>
+                  <button
+                    v-else
+                    type="button"
+                    class="btn btn-danger me-3"
+                    @click="deleteForm(props, index, 'ser')"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      <hr />
+      <!-- Bảng nhập dịch vụ theo lịch trình -->
+      <div class="schedule_service">
+        <table class="table table-bordered" style="border-radius: 10px">
+          <thead class="table-primary" style="border-radius: 10px">
+            <tr>
+              <th>Schedule</th>
+              <th>Service</th>
+              <th>Capacity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="(schedule, index) in props.dateForms">
+              <tr
+                v-for="(service, index1) in ListOptionalService(
+                  props.serviceForms
+                )"
+                :key="`${index}-${index1}`"
+              >
+                <td
+                  v-if="index1 == 0"
+                  :rowspan="ListOptionalService(props.serviceForms).length"
+                >
+                  {{ formatDate(schedule.date) }}
+                </td>
+                <td>
+                  {{
+                    services.filter((item) => {
+                      return item.ServiceID == service.ServiceID;
+                    })[0]?.ServiceName
+                  }}
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    :value="getServiceCapacity(schedule, service.ServiceID)"
+                    @input="
+                      updateServiceCapacity(
+                        schedule,
+                        service.ServiceID,
+                        $event.target.value
+                      )
+                    "
+                    class="form-control"
+                    required
+                    placeholder="Your Answer"
+                    min="1"
+                  />
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
       </div>
 
       <div v-if="!editable" class="text-end">
@@ -385,11 +467,12 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, computed } from 'vue';
 import { useScreens } from 'vue-screen-utils';
 import TourSection from './TourSection.vue';
 import axios from 'axios';
 import { format } from 'date-fns';
+// import { applyRulesForDateParts } from 'v-calendar/dist/types/src/utils/date/helpers';
 
 const services = ref([]); // Lưu các services của tour
 
@@ -444,6 +527,46 @@ const removeForm = (form, index) => {
   }
 };
 
+const deleteForm = async (form, index, type) => {
+  try {
+    console.log(form, index, type);
+    switch (type) {
+      case 'sch':
+        const respone1 = await axios.put('/api/delete_schedule', {
+          id: form.dateForms[index].ScheduleID,
+        });
+        if (respone1.status == 200) {
+          removeForm(form.dateForms, index);
+        }
+        alert(respone1.data.message);
+        break;
+      case 'ser':
+        const respone2 = await axios.put('/api/delete_TourService', {
+          TourID: form.tourInf.TourID,
+          ServiceID: form.serviceForms[index].ServiceID,
+        });
+        if (respone2.status == 200) {
+          removeForm(form.serviceForms, index);
+        }
+        alert(respone2.data.message);
+        break;
+      case 'iti':
+        const respone3 = await axios.put('/api/delete_itinerary', {
+          id: index,
+        });
+        if (respone3.status == 200) {
+          removeForm(form, index);
+        }
+        alert(respone3.data.message);
+        break;
+      default:
+        console.log('Invalid type');
+    }
+  } catch (err) {
+    console.log('Error deleteform:', err);
+  }
+};
+
 // const handleImage = (event, targetObject, imageKey) => {
 //   const file = event.target.files[0];
 //   if (file) {
@@ -494,9 +617,40 @@ const uploadImage = async (file) => {
   }
 };
 
+const filterLiveValue = async (schedules, services) => {
+  return schedules.map((schedule) => {
+    // Lấy các ServiceID từ mảng services
+    const serviceIDs = services
+      .filter((service) => service.Status === 'Optional') // Lọc các service có Status là 'Optional'
+      .map((service) => Number(service.ServiceID)); // Chuyển đổi ServiceID thành số
+
+    // Lấy các key từ schedule.services và chuyển đổi chúng thành số
+    const numericKeys = Object.keys(schedule.services).map((key) =>
+      Number(key)
+    );
+
+    console.log(Object.entries(schedule.services));
+    // Lọc các key trong schedule.services mà có trong mảng serviceIDs
+    const filteredServices = numericKeys
+      .filter((key) => serviceIDs.includes(key)) // Lọc các key hợp lệ
+      .reduce((acc, key) => {
+        acc[key] = schedule.services[key]; // Giữ lại giá trị tương ứng của key
+        return acc;
+      }, {});
+
+    // Trả về schedule mới với services đã được lọc
+    return {
+      ...schedule,
+      services: filteredServices,
+    };
+  });
+};
+
 const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
+  console.log(dateForms, serviceForms);
   try {
     // tiền xử lý
+    dateForms = await filterLiveValue(dateForms, serviceForms);
     //xử lý ảnh
     const [mainImage, ...itineraryResults] = await Promise.all([
       uploadImage(tourInf.Img_Tour.file).catch((error) => {
@@ -548,6 +702,18 @@ const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
   }
 };
 
+const ListOptionalService = (services) => {
+  return services.filter((item) => {
+    return item.Status == 'Optional';
+  });
+};
+const formatDate = (dateString) => {
+  if (dateString) {
+    return format(new Date(dateString), 'dd/MM/yyyy');
+  }
+  return '';
+};
+
 const fetchTourService = async () => {
   try {
     const response = await axios.get(`/api/services`);
@@ -556,6 +722,20 @@ const fetchTourService = async () => {
   } catch (error) {
     console.error('Error fetching Tour Detail:', error);
   }
+};
+
+const getServiceCapacity = (schedule, serviceID) => {
+  if (!schedule.services) {
+    schedule.services = {};
+  }
+  return schedule.services[serviceID]; // Giá trị mặc định là 1
+};
+
+const updateServiceCapacity = (schedule, serviceID, value) => {
+  if (!schedule.services) {
+    schedule.services = {};
+  }
+  schedule.services[serviceID] = Number(value);
 };
 
 onMounted(() => {

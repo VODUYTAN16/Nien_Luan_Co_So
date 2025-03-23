@@ -107,7 +107,7 @@
                         >
                           <li
                             v-for="value in caculateMount(
-                              getSchedule(selectedDate)?.AvailableSpots
+                              schedulePicked.AvailableSpots
                             )"
                             :key="value"
                           >
@@ -157,7 +157,8 @@
                                 >
                                   <li
                                     v-for="value in caculateMount(
-                                      option.Capacity
+                                      scheduleTSData[option.ServiceID]
+                                        ?.AvailableSpots || 0
                                     )"
                                     :key="value"
                                   >
@@ -758,6 +759,7 @@ const selectedPakage = ref(1); // Lưu số lượng người tham gia
 const selectedOptions = ref({}); // Lưu số lượng đã chọn cho từng option
 const schedulePicked = ref({}); // Lưu lịch trình đã chọn
 const itineraries = ref([]); // Lưu các lịch trình của tour
+const scheduleTSData = ref({});
 
 //
 
@@ -773,16 +775,19 @@ const selectOption = (optionId, Quantity) => {
   selectedOptions.value[optionId] = { Quantity, ...service }; // Cập nhật số lượng cho từng option
 };
 
-const getSchedule = (date) => {
-  const index = schedules.value.findIndex((schedule) => {
-    return (
-      new Date(schedule.StartDate).toDateString() ===
-      new Date(date).toDateString()
-    );
-  });
-  if (index != -1) {
-    schedulePicked.value = schedules.value[index];
-    return schedules.value[index];
+const fetchScheduleTS = async (ScheduleID) => {
+  try {
+    const tourid = route.params.tourid;
+    const response = await axios.get(`/api/tour/${tourid}/${ScheduleID}`);
+    if (response.status === 200) {
+      response.data.forEach((item) => {
+        scheduleTSData.value[item.ServiceID] = item; // Lưu trữ dữ liệu theo ServiceID
+      });
+    }
+
+    console.log(scheduleTSData.value);
+  } catch (err) {
+    console.log('getschedule_ts', err);
   }
 };
 
@@ -831,6 +836,8 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
     );
     // Kiểm tra ngày được chọn có ở trong schedule
     if (index_StartDate != -1) {
+      schedulePicked.value = schedules.value[index_StartDate];
+      fetchScheduleTS(schedulePicked.value.ScheduleID);
       const startDate = new Date(datePicked);
       allAvailableDates.value.push(datePicked);
 
@@ -850,6 +857,7 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
       }
     } else {
       selectedDate.value = null;
+      scheduleTSData.value = [];
     }
   } catch (error) {
     console.error('Error remove 7 days after selected date:', error);

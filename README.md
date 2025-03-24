@@ -29,3 +29,9 @@ npm run build
 ```
 
 ### npm run dev -- --port 8080
+
+### cd /backend
+
+```sh
+node server.js
+```

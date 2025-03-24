@@ -775,10 +775,10 @@ app.get('/api/basis_inf/:tourid', async (req, res) => {
     const sql = `
       SELECT * FROM tour  
       JOIN tour_service ts ON ts.TourID = tour.TourID 
-      WHERE tour.TourID = ? AND tour.IsDeleted = 0`;
+      WHERE tour.TourID = ? AND ts.IsDeleted = 0`;
 
     const query1 = `SELECT it.* FROM tour 
-    JOIN Itinerary it ON tour.TourID = it.TourID WHERE tour.TourID = ? AND tour.IsDeleted = 0`;
+    JOIN Itinerary it ON tour.TourID = it.TourID WHERE tour.TourID = ? AND tour.IsDeleted = 0 AND it.IsDeleted = 0`;
 
     // Thực hiện truy vấn
     var tourInf = null;
@@ -794,7 +794,8 @@ app.get('/api/basis_inf/:tourid', async (req, res) => {
         results.map(async (schedule) => {
           const query = `SELECT * FROM schedule 
                        JOIN schedule_ts s ON schedule.ScheduleID = s.ScheduleID
-                       WHERE schedule.ScheduleID = ? AND schedule.IsDeleted = 0`;
+                       JOIN tour_service ts ON ts.ServiceID = s.ServiceID AND ts.TourID = s.TourID
+                       WHERE schedule.ScheduleID = ? AND schedule.IsDeleted = 0 `;
           let results2 = await queryAsync(query, [schedule.ScheduleID]);
           results2 = results2.reduce((acc, item) => {
             acc[item.ServiceID] = item.AvailableSpots;
@@ -885,7 +886,7 @@ app.get('/api/tour/:tourid/service', (req, res) => {
   const query = `select service.*, ts.* from tour
   join tour_service ts on tour.tourid = ts.tourid
   join service on ts.serviceid = service.serviceid
-  where tour.tourid = ?`;
+  where tour.tourid = ? AND ts.IsDeleted = 0`;
   db.query(query, [tourid], (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving categories' });
@@ -1046,6 +1047,7 @@ app.post('/api/create_booking', async (req, res) => {
   const selectedOptions = req.body.selectedOptions;
   const total = req.body.total;
 
+  console.log(req.body);
   const queryAsync = (sql, values) => {
     return new Promise((resolve, reject) => {
       db.query(sql, values, (err, result) => {
@@ -1113,23 +1115,49 @@ app.post('/api/create_booking', async (req, res) => {
     });
 
     // Giảm số lượng available của service đã chọn của tour
-    const servicePromises2 = selectedOptions.map((option) => {
-      return queryAsync(
-        `UPDATE tour_service SET AvailableSpots = ? WHERE ServiceID = ? AND TourID = ?`,
-        [
-          option.AvailableSpots - option.Quantity,
-          option.ServiceID,
-          schedulePicked.TourID,
-        ]
-      );
+    selectedOptions.map(async (option) => {
+      const query = `SELECT * FROM schedule_ts WHERE ScheduleID = ? AND ServiceID = ? AND TourID = ?`;
+
+      try {
+        // Thực hiện truy vấn SELECT và đợi kết quả
+        db.query(
+          query,
+          [schedulePicked.ScheduleID, option.ServiceID, option.TourID],
+          (err, result) => {
+            if (err) {
+              console.log(err);
+              return;
+            }
+            // Kiểm tra nếu không có kết quả trả về
+            if (result.length === 0) {
+              console.log('no schedule_ts');
+              return { success: false, message: 'No matching schedule found' };
+            }
+
+            // Thực hiện truy vấn UPDATE và đợi kết quả
+            db.query(
+              `UPDATE schedule_ts SET AvailableSpots = ? WHERE ServiceID = ? AND TourID = ? AND ScheduleID = ?`,
+              [
+                result[0].AvailableSpots - option.Quantity,
+                option.ServiceID,
+                option.TourID,
+                schedulePicked.ScheduleID,
+              ]
+            );
+
+            // Trả về kết quả thành công
+            return { success: true, message: 'Update successful' };
+          }
+        );
+      } catch (err) {
+        // Xử lý lỗi
+        console.error('servicePromises2: ', err);
+        return { success: false, message: 'Error in servicePromises2' };
+      }
     });
 
     // Chạy các truy vấn INSERT song song để tăng tốc độ xử lý
-    await Promise.all([
-      ...participantPromises,
-      ...servicePromises,
-      ...servicePromises2,
-    ]);
+    await Promise.all([...participantPromises, ...servicePromises]);
 
     res.status(200).json({ message: 'Tour Booked Successfully' });
   } catch (error) {
@@ -1151,10 +1179,12 @@ app.put('/api/delete_booking', (req, res) => {
     });
   });
 });
+
 //API dùng để approve booking
 app.post('/api/change_status', async (req, res) => {
   const bookingId = req.body.bookingId;
   const status = req.body.status;
+  const tourid = req.body.tourId;
   const queryAsync = (sql, values) => {
     return new Promise((resolve, reject) => {
       db.query(sql, values, (err, result) => {
@@ -1165,8 +1195,7 @@ app.post('/api/change_status', async (req, res) => {
   };
 
   if (status === 'Cancelled') {
-    const query = `SELECT * FROM booking
-    join participant on booking.BookingID = participant.BookingID WHERE booking.BookingID = ?`;
+    const query = `SELECT * FROM booking WHERE BookingID = ?`;
     db.query(query, [bookingId], async (err, result) => {
       if (err) {
         console.log('Error get booking');
@@ -1180,13 +1209,69 @@ app.post('/api/change_status', async (req, res) => {
         return res.status(404).json({ message: 'Schedule not found' });
       }
 
+      // Khôi phục AvailableSpots ở schedule
       db.query(
         `UPDATE schedule SET AvailableSpots = ? WHERE ScheduleID = ?`,
         [
-          scheduleResult[0].AvailableSpots + result.length,
+          scheduleResult[0].AvailableSpots + result[0].NumberOfGuests,
           result[0].ScheduleID,
         ],
-        (err, result) => {}
+        (err, result) => {
+          if (err) {
+            console.log('Error update schedule');
+            return res.status(500).json({ message: 'Error update schedule' });
+          }
+        }
+      );
+
+      // Khôi phục AvailableSpots ở schedule_ts
+      db.query(
+        `SELECT * FROM Booking join booking_service bs on  Booking.BookingID = bs.BookingID WHERE Booking.BookingID = ?`,
+        [bookingId],
+        async (err, result) => {
+          if (err) {
+            console.log('Error update schedule_ts1');
+            return res
+              .status(500)
+              .json({ message: 'Error update schedule_ts1' });
+          }
+
+          if (result.length > 0) {
+            result.map((item) => {
+              db.query(
+                `SELECT * FROM schedule_ts WHERE ScheduleID = ? AND ServiceID = ? AND TourID = ?`,
+                [item.ScheduleID, item.ServiceID, tourid],
+                (error, result1) => {
+                  if (err) {
+                    console.log('Error update schedule_ts2');
+                    return res
+                      .status(500)
+                      .json({ message: 'Error update schedule_ts2' });
+                  }
+                  if (result1.length > 0) {
+                    db.query(
+                      `UPDATE schedule_ts SET AvailableSpots = ? WHERE ScheduleID = ? AND ServiceID = ? AND TourID = ?`,
+                      [
+                        result1[0].AvailableSpots + item.Quantity,
+                        item.ScheduleID,
+                        item.ServiceID,
+                        tourid,
+                      ],
+                      (err, result2) => {
+                        if (err) {
+                          console.log('Error update schedule_ts3');
+                          return res
+                            .status(500)
+                            .json({ message: 'Error update schedule_ts3' });
+                        }
+                      }
+                    );
+                  }
+                }
+              );
+            });
+          }
+        }
       );
     });
   }
@@ -1403,13 +1488,17 @@ app.put('/api/edit_tour', async (req, res) => {
 
         if (existingSchedule.length > 0) {
           // Nếu tồn tại, cập nhật số lượng chỗ trống
+          const SpotsIncrease = date.Capacity - existingSchedule[0].Capacity;
           const updateScheduleQuery = `
           UPDATE schedule 
-          SET Capacity = ?
+          SET Capacity = ?, AvailableSpots = ?
           WHERE TourID = ? AND StartDate = ?
         `;
           await queryAsync(updateScheduleQuery, [
             date.Capacity,
+            existingSchedule[0].AvailableSpots || 0 + SpotsIncrease >= 0
+              ? existingSchedule[0].AvailableSpots || 0 + SpotsIncrease
+              : 0,
             tourInf.TourID,
             date.date,
           ]);
@@ -1498,7 +1587,7 @@ app.put('/api/edit_tour', async (req, res) => {
           // Nếu dịch vụ đã tồn tại, cập nhật lại
           const updateServiceQuery = `
           UPDATE tour_service 
-          SET Status = ?
+          SET Status = ?, IsDeleted = false
           WHERE TourID = ? AND ServiceID = ?
         `;
           await queryAsync(updateServiceQuery, [
@@ -1523,7 +1612,7 @@ app.put('/api/edit_tour', async (req, res) => {
 
     if (itinerary) {
       for (const item of itinerary) {
-        const checkItineraryQuery = `SELECT * FROM itinerary WHERE TourID = ? AND DayNumber = ?`;
+        const checkItineraryQuery = `SELECT * FROM itinerary WHERE TourID = ? AND DayNumber = ? AND IsDeleted = 0`;
         const existingItinerary = await queryAsync(checkItineraryQuery, [
           tourInf.TourID,
           item.DayNumber,
@@ -1875,7 +1964,7 @@ app.get('/api/tour-statistics', async (req, res) => {
 app.get('/api/itinerary/:tourId', (req, res) => {
   const tourId = req.params.tourId;
   db.query(
-    `SELECT * FROM itinerary WHERE TourID = ?`,
+    `SELECT * FROM itinerary WHERE TourID = ? AND IsDeleted = 0`,
     [tourId],
     (err, results) => {
       if (err) {
@@ -1908,27 +1997,28 @@ app.put('/api/delete_schedule', (req, res) => {
   );
 });
 
-// API xóa mềm service
-app.put('/api/delete_service', (req, res) => {
-  const serviceId = req.body.id;
+// API xóa mềm itinerary
+app.put('/api/delete_itinerary', (req, res) => {
+  const itiID = req.body.id;
+  console.log(itiID);
   db.query(
-    `UPDATE service SET isDeleted = true WHERE id = ?`,
-    [serviceId],
+    `UPDATE itinerary SET isDeleted = true WHERE ItineraryID = ?`,
+    [itiID],
     (err, results) => {
       if (err) {
         console.error(err);
         res.status(500).json({
           error: err.message,
-          message: 'Can not delete this service',
+          message: 'Can not delete this itinerary',
         });
       }
-      res.status(200).json({ message: 'Service deleted successfully' });
+      res.status(200).json({ message: 'itinerary deleted successfully' });
     }
   );
 });
 
-// API xóa mềm itinerary
-app.put('/api/delete_TourService', (req, res) => {
+// API xóa mềm service
+app.put('/api/delete_tourService', (req, res) => {
   const serviceId = req.body.ServiceID;
   const tourId = req.body.TourID;
   db.query(

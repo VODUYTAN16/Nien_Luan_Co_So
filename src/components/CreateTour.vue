@@ -532,6 +532,12 @@ const deleteForm = async (form, index, type) => {
     console.log(form, index, type);
     switch (type) {
       case 'sch':
+        const confirm = window.confirm(
+          'Are you sure you want to DELETE this schedule?'
+        );
+        if (!confirm) {
+          return;
+        }
         const respone1 = await axios.put('/api/delete_schedule', {
           id: form.dateForms[index].ScheduleID,
         });
@@ -541,7 +547,13 @@ const deleteForm = async (form, index, type) => {
         alert(respone1.data.message);
         break;
       case 'ser':
-        const respone2 = await axios.put('/api/delete_TourService', {
+        const confirm2 = window.confirm(
+          'Are you sure you want to DELETE this service?'
+        );
+        if (!confirm2) {
+          return;
+        }
+        const respone2 = await axios.put('/api/delete_tourService', {
           TourID: form.tourInf.TourID,
           ServiceID: form.serviceForms[index].ServiceID,
         });
@@ -551,11 +563,17 @@ const deleteForm = async (form, index, type) => {
         alert(respone2.data.message);
         break;
       case 'iti':
+        const confirm3 = window.confirm(
+          'Are you sure you want to DELETE this itinerary?'
+        );
+        if (!confirm3) {
+          return;
+        }
         const respone3 = await axios.put('/api/delete_itinerary', {
-          id: index,
+          id: form.itinerary[index].ItineraryID,
         });
         if (respone3.status == 200) {
-          removeForm(form, index);
+          removeForm(form.itinerary, index);
         }
         alert(respone3.data.message);
         break;
@@ -703,6 +721,7 @@ const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
 };
 
 const ListOptionalService = (services) => {
+  console.log(services);
   return services.filter((item) => {
     return item.Status == 'Optional';
   });
@@ -728,7 +747,7 @@ const getServiceCapacity = (schedule, serviceID) => {
   if (!schedule.services) {
     schedule.services = {};
   }
-  return schedule.services[serviceID]; // Giá trị mặc định là 1
+  return schedule.services[serviceID];
 };
 
 const updateServiceCapacity = (schedule, serviceID, value) => {

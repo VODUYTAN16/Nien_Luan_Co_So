@@ -27,11 +27,11 @@
 
     <!-- Main Content -->
     <div class="mb-4">
-      <p>{{ blog.ContentIntro || 'No introduction available.' }}</p>
+      <p>{{ blog.ContentIntro || '' }}</p>
       <blockquote v-if="blog.Quote" class="blockquote fst-italic px-3">
         <p>{{ blog.Quote }}</p>
       </blockquote>
-      <p>{{ blog.ContentBody || 'No content available.' }}</p>
+      <p>{{ blog.ContentBody || '' }}</p>
     </div>
 
     <!-- Share and Interaction Section -->

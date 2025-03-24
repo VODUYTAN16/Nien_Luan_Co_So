@@ -27,7 +27,11 @@
           <span>
             {{ item.StartDate }} -
             {{
-              item.Status == 'Full' ? 'FULL ' : item.AvailableSpots + ' Spots'
+              item.Status == 'Full'
+                ? 'FULL '
+                : item.AvailableSpots
+                ? item.AvailableSpots + ' spots left'
+                : 0 + ' spots left'
             }}
           </span>
           <span v-if="item.Status == 'Full'"
@@ -100,8 +104,8 @@
           <div v-for="(item, index) in items" :key="index">
             <div class="row mb-3">
               <div class="col-md-6">
-                <span class="text-success"
-                  ><i class="fa-solid fa-circle-xmark text-secondary"></i
+                <span class="text-success">
+                  <i class="bx bx-chevrons-right text-info fs-4"></i
                 ></span>
                 {{ item.ServiceName }}
               </div>

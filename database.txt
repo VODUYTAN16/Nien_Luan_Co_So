@@ -84,6 +84,7 @@ CREATE TABLE Tour_Service (
     TourID INT,
     ServiceID INT,
     Status ENUM('Available', 'Optional') DEFAULT 'Available',
+    IsDeleted Boolean DEFAULT FALSE,
     PRIMARY KEY (TourID, ServiceID),
     FOREIGN KEY (TourID) REFERENCES Tour(TourID) ON DELETE CASCADE,
     FOREIGN KEY (ServiceID) REFERENCES Service(ServiceID)
@@ -200,11 +201,3 @@ INSERT INTO categories (name) VALUES
 ('reportage');
 
 
-
--- Data fake
--- Thêm dữ liệu cho bảng User
-INSERT INTO User (FullName, Email, PhoneNumber, Password, AvatarUrl)
-VALUES 
-('Vo Duy Tan', 'voduytan2004@gmail.com', '0842596099', '000000', 'https://i.pinimg.com/736x/4a/da/9b/4ada9bd2c41329a8ec10660c8aa95d57.jpg')
-
-INSERT INTO Role 

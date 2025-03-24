@@ -117,7 +117,7 @@
               ></textarea>
             </td>
             <td>
-              <div v-if="editableRow != item.ServiceID">
+              <div v-if="editableRow != item.ServiceID" class="d-flex">
                 <button
                   class="btn btn-sm btn-outline-success mx-1"
                   @click="editService(item)"
@@ -131,7 +131,7 @@
                   Delete
                 </button>
               </div>
-              <div v-else>
+              <div v-else class="d-flex">
                 <button
                   @click="saveEdit"
                   class="btn btn-sm btn-outline-primary mx-1"

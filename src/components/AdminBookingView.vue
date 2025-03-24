@@ -201,28 +201,32 @@
                   <li
                     v-if="item.Status != 'Pending'"
                     class="dropdown-items"
-                    @click="changeStatus(item.BookingID, 'Pending')"
+                    @click="
+                      changeStatus(item.BookingID, 'Pending', item.TourID)
+                    "
                   >
                     Pending
                   </li>
                   <li
                     v-if="item.Status != 'Booked'"
                     class="dropdown-items"
-                    @click="changeStatus(item.BookingID, 'Booked')"
+                    @click="changeStatus(item.BookingID, 'Booked', item.TourID)"
                   >
                     Booked
                   </li>
                   <li
                     v-if="item.Status != 'Paid'"
                     class="dropdown-items"
-                    @click="changeStatus(item.BookingID, 'Paid')"
+                    @click="changeStatus(item.BookingID, 'Paid', item.TourID)"
                   >
                     Paid
                   </li>
                   <li
                     v-if="item.Status != 'Cancelled'"
                     class="dropdown-items"
-                    @click="changeStatus(item.BookingID, 'Cancelled')"
+                    @click="
+                      changeStatus(item.BookingID, 'Cancelled', item.TourID)
+                    "
                   >
                     Cancelled
                   </li>
@@ -548,7 +552,7 @@ const bookedServices = async (bookingId) => {
   }
 };
 
-const changeStatus = async (bookingId, status) => {
+const changeStatus = async (bookingId, status, tourId) => {
   try {
     const isConfirmed = confirm(`Are you sure you want change to ${status} `);
     if (!isConfirmed) {
@@ -559,6 +563,7 @@ const changeStatus = async (bookingId, status) => {
     const response = await axios.post(`/api/change_status`, {
       bookingId,
       status,
+      tourId,
     });
     if (response.status == 200) {
       alert('Change status successfully');

@@ -114,7 +114,7 @@
                   Edit
                 </button>
                 <button
-                  v-if="user.Role === 'Admin'"
+                  v-if="user.RoleName === 'Admin'"
                   @click="deleteUser(item)"
                   class="btn btn-sm btn-outline-danger mx-2"
                 >
@@ -130,13 +130,10 @@
                     Promote
                   </button>
                   <ul class="dropdown-menu text-center">
-                    <li class="dropdown-items" @click="promote(item, 'Admin')">
+                    <li class="dropdown-items" @click="promote(item, '1')">
                       Admin
                     </li>
-                    <li
-                      class="dropdown-items"
-                      @click="promote(item, 'Manager')"
-                    >
+                    <li class="dropdown-items" @click="promote(item, '2')">
                       Manager
                     </li>
                   </ul>
@@ -196,8 +193,8 @@
               <input v-model="editedData.PhoneNumber" class="form-control" />
             </td>
 
-            <td>{{ item.Role }}</td>
-            <td v-if="user.Role === 'Admin'">
+            <td>{{ item.RoleName }}</td>
+            <td v-if="user.RoleName === 'Admin'">
               <div v-if="editableRow !== item.UserID">
                 <button
                   @click="editUser(item)"
@@ -206,7 +203,7 @@
                   Edit
                 </button>
                 <button
-                  v-if="user.Role === 'Admin'"
+                  v-if="user.RoleName === 'Admin'"
                   @click="deleteUser(item)"
                   class="btn btn-sm btn-outline-danger mx-2"
                 >

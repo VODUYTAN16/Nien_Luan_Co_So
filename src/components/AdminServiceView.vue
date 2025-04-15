@@ -18,6 +18,7 @@
         <label for="price" class="form-label">Price</label>
         <input
           type="number"
+          step="0.01"
           id="price"
           class="form-control"
           min="0"
@@ -102,7 +103,7 @@
 
             <td v-if="editableRow !== item.ServiceID">{{ item.Price }}</td>
             <td v-else>
-              <input v-model="editedData.Price" class="form-control" />
+              <input v-model="editedData.Price" class="form-control" disabled />
             </td>
 
             <td v-if="editableRow !== item.ServiceID">
@@ -179,7 +180,7 @@
 
             <td v-if="editableRow !== item.ServiceID">{{ item.Price }}</td>
             <td v-else>
-              <input v-model="editedData.Price" class="form-control" />
+              <!-- <input v-model="editedData.Price" class="form-control" readonly /> -->
             </td>
 
             <td v-if="editableRow !== item.ServiceID">

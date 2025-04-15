@@ -30,7 +30,7 @@
       <div class="col-md-3" v-for="(item, key) in stats" :key="key">
         <div class="card p-3 shadow">
           <h5>{{ item.label }}</h5>
-          <p class="fw-bold fs-4">{{ item.value || 0 }}</p>
+          <p class="fw-bold fs-4">{{ item.value != null ? item.value : 0 }}</p>
         </div>
       </div>
     </div>
@@ -42,7 +42,9 @@
         <DoughnutChart :chart-data="chartData" />
       </div>
       <div class="col-md-6">
-        <h5 class="text-center">Profit & Number of Customers per Tour</h5>
+        <h5 class="text-center">
+          Profit & Number of Customers per Tour Package
+        </h5>
         <LineChart :chart-data="lineChartData" :chart-options="chartOptions" />
       </div>
     </div>

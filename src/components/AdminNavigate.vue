@@ -7,19 +7,17 @@
       >
         <div class="text-center mx-2">
           <div>
-            <img
-              class="avatar router-link-hover"
-              :src="
-                user.avatarurl
-                  ? user.avatarurl
-                  : 'https://i.pinimg.com/736x/f6/d5/fe/f6d5fe0a4ce89d111b60cf8f7a552502.jpg'
+            <router-link to="/"
+              ><img
+                class="avatar router-link-hover"
+                src="/logo.png
               "
-              alt="Avatar"
-              style="width: 55px; height: 55px"
-              @click="handleClick"
-            />
+                alt="Avatar"
+                style="width: 50px; height: 50px"
+                @click="handleClick"
+            /></router-link>
           </div>
-          <div v-if="isCardVisible">
+          <!-- <div v-if="isCardVisible">
             <div class="card" style="width: 18rem">
               <img
                 :src="
@@ -38,7 +36,7 @@
                 </button>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
       <div class="text-end pt-3 menu-icon" @click="toggleMenu">
@@ -101,6 +99,9 @@
         >
           Statistics
         </router-link>
+        <button @click="logout" class="btn btn-danger logoutb">
+          <i class="bx bx-log-out"></i> Đăng xuất
+        </button>
       </div>
     </div>
   </div>
@@ -182,6 +183,9 @@ onBeforeRouteUpdate((to, from, next) => {
 </script>
 
 <style scoped>
+.logoutb {
+  margin-top: 360px !important;
+}
 .adminNavigate {
   background-color: aliceblue;
   position: relative;
@@ -239,12 +243,15 @@ onBeforeRouteUpdate((to, from, next) => {
 
 .avatar {
   max-width: 60px;
-  border-radius: 50%;
   /* margin-right: 40px; */
 }
 .account {
   margin: 10px 10px 0 10px;
   transition: all 0.3s ease-in-out;
+}
+
+a:hover {
+  background: none;
 }
 @media (max-width: 1200px) {
   .avatar {

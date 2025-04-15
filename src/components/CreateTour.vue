@@ -36,10 +36,11 @@
         <div class="row">
           <div class="col">
             <div class="row">
-              <div class="col">
+              <div class="col" v-if="!editable">
                 <label for="price" class="form-label"> Price of tour </label>
                 <input
                   type="number"
+                  step="0.01"
                   id="price"
                   min="0"
                   class="form-control"
@@ -48,12 +49,27 @@
                   placeholder="$0"
                 />
               </div>
+              <div class="col" v-else>
+                <label for="price" class="form-label"> Price of tour </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="price"
+                  min="0"
+                  class="form-control"
+                  v-model="tourInf.Price"
+                  required
+                  placeholder="$0"
+                  disabled
+                />
+              </div>
               <div class="col">
                 <label for="duration" class="form-label">Duration</label>
                 <input
                   id="duration"
-                  type="text"
-                  min="0"
+                  type="number"
+                  step="1"
+                  min="1"
                   class="form-control"
                   placeholder="Ex: 7 days"
                   required
@@ -150,7 +166,8 @@
                   <label class="form-label">Day Number</label>
                   <input
                     type="number"
-                    min="0"
+                    step="1"
+                    min="1"
                     placeholder="Day order in tour"
                     :max="tourInf?.Duration"
                     required
@@ -288,6 +305,7 @@
                   <label for="capacity" class="form-label">Capacity</label>
                   <input
                     type="number"
+                    step="1"
                     class="form-control"
                     min="0"
                     placeholder="Your Anwer"
@@ -391,7 +409,7 @@
                   <button
                     v-else
                     type="button"
-                    class="btn btn-danger me-3"
+                    class="btn btn-danger me-3 px-2"
                     @click="deleteForm(props, index, 'ser')"
                   >
                     Delete
@@ -410,7 +428,7 @@
             <tr>
               <th>Schedule</th>
               <th>Service</th>
-              <th>Capacity</th>
+              <th>Available Quantity</th>
             </tr>
           </thead>
           <tbody>
@@ -437,6 +455,7 @@
                 <td>
                   <input
                     type="number"
+                    step="1"
                     :value="getServiceCapacity(schedule, service.ServiceID)"
                     @input="
                       updateServiceCapacity(

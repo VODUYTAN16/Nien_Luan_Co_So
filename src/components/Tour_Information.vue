@@ -138,7 +138,7 @@
               <!-- Lớp phủ mờ -->
               <div class="overlay"></div>
             </div>
-            <div class="carousel-caption d-none d-md-block">
+            <div class="carousel-caption d-none d-md-block overlay">
               <h5>Day {{ item.DayNumber }}: {{ item.Location }}</h5>
               <p><strong>Activities:</strong> {{ item.Activities }}</p>
               <p><strong>Meals Included:</strong> {{ item.MealsIncluded }}</p>
@@ -229,12 +229,8 @@ div {
 
 /* Lớp phủ mờ */
 .overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
   pointer-events: none;
 }
 </style>

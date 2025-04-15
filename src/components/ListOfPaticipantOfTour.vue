@@ -76,6 +76,7 @@
                 <th class="fw-bold">Passport Number</th>
                 <th class="fw-bold">Nationality</th>
                 <th class="fw-bold">Booked Services</th>
+                <th class="fw-bold">Total Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -135,9 +136,60 @@
                         : ''
                     }}
                   </td>
+                  <td v-if="index === 0" :rowspan="bookingPackage.items.length">
+                    ${{ participant.TotalAmount }}
+                    <i
+                      class="bx bx-money text-success fs-5"
+                      v-if="(participant.Status === 'Paid') & (index === 0)"
+                    ></i>
+                  </td>
                 </tr>
               </template>
 
+              <tr class="total-row table-secondary">
+                <td colspan="9"></td>
+                <td colspan="2">
+                  <div
+                    class="d-flex justify-content-between align-items-center p-2 bg-light rounded"
+                  >
+                    <!-- Total Collected -->
+                    <div class="d-flex align-items-center">
+                      <span class="badge bg-success me-2">
+                        <i class="bi bi-currency-dollar"></i>
+                      </span>
+                      <div>
+                        <div class="text-muted small">Total Collected</div>
+                        <div class="fw-bold text-success">
+                          ${{
+                            totalAmount?.[
+                              `${tour.TourID}-${schedule.ScheduleID}`
+                            ]?.[0]?.total_collected || 0
+                          }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="vr mx-3"></div>
+
+                    <!-- Total Pending -->
+                    <div class="d-flex align-items-center">
+                      <span class="badge bg-warning me-2">
+                        <i class="bi bi-clock-history"></i>
+                      </span>
+                      <div>
+                        <div class="text-muted small">Total Pending</div>
+                        <div class="fw-bold text-warning">
+                          ${{
+                            totalAmount?.[
+                              `${tour.TourID}-${schedule.ScheduleID}`
+                            ]?.[0]?.total_pending || 0
+                          }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
               <tr
                 v-if="
                   participants[`${tour.TourID}-${schedule.ScheduleID}`] &&
@@ -145,7 +197,7 @@
                     .length === 0
                 "
               >
-                <td colspan="10" class="text-center">No data</td>
+                <td colspan="11" class="text-center">No data</td>
               </tr>
             </tbody>
           </table>
@@ -168,6 +220,7 @@ const expandedSchedule = ref(null);
 const participants = ref([{}]);
 const loadingSchedule = ref(null);
 const tourNameList = ref([]);
+var totalAmount = ref({});
 
 const Filter = reactive({
   StartDate: '',
@@ -269,7 +322,7 @@ const fetchParticipants = async (tourId, scheduleId) => {
       // Kiểm tra xem booking đã có trong acc chưa
       if (!acc[bookingId]) {
         acc[bookingId] = {
-          items: [], // Dùng mảng thay vì Object
+          items: [], // Dùng mảng lưu thông tin thành viên
         };
       }
 
@@ -298,6 +351,29 @@ const fetchParticipants = async (tourId, scheduleId) => {
   loadingSchedule.value = null;
 };
 
+const totalAmount_Booking = async (key) => {
+  console.log(key);
+  const items = Object.values(participants.value[key]).map(
+    (item) => item.items[0]
+  );
+
+  const { total_collected, total_pending } = items.reduce(
+    (acc, item) => {
+      if (item.Status === 'Paid')
+        acc.total_collected += Number(item.TotalAmount);
+      if (item.Status === 'Booked')
+        acc.total_pending += Number(item.TotalAmount);
+      return acc;
+    },
+    { total_collected: 0, total_pending: 0 }
+  );
+  console.log(total_collected, total_pending);
+  return {
+    total_collected: Number(total_collected.toFixed(2)),
+    total_pending: Number(total_pending.toFixed(2)),
+  };
+};
+
 // Khi người dùng click vào schedule
 const toggleParticipants = async (tourId, scheduleId) => {
   const key = `${tourId}-${scheduleId}`;
@@ -307,6 +383,15 @@ const toggleParticipants = async (tourId, scheduleId) => {
     expandedSchedule.value = key;
     if (!participants.value[key]) {
       await fetchParticipants(tourId, scheduleId);
+      // Đảm bảo totalAmount.value[key] là mảng
+      if (!totalAmount.value[key]) {
+        totalAmount.value[key] = [];
+      }
+
+      const result = await totalAmount_Booking(key);
+      totalAmount.value[key].push(result);
+      console.log(totalAmount.value[key]?.[0].total_collected);
+      console.log(totalAmount.value);
     }
   }
 };

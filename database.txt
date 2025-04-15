@@ -16,9 +16,16 @@ CREATE TABLE User (
 );
 
 CREATE TABLE Role (
+    RoleID INT PRIMARY KEY AUTO_INCREMENT,
+    RoleName  ENUM('Admin', 'Manager') DEFAULT 'Admin'
+);
+
+CREATE TABLE User_Role (
+    RoleID INT,
     UserID INT,
-    Role  ENUM('Admin', 'Manager') DEFAULT 'Admin',
-    FOREIGN KEY (UserID) REFERENCES User(UserID) ON DELETE CASCADE
+    PRIMARY KEY (RoleID, UserID),
+    FOREIGN KEY (UserID) REFERENCES User(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (RoleID) REFERENCES Role(RoleID) ON DELETE CASCADE
 );
 
 
@@ -199,5 +206,11 @@ CREATE TABLE UserLikes (
 INSERT INTO categories (name) VALUES
 ('blog'),
 ('reportage');
+
+INSERT INTO role (RoleName) VALUES
+('Admin'),
+('Manager');
+
+
 
 

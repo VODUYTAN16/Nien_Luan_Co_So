@@ -327,7 +327,7 @@ app.get('/api/categories', (req, res) => {
 
 // API lấy danh sách admin
 app.get('/api/users/admin', (req, res) => {
-  const query = `SELECT * from User join role on User.UserID = role.UserID`;
+  const query = `SELECT * from User join user_role ur on User.UserID = ur.UserID join role on ur.RoleID = role.RoleID`;
   db.query(query, (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving categories' });
@@ -704,10 +704,12 @@ app.post('/api/login/admin', async (req, res) => {
   const { Email } = req.body;
   let { Password } = req.body;
   Password = Password.trim();
+  console.log(req.body);
   try {
     // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
     db.query(
-      `SELECT * FROM user join role on user.UserID = role.UserID  WHERE Email = ?`,
+      `SELECT * FROM user join user_role ur on user.UserID = ur.UserID
+      join role on ur.RoleID = role.RoleID WHERE Email = ?`,
       [Email],
       async (err, results) => {
         if (err) {
@@ -721,13 +723,13 @@ app.post('/api/login/admin', async (req, res) => {
         }
 
         const user = results[0];
+        console.log(user);
 
         // Kiểm tra mật khẩu
         const isPasswordValid = await comparePassword(Password, user.Password);
         if (!isPasswordValid) {
           return res.status(400).json({
-            message:
-              "Invalid email or password or you register by google before, Let's login by google",
+            message: 'Invalid password',
           });
         }
 
@@ -1162,7 +1164,7 @@ app.post('/api/create_booking', async (req, res) => {
     res.status(200).json({ message: 'Tour Booked Successfully' });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Booking Fail' });
   }
 });
 
@@ -1454,7 +1456,7 @@ app.post('/api/create_tour', async (req, res) => {
 app.put('/api/edit_tour', async (req, res) => {
   try {
     const { tourInf, dateForms, serviceForms, itinerary } = req.body;
-
+    console.log(dateForms);
     // Kiểm tra tourID
     if (!tourInf.TourID) {
       return res.status(400).json({ message: 'Missing TourID' });
@@ -1489,6 +1491,7 @@ app.put('/api/edit_tour', async (req, res) => {
         if (existingSchedule.length > 0) {
           // Nếu tồn tại, cập nhật số lượng chỗ trống
           const SpotsIncrease = date.Capacity - existingSchedule[0].Capacity;
+          console.log(SpotsIncrease, date.Capacity);
           const updateScheduleQuery = `
           UPDATE schedule 
           SET Capacity = ?, AvailableSpots = ?
@@ -1496,8 +1499,8 @@ app.put('/api/edit_tour', async (req, res) => {
         `;
           await queryAsync(updateScheduleQuery, [
             date.Capacity,
-            existingSchedule[0].AvailableSpots || 0 + SpotsIncrease >= 0
-              ? existingSchedule[0].AvailableSpots || 0 + SpotsIncrease
+            existingSchedule[0].AvailableSpots + SpotsIncrease >= 0
+              ? existingSchedule[0].AvailableSpots + SpotsIncrease
               : 0,
             tourInf.TourID,
             date.date,
@@ -1512,14 +1515,13 @@ app.put('/api/edit_tour', async (req, res) => {
             ]);
 
             if (existingService.length > 0) {
-              const serviceIncrease = value - existingService[0].Capacity;
-
+              const serviceIncrease = value - existingService[0].AvailableSpots;
               const updateServiceQuery = `UPDATE schedule_ts SET Capacity = ?, AvailableSpots = ? WHERE TourID = ? AND ScheduleID = ? AND ServiceID = ?`;
               await queryAsync(updateServiceQuery, [
-                value,
-                existingService[0].AvailableSpots + serviceIncrease >= 0
-                  ? existingService[0].AvailableSpots + serviceIncrease
+                existingService[0].Capacity + serviceIncrease >= 0
+                  ? existingService[0].Capacity + serviceIncrease
                   : 0,
+                value,
                 tourInf.TourID,
                 date.ScheduleID,
                 key,
@@ -1674,7 +1676,7 @@ app.get('/api/users_list', (req, res) => {
 
 // API lấy danh sách admin
 app.get('/api/admins_list', (req, res) => {
-  const query = `select * from user join role on user.UserID = role.UserID`;
+  const query = `select * from user join user_role ur on user.UserID = ur.UserID join role on ur.RoleID = role.RoleID`;
   db.query(query, (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving admin list' });
@@ -1687,13 +1689,13 @@ app.get('/api/admins_list', (req, res) => {
 // API promote admin hay manager
 app.post('/api/promote', (req, res) => {
   const user = req.body.user;
-  const query = `SELECT * FROM user join role on user.UserID = role.UserID WHERE email = ?`;
+  const query = `SELECT * FROM user join user_role ur on user.UserID = ur.UserID WHERE email = ?`;
   db.query(query, [user.Email], (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error promote user' });
     } else {
       if (results.length === 0) {
-        const query = `INSERT INTO role (UserID, Role) VALUES (?, ?)`;
+        const query = `INSERT INTO user_role (UserID, RoleID) VALUES (?, ?)`;
         db.query(query, [user.UserID, req.body.role], (err, results) => {
           if (err) {
             res.status(500).json({ message: 'Error promote user' });
@@ -1702,7 +1704,7 @@ app.post('/api/promote', (req, res) => {
           }
         });
       } else {
-        const query = `UPDATE role SET Role = ? WHERE UserID = ?`;
+        const query = `UPDATE user_role SET RoleID = ? WHERE UserID = ?`;
         db.query(query, [req.body.Role, user.UserID], (err, results) => {
           if (err) {
             res.status(500).json({ message: 'Error promote user' });
@@ -1751,7 +1753,7 @@ app.put('/api/update_user', (req, res) => {
 
 // API dùng để gián chức user
 app.delete('/api/dismissal/:UserID', (req, res) => {
-  const query = `DELETE FROM role WHERE UserID = ?`;
+  const query = `DELETE FROM user_role WHERE UserID = ?`;
   db.query(query, [req.params.UserID], (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error dismissal user' });
@@ -1790,14 +1792,14 @@ app.get('/api/statistics', async (req, res) => {
       COUNT(b.BookingID) AS totalBookings, 
       SUM(b.TotalAmount) AS totalRevenue, 
       SUM(b.NumberOfGuests) AS totalGuests
-    FROM Booking b ${condition}
+    FROM Booking b ${condition} AND b.Status != 'Cancelled'
   `;
 
   const query = `
     SELECT AVG(DATEDIFF(CURDATE(), p.DateOfBirth) / 365) AS avgAge
     FROM Booking b 
     LEFT JOIN Participant p ON b.BookingID = p.BookingID
-    ${condition}
+    ${condition}  AND b.Status != 'Cancelled'
   `;
 
   try {
@@ -1812,7 +1814,7 @@ app.get('/api/statistics', async (req, res) => {
           console.error(err);
           res.status(500).send({ message: 'Internal Server Error' });
         }
-        const avgAge = result[0].avgAge;
+        const avgAge = Math.ceil(result[0].avgAge);
         res.status(200).json({ stats, avgAge });
       });
     });
@@ -1879,7 +1881,6 @@ app.get('/api/tour-capacity', async (req, res) => {
 
     // Thực hiện truy vấn
     const [result] = await db.promise().query(query, [startDate, endDate]);
-
     const tourCapacity = result.reduce(
       (acc, schedule) => {
         acc[0] = schedule.AvailableSpots
@@ -1931,15 +1932,17 @@ app.get('/api/tour-statistics', async (req, res) => {
         SUM(b.TotalAmount) AS totalRevenue
       FROM Booking b
       JOIN Schedule s ON b.ScheduleID = s.ScheduleID
-       ${condition}
+       ${condition} AND b.Status != 'Cancelled'
       GROUP BY s.ScheduleID 
     `;
+    console.log(sql);
 
     db.query(sql, params, (err, results) => {
       if (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
       }
+      console.log(results);
 
       const guestData = results.map((tour) => tour.totalGuests || 0);
       const revenueData = results.map((tour) => tour.totalRevenue || 0); // Đổi đơn vị thành triệu VND

@@ -172,7 +172,7 @@
               <!-- Button trigger modal -->
               <button
                 type="button"
-                class="btn btn-sm btn-outline-success"
+                class="btn btn-sm btn-outline-success mx-2"
                 data-bs-toggle="modal"
                 data-bs-target="#exampleModal"
                 @click="
@@ -182,12 +182,12 @@
               >
                 Detail
               </button>
-              <button
+              <!-- <button
                 class="btn btn-sm btn-outline-danger mx-2"
                 @click="deleteBooking(item.BookingID)"
               >
                 Delete
-              </button>
+              </button> -->
               <div class="btn-group">
                 <button
                   type="button"

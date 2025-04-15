@@ -44,11 +44,22 @@
           <div class="mb-3 position-relative">
             <input
               v-model="password"
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
               class="form-control"
               placeholder="Password"
               required
             />
+            <span
+              class="position-absolute end-0 top-50 translate-middle-y me-3"
+              style="cursor: pointer"
+              @click="showPassword = !showPassword"
+            >
+              <i
+                :class="
+                  showPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'
+                "
+              ></i>
+            </span>
           </div>
 
           <!-- Submit Button -->
@@ -67,7 +78,7 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-
+const showPassword = ref(false);
 // Reactive variables
 const isLogin = ref(true); // Toggle between Sign In and Sign Up
 const email = ref('');

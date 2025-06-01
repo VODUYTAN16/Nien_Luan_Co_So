@@ -14,7 +14,7 @@ dotenv.config();
 const app = express();
 const port = 3000;
 
-app.use(express.json({ limit: '50mb' })); // Tăng giới hạn payload JSON
+// app.use(express.json({ limit: '50mb' })); // Tăng giới hạn payload JSON
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Cấu hình CORS và Express

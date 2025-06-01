@@ -12,7 +12,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = 8081;
 
 // app.use(express.json({ limit: '50mb' })); // Tăng giới hạn payload JSON
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -2050,8 +2050,6 @@ app.put('/api/delete_tourService', (req, res) => {
 // Cấu hình để có thể truy cập ảnh từ thư mục uploads
 app.use('/uploads', express.static('uploads'));
 // Khởi động server
-app.listen(process.env.MYSQLPORT, () => {
-  console.log(
-    `Server running on http://${process.env.MYSQLHOST}:${process.env.MYSQLPORT}`
-  );
+app.listen(port, () => {
+  console.log(`Server running on http://${process.env.MYSQLHOST}:8081`);
 });

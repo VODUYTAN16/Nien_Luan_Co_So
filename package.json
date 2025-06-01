@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "homepage": "https://nienluancoso-production.up.railway.app/",
+  "homepage": "https://nienluancoso-production.up.railway.app/sign_in_and_out",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -5,7 +5,7 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/Nien_Luan_Co_So/', // <--- Thêm dòng này
+  base: '/', // <--- Thêm dòng này
   server: {
     proxy: {
       '/api': {

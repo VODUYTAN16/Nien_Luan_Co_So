@@ -1,8 +1,17 @@
 <template>
-  <div
+  <!-- <div
     v-if="user.RoleName == 'Admin' || user.RoleName == 'Manager'"
     class="row"
   >
+    <AdminNavigate class="col-1"></AdminNavigate>
+    <div
+      class="col custom-scroll"
+      style="height: 100vh; overflow-y: auto; padding: 0"
+    >
+      <router-view></router-view>
+    </div>
+  </div> -->
+  <div v-if="true" class="row">
     <AdminNavigate class="col-1"></AdminNavigate>
     <div
       class="col custom-scroll"

@@ -22,7 +22,7 @@ app.use(cors());
 
 app.use(
   cors({
-    origin: 'http://localhost:5173', // Cho phép yêu cầu từ front-end trên cổng 5173
+    origin: '*', // Cho phép yêu cầu từ front-end trên cổng 5173
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Cho phép các phương thức HTTP này
     allowedHeaders: ['Content-Type'], // Các headers được phép
   })

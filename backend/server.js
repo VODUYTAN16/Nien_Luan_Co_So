@@ -2050,6 +2050,8 @@ app.put('/api/delete_tourService', (req, res) => {
 // Cấu hình để có thể truy cập ảnh từ thư mục uploads
 app.use('/uploads', express.static('uploads'));
 // Khởi động server
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.listen(process.env.MYSQLPORT, () => {
+  console.log(
+    `Server running on http://${process.env.MYSQLHOST}:${process.env.MYSQLPORT}`
+  );
 });

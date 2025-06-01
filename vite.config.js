@@ -5,7 +5,7 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/sign_in_and_out', // <--- Thêm dòng này
+  base: '/', // <--- Thêm dòng này
   server: {
     proxy: {
       '/api': {

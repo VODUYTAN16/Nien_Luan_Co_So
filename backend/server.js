@@ -8,6 +8,8 @@ import bcrypt from 'bcrypt';
 import multer from 'multer';
 import path from 'path';
 import { scheduler } from 'timers/promises';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 const port = 3000;
@@ -48,11 +50,16 @@ app.use(function (req, res, next) {
 
 // Kết nối MySQL
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: process.env.PASSWORD_MYSQL, // Thay bằng mật khẩu của bạn
-  database: 'TourManagement', // Tên database
+  // host: 'localhost',
+  // user: 'root',
+  // password: process.env.PASSWORD_MYSQL, // Thay bằng mật khẩu của bạn
+  // database: 'TourManagement', // Tên database
   connectTimeout: 10000,
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQL_ROOT_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  port: process.env.MYSQLPORT,
 });
 
 db.connect((err) => {

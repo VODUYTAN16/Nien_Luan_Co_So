@@ -1,11 +1,11 @@
 import { fileURLToPath, URL } from 'node:url';
-
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/Nien_Luan_Co_So/', // <--- Thêm dòng này
   server: {
     proxy: {
       '/api': {

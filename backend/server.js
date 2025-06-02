@@ -1694,6 +1694,9 @@ app.get('/api/admins_list', (req, res) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving admin list' });
     } else {
+      if (results.length === 0) {
+        res.status(200).json({ message: 'No admin found' });
+      }
       res.json(results);
     }
   });

@@ -20,7 +20,10 @@ const port = 8081;
 // Cấu hình CORS và Express
 app.use(
   cors({
-    origin: 'https://webhamornycharitytravel-production.up.railway.app',
+    origin: [
+      'https://webhamornycharitytravel-production.up.railway.app',
+      'https://nienluancoso-production.up.railway.app',
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Thêm OPTIONS cho preflight
     allowedHeaders: ['Content-Type', 'Authorization'], // Thêm Authorization nếu dùng JWT
     credentials: true,

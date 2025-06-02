@@ -19,15 +19,14 @@ const port = 8081;
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Cấu hình CORS và Express
-// app.use(
-//   cors({
-//     origin: ['https://webhamornycharitytravel-production.up.railway.app'],
-//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Thêm OPTIONS cho preflight
-//     allowedHeaders: ['Content-Type', 'Authorization'], // Thêm Authorization nếu dùng JWT
-//     credentials: true,
-//   })
-// );
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://webhamornycharitytravel-production.up.railway.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Thêm OPTIONS cho preflight
+    allowedHeaders: ['Content-Type', 'Authorization'], // Thêm Authorization nếu dùng JWT
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 

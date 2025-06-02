@@ -8,6 +8,7 @@ import bcrypt from 'bcrypt';
 import multer from 'multer';
 import path from 'path';
 import { scheduler } from 'timers/promises';
+import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -48,18 +49,21 @@ app.use(function (req, res, next) {
   next();
 });
 
+const sqlScript = fs.readFileSync('./init.sql', 'utf-8');
+
 // Kết nối MySQL
 const db = mysql.createConnection({
   // host: 'localhost',
   // user: 'root',
   // password: process.env.PASSWORD_MYSQL, // Thay bằng mật khẩu của bạn
   // database: 'TourManagement', // Tên database
-  connectTimeout: 10000,
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQL_ROOT_PASSWORD,
   database: process.env.MYSQL_DATABASE,
   port: process.env.MYSQLPORT,
+  connectTimeout: 10000,
+  multipleStatements: true,
 });
 
 db.connect((err) => {
@@ -69,6 +73,13 @@ db.connect((err) => {
   } else {
     console.log('Connected to MySQL');
   }
+});
+
+//initial database
+db.query(sqlScript, (err, results) => {
+  if (err) throw err;
+  console.log('Database initialized.');
+  db.end();
 });
 ////////////////////////////////////////////////////////////////////////////////
 

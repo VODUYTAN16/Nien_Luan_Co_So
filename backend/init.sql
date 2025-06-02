@@ -1,10 +1,10 @@
 
 -- Tạo cơ sở dữ liệu
-CREATE DATABASE TourManagement;
+CREATE DATABASE IF NOT EXISTS TourManagement;
 USE TourManagement;
 
 -- Tạo bảng User
-CREATE TABLE User (
+CREATE TABLE IF NOT EXISTS User (
     UserID INT PRIMARY KEY AUTO_INCREMENT,
     FullName VARCHAR(255) NOT NULL,           
     Email VARCHAR(100),
@@ -15,12 +15,12 @@ CREATE TABLE User (
 
 );
 
-CREATE TABLE Role (
+CREATE TABLE IF NOT EXISTS Role (
     RoleID INT PRIMARY KEY AUTO_INCREMENT,
     RoleName  ENUM('Admin', 'Manager') DEFAULT 'Admin'
 );
 
-CREATE TABLE User_Role (
+CREATE TABLE IF NOT EXISTS User_Role (
     RoleID INT,
     UserID INT,
     PRIMARY KEY (RoleID, UserID),
@@ -30,7 +30,7 @@ CREATE TABLE User_Role (
 
 
 -- Tạo bảng Tour
-CREATE TABLE Tour (
+CREATE TABLE IF NOT EXISTS Tour (
     TourID INT PRIMARY KEY AUTO_INCREMENT,
     TourName VARCHAR(255),
     Duration INT,
@@ -41,7 +41,7 @@ CREATE TABLE Tour (
 );
 
 -- Tạo bảng Schedule
-CREATE TABLE Schedule (
+CREATE TABLE IF NOT EXISTS Schedule (
     ScheduleID INT PRIMARY KEY AUTO_INCREMENT,
     TourID INT,
     StartDate DATETIME,
@@ -54,7 +54,7 @@ CREATE TABLE Schedule (
 );
 
 -- Tạo bảng Booking
-CREATE TABLE Booking (
+CREATE TABLE IF NOT EXISTS Booking (
     BookingID INT PRIMARY KEY AUTO_INCREMENT,
     UserID INT,
     ScheduleID INT,
@@ -68,7 +68,7 @@ FOREIGN KEY (ScheduleID) REFERENCES Schedule(ScheduleID)
 );
 
 -- Tạo bảng Service
-CREATE TABLE Service (
+CREATE TABLE IF NOT EXISTS Service (
     ServiceID INT PRIMARY KEY AUTO_INCREMENT,
     ServiceName VARCHAR(255),
     Description TEXT,
@@ -77,7 +77,7 @@ CREATE TABLE Service (
 );
 
 -- Tạo bảng Booking_Service
-CREATE TABLE Booking_Service (
+CREATE TABLE IF NOT EXISTS Booking_Service (
     BookingID INT,
     ServiceID INT,
     Quantity INT,
@@ -87,7 +87,7 @@ CREATE TABLE Booking_Service (
 );
 
 -- Tạo bảng Tour_Service
-CREATE TABLE Tour_Service (
+CREATE TABLE IF NOT EXISTS Tour_Service (
     TourID INT,
     ServiceID INT,
     Status ENUM('Available', 'Optional') DEFAULT 'Available',
@@ -98,7 +98,7 @@ CREATE TABLE Tour_Service (
 );
 
 -- Tạo bảng Schedule_TS
-CREATE TABLE Schedule_TS (
+CREATE TABLE IF NOT EXISTS Schedule_TS (
     TourID INT,
     ServiceID INT,
     ScheduleID INT,
@@ -111,7 +111,7 @@ CREATE TABLE Schedule_TS (
 );
 
 -- Tạo bảng Feedback
-CREATE TABLE Feedback (
+CREATE TABLE IF NOT EXISTS Feedback (
     FeedbackID INT PRIMARY KEY AUTO_INCREMENT,
     UserID INT,
     TourID INT,
@@ -123,7 +123,7 @@ CREATE TABLE Feedback (
 );
 
 -- Tạo bảng Paticipant
-CREATE TABLE Participant (
+CREATE TABLE IF NOT EXISTS Participant (
     ParticipantID INT PRIMARY KEY AUTO_INCREMENT, 
     BookingID INT NOT NULL,                      
     FullName VARCHAR(255) NOT NULL,           
@@ -138,7 +138,7 @@ CREATE TABLE Participant (
 ); 
 
 -- Tạo bảng lưu lịch trình của tour
-CREATE TABLE Itinerary (
+CREATE TABLE IF NOT EXISTS Itinerary (
     ItineraryID INT PRIMARY KEY AUTO_INCREMENT,
     TourID INT NOT NULL,
     DayNumber INT NOT NULL,
@@ -152,13 +152,13 @@ CREATE TABLE Itinerary (
 );
 
 -- Bảng danh mục
-CREATE TABLE Categories (
+CREATE TABLE IF NOT EXISTS Categories (
     CategoryID INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(255) NOT NULL UNIQUE
 );
 
 -- Bảng bài viết
-CREATE TABLE Posts (
+CREATE TABLE IF NOT EXISTS Posts (
     PostID INT AUTO_INCREMENT PRIMARY KEY,
     AuthorID INT NOT NULL,
     CategoryID INT NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE Posts (
 );
 
 -- Bảng nội dung bài viết
-CREATE TABLE PostContent (
+CREATE TABLE IF NOT EXISTS PostContent (
     ContentID INT AUTO_INCREMENT PRIMARY KEY,
     PostID INT NOT NULL,
     ImageUrl TEXT DEFAULT NULL,
@@ -183,7 +183,7 @@ CREATE TABLE PostContent (
 );
 
 -- Bảng bình luận
-CREATE TABLE Comments (
+CREATE TABLE IF NOT EXISTS Comments (
     CommentID INT AUTO_INCREMENT PRIMARY KEY,
     PostID INT NOT NULL,
     AuthorID INT NOT NULL,
@@ -194,7 +194,7 @@ CREATE TABLE Comments (
 );
 
 -- Bảng lượt thích bài viết
-CREATE TABLE UserLikes (
+CREATE TABLE IF NOT EXISTS UserLikes (
     LikeID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT NOT NULL,
     PostID INT NOT NULL,
@@ -203,14 +203,13 @@ CREATE TABLE UserLikes (
     FOREIGN KEY (PostID) REFERENCES Posts(PostID) ON DELETE CASCADE
 );
 
-INSERT INTO categories (name) VALUES
+INSERT IGNORE INTO categories (name) VALUES
 ('blog'),
 ('reportage');
 
-INSERT INTO role (RoleName) VALUES
+INSERT IGNORE INTO role (RoleName) VALUES
 ('Admin'),
 ('Manager');
-
 
 
 

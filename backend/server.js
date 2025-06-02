@@ -675,43 +675,46 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { Email } = req.body;
   let { Password } = req.body;
-  res.status(200).json(Email, Password);
-  // try {
-  //   // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
-  //   db.query(
-  //     `SELECT * FROM user  WHERE email = ?`,
-  //     [Email],
-  //     async (err, results) => {
-  //       if (err) {
-  //         return res
-  //           .status(500)
-  //           .json({ message: `Database error ${err}`, error: err.message });
-  //       }
+  if (!Email || !Password) {
+    return res.status(400).json({ message: 'Email and Password are required' });
+  }
 
-  //       if (results.length === 0) {
-  //         return res.status(400).json({ message: 'Invalid email or password' });
-  //       }
+  try {
+    // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
+    db.query(
+      `SELECT * FROM user  WHERE email = ?`,
+      [Email],
+      async (err, results) => {
+        if (err) {
+          return res
+            .status(500)
+            .json({ message: `Database error ${err}`, error: err.message });
+        }
 
-  //       const user = results[0];
+        if (results.length === 0) {
+          return res.status(400).json({ message: 'Invalid email or password' });
+        }
 
-  //       // Kiểm tra mật khẩu
-  //       const isPasswordValid = await comparePassword(Password, user.Password);
-  //       if (!isPasswordValid) {
-  //         return res.status(400).json({
-  //           message:
-  //             "Invalid email or password or you register by google before, Let's login by google",
-  //         });
-  //       }
+        const user = results[0];
 
-  //       res.status(200).json({
-  //         message: 'Login successful',
-  //         user: results[0],
-  //       });
-  //     }
-  //   );
-  // } catch (error) {
-  //   res.status(500).json({ message: 'Login failed', error: error.message });
-  // }
+        // Kiểm tra mật khẩu
+        const isPasswordValid = await comparePassword(Password, user.password);
+        if (!isPasswordValid) {
+          return res.status(400).json({
+            message:
+              "Invalid email or password or you register by google before, Let's login by google",
+          });
+        }
+
+        res.status(200).json({
+          message: 'Login successful',
+          user: results[0],
+        });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ message: 'Login failed', error: error.message });
+  }
 });
 
 // API đăng nhập (Login) của Admin

@@ -633,7 +633,7 @@ app.post('/api/register', async (req, res) => {
     }
 
     // Kiểm tra xem email đã tồn tại chưa
-    db.query(`SELECT * FROM user WHERE Email = ?`, [Email], (err, results) => {
+    db.query(`SELECT * FROM User WHERE Email = ?`, [Email], (err, results) => {
       if (err) {
         return res
           .status(500)
@@ -649,7 +649,7 @@ app.post('/api/register', async (req, res) => {
 
       // Nếu email chưa tồn tại, tiến hành tạo tài khoản
       db.query(
-        `INSERT INTO user (Email, Password, FullName, PhoneNumber, AvatarUrl) VALUES (?, ?, ?, ?, ?)`,
+        `INSERT INTO User (Email, Password, FullName, PhoneNumber, AvatarUrl) VALUES (?, ?, ?, ?, ?)`,
         [Email, Password, FullName, PhoneNumber, AvatarUrl],
         (err, result) => {
           if (err) {

@@ -2,8 +2,8 @@
   "build": {
     "builder": "nixpacks",
     "config": {
-      "startCommand": "cd backend && npm start"
+      "startCommand": "npm start"
     },
-    "root": "./backend"
+    "root": "."
   }
 }

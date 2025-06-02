@@ -5,10 +5,6 @@
   "type": "module",
   "homepage": "https://nienluancoso-production.up.railway.app/",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "deploy": "gh-pages -d dist",
     "start": "node server.js"
   },
   "dependencies": {

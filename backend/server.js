@@ -637,7 +637,7 @@ app.post('/api/register', async (req, res) => {
       if (err) {
         return res
           .status(500)
-          .json({ message: 'Database error1', error: err.message });
+          .json({ message: `Database error1 ${err}`, error: err.message });
       }
 
       if (results.length > 0) {

@@ -1,8 +1,8 @@
 
 -- Tạo cơ sở dữ liệu
-CREATE DATABASE IF NOT EXISTS TourManagement;
-USE TourManagement;
-
+-- CREATE DATABASE IF NOT EXISTS TourManagement;
+-- USE TourManagement;
+USE railway;
 -- Tạo bảng User
 CREATE TABLE IF NOT EXISTS User (
     UserID INT PRIMARY KEY AUTO_INCREMENT,

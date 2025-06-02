@@ -19,8 +19,6 @@ const port = 8081;
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Cấu hình CORS và Express
-app.use(cors());
-
 app.use(
   cors({
     origin: '*', // Cho phép yêu cầu từ front-end trên cổng 5173
@@ -79,7 +77,6 @@ db.connect((err) => {
 db.query(sqlScript, (err, results) => {
   if (err) throw err;
   console.log('Database initialized.');
-  db.end();
 });
 ////////////////////////////////////////////////////////////////////////////////
 

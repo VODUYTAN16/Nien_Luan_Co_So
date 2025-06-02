@@ -1689,7 +1689,7 @@ app.get('/api/users_list', (req, res) => {
 
 // API lấy danh sách admin
 app.get('/api/admins_list', (req, res) => {
-  const query = `select * from user join user_role ur on user.user_id = ur.user_id join role on ur.role_id = role.role_id`;
+  const query = `select * from user join user_role ur on user.userid = ur.userid join role on ur.roleid = role.roleid`;
   db.query(query, (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error retrieving admin list' });

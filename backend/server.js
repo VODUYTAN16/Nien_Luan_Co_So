@@ -28,6 +28,26 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 //   })
 // );
 
+app.use((req, res, next) => {
+  res.header(
+    'Access-Control-Allow-Origin',
+    'https://webhamornycharitytravel-production.up.railway.app'
+  );
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-Requested-With'
+  );
+  res.header('Access-Control-Allow-Credentials', 'true');
+
+  // Xử lý preflight request
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
 app.use(express.json());
 
 // Cấu hình Multer để lưu file vào thư mục uploads
@@ -40,11 +60,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-  next();
-});
+// app.use(function (req, res, next) {
+//   res.header('Access-Control-Allow-Origin', '*');
+//   res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+//   next();
+// });
 
 const sqlScript = fs.readFileSync('./init.sql', 'utf-8');
 

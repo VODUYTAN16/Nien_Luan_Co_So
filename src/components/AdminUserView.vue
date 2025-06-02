@@ -240,7 +240,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 const usersList = ref([]); // Lưu danh sách người dùng có trong hệ thống
 const adminsList = ref([]); // Lưu danh sách người dùng có quyền quản trị
 const currentStep = ref(1);
@@ -259,7 +259,7 @@ const goBack = () => {
 
 const fetchUsersList = async () => {
   try {
-    const response = await axios.get('/api/users_list');
+    const response = await api.get('/api/users_list');
     usersList.value = response.data.filter((user) => {
       return user.IsDeleted == 0;
     });
@@ -273,7 +273,7 @@ const fetchUsersList = async () => {
 
 const fetchAdminsList = async () => {
   try {
-    const response = await axios.get('/api/admins_list');
+    const response = await api.get('/api/admins_list');
     adminsList.value = response.data.filter((user) => {
       return user.IsDeleted == 0;
     });
@@ -293,7 +293,7 @@ const promote = async (user, role) => {
       return;
     }
 
-    const response = await axios.post('/api/promote', { user, role });
+    const response = await api.post('/api/promote', { user, role });
     console.log(response.data);
     if (response.status == 200) {
       alert(response.data.message);
@@ -314,7 +314,7 @@ const deleteUser = async (user) => {
       console.log('Deletion canceled by user.');
       return;
     }
-    const response = await axios.put('/api/delete_user', user);
+    const response = await api.put('/api/delete_user', user);
     if (response.status == 200) {
       fetchUsersList();
       fetchAdminsList();
@@ -335,7 +335,7 @@ const dismissal = async (user) => {
       console.log('Deletion canceled by user.');
       return;
     }
-    const response = await axios.delete(`/api/dismissal/${user.UserID}`);
+    const response = await api.delete(`/api/dismissal/${user.UserID}`);
     if (response.status == 200) {
       fetchAdminsList();
     }
@@ -362,7 +362,7 @@ const addUser = async () => {
       console.log('Deletion canceled by user.');
       return;
     }
-    const response = await axios.post('/api/register', newUser.value);
+    const response = await api.post('/api/register', newUser.value);
     if (response.status == 200) {
       fetchUsersList();
       newUser.value = {};
@@ -391,7 +391,7 @@ const editUser = (item) => {
 
 const saveUserEdit = async () => {
   try {
-    const response = await axios.put('/api/update_user', editedData);
+    const response = await api.put('/api/update_user', editedData);
     if (response.status == 200) {
       fetchUsersList();
       fetchAdminsList();

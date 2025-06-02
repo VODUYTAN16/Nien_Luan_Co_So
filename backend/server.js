@@ -21,10 +21,10 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Cấu hình CORS và Express
 app.use(
   cors({
-    origin: 'https://webhamornycharitytravel-production.up.railway.app', // Cho phép đúng domain frontend
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type'],
-    credentials: true, // Nếu frontend gửi cookies hoặc Authorization
+    origin: ['https://webhamornycharitytravel-production.up.railway.app'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Thêm OPTIONS cho preflight
+    allowedHeaders: ['Content-Type', 'Authorization'], // Thêm Authorization nếu dùng JWT
+    credentials: true,
   })
 );
 
@@ -40,16 +40,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// app.use(function (req, res, next) {
-//   res.header('Access-Control-Allow-Origin', '*');
-//   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-//   res.header('Cross-Origin-Embedder-Policy', 'require-corp');
-//   res.header('Cross-Origin-Opener-Policy', 'same-origin');
-//   next();
-// });
-app.use((req, res, next) => {
-  res.removeHeader('Cross-Origin-Opener-Policy');
-  res.removeHeader('Cross-Origin-Embedder-Policy');
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.header('Cross-Origin-Embedder-Policy', 'require-corp');
+  res.header('Cross-Origin-Opener-Policy', 'same-origin');
   next();
 });
 

@@ -16,7 +16,6 @@ const app = express();
 const port = 8081;
 
 // app.use(express.json({ limit: '50mb' })); // Tăng giới hạn payload JSON
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Cấu hình CORS và Express
 app.use(
@@ -27,9 +26,16 @@ app.use(
     credentials: true,
   })
 );
-
+app.options('*', cors());
 app.use(express.json());
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+app.use(function (req, res, next) {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.header('Cross-Origin-Embedder-Policy', 'require-corp');
+  res.header('Cross-Origin-Opener-Policy', 'same-origin');
+  next();
+});
 // Cấu hình Multer để lưu file vào thư mục uploads
 const storage = multer.diskStorage({
   destination: 'uploads/', // Thư mục lưu ảnh
@@ -39,12 +45,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
-// app.use(function (req, res, next) {
-//   res.header('Access-Control-Allow-Origin', '*');
-//   res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-//   next();
-// });
 
 const sqlScript = fs.readFileSync('./init.sql', 'utf-8');
 
@@ -675,42 +675,43 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { Email } = req.body;
   let { Password } = req.body;
-  try {
-    // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
-    db.query(
-      `SELECT * FROM user  WHERE email = ?`,
-      [Email],
-      async (err, results) => {
-        if (err) {
-          return res
-            .status(500)
-            .json({ message: `Database error ${err}`, error: err.message });
-        }
+  res.status(200).json(Email, Password);
+  // try {
+  //   // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
+  //   db.query(
+  //     `SELECT * FROM user  WHERE email = ?`,
+  //     [Email],
+  //     async (err, results) => {
+  //       if (err) {
+  //         return res
+  //           .status(500)
+  //           .json({ message: `Database error ${err}`, error: err.message });
+  //       }
 
-        if (results.length === 0) {
-          return res.status(400).json({ message: 'Invalid email or password' });
-        }
+  //       if (results.length === 0) {
+  //         return res.status(400).json({ message: 'Invalid email or password' });
+  //       }
 
-        const user = results[0];
+  //       const user = results[0];
 
-        // Kiểm tra mật khẩu
-        const isPasswordValid = await comparePassword(Password, user.Password);
-        if (!isPasswordValid) {
-          return res.status(400).json({
-            message:
-              "Invalid email or password or you register by google before, Let's login by google",
-          });
-        }
+  //       // Kiểm tra mật khẩu
+  //       const isPasswordValid = await comparePassword(Password, user.Password);
+  //       if (!isPasswordValid) {
+  //         return res.status(400).json({
+  //           message:
+  //             "Invalid email or password or you register by google before, Let's login by google",
+  //         });
+  //       }
 
-        res.status(200).json({
-          message: 'Login successful',
-          user: results[0],
-        });
-      }
-    );
-  } catch (error) {
-    res.status(500).json({ message: 'Login failed', error: error.message });
-  }
+  //       res.status(200).json({
+  //         message: 'Login successful',
+  //         user: results[0],
+  //       });
+  //     }
+  //   );
+  // } catch (error) {
+  //   res.status(500).json({ message: 'Login failed', error: error.message });
+  // }
 });
 
 // API đăng nhập (Login) của Admin

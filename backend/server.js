@@ -27,26 +27,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 //     credentials: true,
 //   })
 // );
-
-app.use((req, res, next) => {
-  res.header(
-    'Access-Control-Allow-Origin',
-    'https://webhamornycharitytravel-production.up.railway.app'
-  );
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Requested-With'
-  );
-  res.header('Access-Control-Allow-Credentials', 'true');
-
-  // Xử lý preflight request
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
+app.use(cors());
 
 app.use(express.json());
 

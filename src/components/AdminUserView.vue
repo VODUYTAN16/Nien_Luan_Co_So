@@ -86,12 +86,12 @@
         <tbody>
           <tr v-for="(item, index) in usersList" :key="index">
             <td>{{ index + 1 }}</td>
-            <td v-if="editableRow !== item.UserID">{{ item.FullName }}</td>
+            <td v-if="editableRow !== item.userid">{{ item.fullname }}</td>
             <td v-else>
               <input v-model="editedData.FullName" class="form-control" />
             </td>
 
-            <td v-if="editableRow !== item.UserID">{{ item.Email }}</td>
+            <td v-if="editableRow !== item.userid">{{ item.email }}</td>
             <td v-else>
               <input
                 v-model="editedData.Email"
@@ -100,13 +100,13 @@
               />
             </td>
 
-            <td v-if="editableRow !== item.UserID">{{ item.PhoneNumber }}</td>
+            <td v-if="editableRow !== item.userid">{{ item.phonenumber }}</td>
             <td v-else>
               <input v-model="editedData.PhoneNumber" class="form-control" />
             </td>
 
             <td>
-              <div v-if="editableRow !== item.UserID">
+              <div v-if="editableRow !== item.userid">
                 <button
                   @click="editUser(item)"
                   class="btn btn-sm btn-outline-success"
@@ -114,7 +114,7 @@
                   Edit
                 </button>
                 <button
-                  v-if="user.RoleName === 'Admin'"
+                  v-if="user.rolename === 'admin'"
                   @click="deleteUser(item)"
                   class="btn btn-sm btn-outline-danger mx-2"
                 >
@@ -261,7 +261,7 @@ const fetchUsersList = async () => {
   try {
     const response = await api.get('/api/users_list');
     usersList.value = response.data.filter((user) => {
-      return user.IsDeleted == 0;
+      return user.isdeleted == 0;
     });
     console.log(usersList.value);
   } catch (error) {
@@ -275,7 +275,7 @@ const fetchAdminsList = async () => {
   try {
     const response = await api.get('/api/admins_list');
     adminsList.value = response.data.filter((user) => {
-      return user.IsDeleted == 0;
+      return user.isdeleted == 0;
     });
     console.log(response.data);
   } catch (error) {

@@ -3,206 +3,207 @@
 -- CREATE DATABASE IF NOT EXISTS TourManagement;
 -- USE TourManagement;
 USE railway;
--- Tạo bảng User
-CREATE TABLE IF NOT EXISTS User (
-    UserID INT PRIMARY KEY AUTO_INCREMENT,
-    FullName VARCHAR(255) NOT NULL,           
-    Email VARCHAR(100),
-    PhoneNumber VARCHAR(50),
-    Password VARCHAR(255),
-    AvatarUrl TEXT,
-    IsDeleted Boolean DEFAULT FALSE
 
+-- Bảng user
+CREATE TABLE IF NOT EXISTS user (
+    userid INT PRIMARY KEY AUTO_INCREMENT,
+    fullname VARCHAR(255) NOT NULL,           
+    email VARCHAR(100),
+    phonenumber VARCHAR(50),
+    password VARCHAR(255),
+    avatarurl TEXT,
+    isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS Role (
-    RoleID INT PRIMARY KEY AUTO_INCREMENT,
-    RoleName ENUM('Admin', 'Manager') NOT NULL DEFAULT 'Admin',
-    UNIQUE (RoleName)
+-- Bảng role
+CREATE TABLE IF NOT EXISTS role (
+    roleid INT PRIMARY KEY AUTO_INCREMENT,
+    rolename ENUM('admin', 'manager') NOT NULL DEFAULT 'admin',
+    UNIQUE (rolename)
 );
 
-CREATE TABLE IF NOT EXISTS User_Role (
-    RoleID INT,
-    UserID INT,
-    PRIMARY KEY (RoleID, UserID),
-    FOREIGN KEY (UserID) REFERENCES User(UserID) ON DELETE CASCADE,
-    FOREIGN KEY (RoleID) REFERENCES Role(RoleID) ON DELETE CASCADE
+-- Bảng user_role
+CREATE TABLE IF NOT EXISTS user_role (
+    roleid INT,
+    userid INT,
+    PRIMARY KEY (roleid, userid),
+    FOREIGN KEY (userid) REFERENCES user(userid) ON DELETE CASCADE,
+    FOREIGN KEY (roleid) REFERENCES role(roleid) ON DELETE CASCADE
 );
 
-
--- Tạo bảng Tour
-CREATE TABLE IF NOT EXISTS Tour (
-    TourID INT PRIMARY KEY AUTO_INCREMENT,
-    TourName VARCHAR(255),
-    Duration INT,
-    Description TEXT,
-    Price DECIMAL(10, 2),
-    Img_Tour TEXT,
-    IsDeleted Boolean DEFAULT FALSE
+-- Bảng tour
+CREATE TABLE IF NOT EXISTS tour (
+    tourid INT PRIMARY KEY AUTO_INCREMENT,
+    tourname VARCHAR(255),
+    duration INT,
+    description TEXT,
+    price DECIMAL(10, 2),
+    img_tour TEXT,
+    isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Tạo bảng Schedule
-CREATE TABLE IF NOT EXISTS Schedule (
-    ScheduleID INT PRIMARY KEY AUTO_INCREMENT,
-    TourID INT,
-    StartDate DATETIME,
-    Capacity INT,
-    AvailableSpots INT NOT NULL,
-    IsDeleted Boolean DEFAULT FALSE,
-    Status ENUM('Available', 'Full') DEFAULT 'Available',
-    FOREIGN KEY (TourID) REFERENCES Tour(TourID) ON DELETE CASCADE
-
+-- Bảng schedule
+CREATE TABLE IF NOT EXISTS schedule (
+    scheduleid INT PRIMARY KEY AUTO_INCREMENT,
+    tourid INT,
+    startdate DATETIME,
+    capacity INT,
+    availablespots INT NOT NULL,
+    isdeleted BOOLEAN DEFAULT FALSE,
+    status ENUM('available', 'full') DEFAULT 'available',
+    FOREIGN KEY (tourid) REFERENCES tour(tourid) ON DELETE CASCADE
 );
 
--- Tạo bảng Booking
-CREATE TABLE IF NOT EXISTS Booking (
-    BookingID INT PRIMARY KEY AUTO_INCREMENT,
-    UserID INT,
-    ScheduleID INT,
-    BookingDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    NumberOfGuests INT,
-    TotalAmount DECIMAL(10, 2),
-    Status ENUM('Booked', 'Paid', 'Cancelled', 'Pending') DEFAULT 'Pending',
-    IsDeleted Boolean DEFAULT FALSE,
-    FOREIGN KEY (UserID) REFERENCES User(UserID),
-FOREIGN KEY (ScheduleID) REFERENCES Schedule(ScheduleID)
+-- Bảng booking
+CREATE TABLE IF NOT EXISTS booking (
+    bookingid INT PRIMARY KEY AUTO_INCREMENT,
+    userid INT,
+    scheduleid INT,
+    bookingdate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    numberofguests INT,
+    totalamount DECIMAL(10, 2),
+    status ENUM('booked', 'paid', 'cancelled', 'pending') DEFAULT 'pending',
+    isdeleted BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (userid) REFERENCES user(userid),
+    FOREIGN KEY (scheduleid) REFERENCES schedule(scheduleid)
 );
 
--- Tạo bảng Service
-CREATE TABLE IF NOT EXISTS Service (
-    ServiceID INT PRIMARY KEY AUTO_INCREMENT,
-    ServiceName VARCHAR(255),
-    Description TEXT,
-    Price DECIMAL(10, 2),
-    IsDeleted Boolean DEFAULT FALSE
+-- Bảng service
+CREATE TABLE IF NOT EXISTS service (
+    serviceid INT PRIMARY KEY AUTO_INCREMENT,
+    servicename VARCHAR(255),
+    description TEXT,
+    price DECIMAL(10, 2),
+    isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Tạo bảng Booking_Service
-CREATE TABLE IF NOT EXISTS Booking_Service (
-    BookingID INT,
-    ServiceID INT,
-    Quantity INT,
-    PRIMARY KEY (BookingID, ServiceID),
-    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID),
-    FOREIGN KEY (ServiceID) REFERENCES Service(ServiceID)
+-- Bảng booking_service
+CREATE TABLE IF NOT EXISTS booking_service (
+    bookingid INT,
+    serviceid INT,
+    quantity INT,
+    PRIMARY KEY (bookingid, serviceid),
+    FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
+    FOREIGN KEY (serviceid) REFERENCES service(serviceid)
 );
 
--- Tạo bảng Tour_Service
-CREATE TABLE IF NOT EXISTS Tour_Service (
-    TourID INT,
-    ServiceID INT,
-    Status ENUM('Available', 'Optional') DEFAULT 'Available',
-    IsDeleted Boolean DEFAULT FALSE,
-    PRIMARY KEY (TourID, ServiceID),
-    FOREIGN KEY (TourID) REFERENCES Tour(TourID) ON DELETE CASCADE,
-    FOREIGN KEY (ServiceID) REFERENCES Service(ServiceID)
+-- Bảng tour_service
+CREATE TABLE IF NOT EXISTS tour_service (
+    tourid INT,
+    serviceid INT,
+    status ENUM('available', 'optional') DEFAULT 'available',
+    isdeleted BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (tourid, serviceid),
+    FOREIGN KEY (tourid) REFERENCES tour(tourid) ON DELETE CASCADE,
+    FOREIGN KEY (serviceid) REFERENCES service(serviceid)
 );
 
--- Tạo bảng Schedule_TS
-CREATE TABLE IF NOT EXISTS Schedule_TS (
-    TourID INT,
-    ServiceID INT,
-    ScheduleID INT,
-    AvailableSpots INT,
-    Capacity INT,
-    PRIMARY KEY (TourID, ServiceID, ScheduleID),
-    FOREIGN KEY (ScheduleID) REFERENCES Schedule(ScheduleID) ON DELETE CASCADE,
-    FOREIGN KEY (TourID) REFERENCES Tour(TourID) ON DELETE CASCADE,
-    FOREIGN KEY (ServiceID) REFERENCES Service(ServiceID) ON DELETE CASCADE
+-- Bảng schedule_ts
+CREATE TABLE IF NOT EXISTS schedule_ts (
+    tourid INT,
+    serviceid INT,
+    scheduleid INT,
+    availablespots INT,
+    capacity INT,
+    PRIMARY KEY (tourid, serviceid, scheduleid),
+    FOREIGN KEY (scheduleid) REFERENCES schedule(scheduleid) ON DELETE CASCADE,
+    FOREIGN KEY (tourid) REFERENCES tour(tourid) ON DELETE CASCADE,
+    FOREIGN KEY (serviceid) REFERENCES service(serviceid) ON DELETE CASCADE
 );
 
--- Tạo bảng Feedback
-CREATE TABLE IF NOT EXISTS Feedback (
-    FeedbackID INT PRIMARY KEY AUTO_INCREMENT,
-    UserID INT,
-    TourID INT,
-    Rating INT,
-    Content TEXT,
-    FeedbackDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserID) REFERENCES User(UserID),
-    FOREIGN KEY (TourID) REFERENCES Tour(TourID)
+-- Bảng feedback
+CREATE TABLE IF NOT EXISTS feedback (
+    feedbackid INT PRIMARY KEY AUTO_INCREMENT,
+    userid INT,
+    tourid INT,
+    rating INT,
+    content TEXT,
+    feedbackdate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userid) REFERENCES user(userid),
+    FOREIGN KEY (tourid) REFERENCES tour(tourid)
 );
 
--- Tạo bảng Paticipant
-CREATE TABLE IF NOT EXISTS Participant (
-    ParticipantID INT PRIMARY KEY AUTO_INCREMENT, 
-    BookingID INT NOT NULL,                      
-    FullName VARCHAR(255) NOT NULL,           
-    Email VARCHAR(255),         
-    PhoneNumber VARCHAR(50),                
-    FullNameOnPassport VARCHAR(255) NOT NULL,  
-    PassportNumber VARCHAR(100) NOT NULL,        
-    DateOfBirth DATE NOT NULL,                 
-    Nationality VARCHAR(255),       
-    Gender ENUM('Male', 'Female'),
-    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID)
+-- Bảng participant
+CREATE TABLE IF NOT EXISTS participant (
+    participantid INT PRIMARY KEY AUTO_INCREMENT, 
+    bookingid INT NOT NULL,                      
+    fullname VARCHAR(255) NOT NULL,           
+    email VARCHAR(255),         
+    phonenumber VARCHAR(50),                
+    fullnameonpassport VARCHAR(255) NOT NULL,  
+    passportnumber VARCHAR(100) NOT NULL,        
+    dateofbirth DATE NOT NULL,                 
+    nationality VARCHAR(255),       
+    gender ENUM('male', 'female'),
+    FOREIGN KEY (bookingid) REFERENCES booking(bookingid)
 ); 
 
--- Tạo bảng lưu lịch trình của tour
-CREATE TABLE IF NOT EXISTS Itinerary (
-    ItineraryID INT PRIMARY KEY AUTO_INCREMENT,
-    TourID INT NOT NULL,
-    DayNumber INT NOT NULL,
-    Location VARCHAR(255),
-    Activities TEXT,
-    MealsIncluded VARCHAR(255),
-    ImageUrl TEXT,
-    IsDeleted BOOLEAN DEFAULT FALSE,
-    Description TEXT,
-    FOREIGN KEY (TourID) REFERENCES Tour(TourID) ON DELETE CASCADE
+-- Bảng itinerary
+CREATE TABLE IF NOT EXISTS itinerary (
+    itineraryid INT PRIMARY KEY AUTO_INCREMENT,
+    tourid INT NOT NULL,
+    daynumber INT NOT NULL,
+    location VARCHAR(255),
+    activities TEXT,
+    mealsincluded VARCHAR(255),
+    imageurl TEXT,
+    isdeleted BOOLEAN DEFAULT FALSE,
+    description TEXT,
+    FOREIGN KEY (tourid) REFERENCES tour(tourid) ON DELETE CASCADE
 );
 
--- Bảng danh mục
-CREATE TABLE IF NOT EXISTS Categories (
-    CategoryID INT AUTO_INCREMENT PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL UNIQUE
+-- Bảng categories
+CREATE TABLE IF NOT EXISTS categories (
+    categoryid INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
 );
 
--- Bảng bài viết
-CREATE TABLE IF NOT EXISTS Posts (
-    PostID INT AUTO_INCREMENT PRIMARY KEY,
-    AuthorID INT NOT NULL,
-    CategoryID INT NOT NULL,
-    Views INT DEFAULT 0,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (AuthorID) REFERENCES User(UserID) ON DELETE CASCADE,
-    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID) ON DELETE CASCADE
+-- Bảng posts
+CREATE TABLE IF NOT EXISTS posts (
+    postid INT AUTO_INCREMENT PRIMARY KEY,
+    authorid INT NOT NULL,
+    categoryid INT NOT NULL,
+    views INT DEFAULT 0,
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (authorid) REFERENCES user(userid) ON DELETE CASCADE,
+    FOREIGN KEY (categoryid) REFERENCES categories(categoryid) ON DELETE CASCADE
 );
 
--- Bảng nội dung bài viết
-CREATE TABLE IF NOT EXISTS PostContent (
-    ContentID INT AUTO_INCREMENT PRIMARY KEY,
-    PostID INT NOT NULL,
-    ImageUrl TEXT DEFAULT NULL,
-    Title VARCHAR(255) NOT NULL,
-    Subtitle VARCHAR(255) DEFAULT NULL,
-    ContentIntro TEXT DEFAULT NULL,
-    Quote TEXT DEFAULT NULL,
-    ContentBody TEXT NOT NULL,
-    Link VARCHAR(2055) DEFAULT NULL,
-    FOREIGN KEY (PostID) REFERENCES Posts(PostID) ON DELETE CASCADE
+-- Bảng postcontent
+CREATE TABLE IF NOT EXISTS postcontent (
+    contentid INT AUTO_INCREMENT PRIMARY KEY,
+    postid INT NOT NULL,
+    imageurl TEXT DEFAULT NULL,
+    title VARCHAR(255) NOT NULL,
+    subtitle VARCHAR(255) DEFAULT NULL,
+    contentintro TEXT DEFAULT NULL,
+    quote TEXT DEFAULT NULL,
+    contentbody TEXT NOT NULL,
+    link VARCHAR(2055) DEFAULT NULL,
+    FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE
 );
 
--- Bảng bình luận
-CREATE TABLE IF NOT EXISTS Comments (
-    CommentID INT AUTO_INCREMENT PRIMARY KEY,
-    PostID INT NOT NULL,
-    AuthorID INT NOT NULL,
-    Content TEXT NOT NULL,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (PostID) REFERENCES Posts(PostID) ON DELETE CASCADE,
-    FOREIGN KEY (AuthorID) REFERENCES User(UserID) ON DELETE CASCADE
+-- Bảng comments
+CREATE TABLE IF NOT EXISTS comments (
+    commentid INT AUTO_INCREMENT PRIMARY KEY,
+    postid INT NOT NULL,
+    authorid INT NOT NULL,
+    content TEXT NOT NULL,
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE,
+    FOREIGN KEY (authorid) REFERENCES user(userid) ON DELETE CASCADE
 );
 
--- Bảng lượt thích bài viết
-CREATE TABLE IF NOT EXISTS UserLikes (
-    LikeID INT AUTO_INCREMENT PRIMARY KEY,
-    UserID INT NOT NULL,
-    PostID INT NOT NULL,
-    UNIQUE(UserID, PostID), -- Tránh trùng lặp lượt thích
-    FOREIGN KEY (UserID) REFERENCES User(UserID) ON DELETE CASCADE,
-    FOREIGN KEY (PostID) REFERENCES Posts(PostID) ON DELETE CASCADE
+-- Bảng userlikes
+CREATE TABLE IF NOT EXISTS userlikes (
+    likeid INT AUTO_INCREMENT PRIMARY KEY,
+    userid INT NOT NULL,
+    postid INT NOT NULL,
+    UNIQUE(userid, postid),
+    FOREIGN KEY (userid) REFERENCES user(userid) ON DELETE CASCADE,
+    FOREIGN KEY (postid) REFERENCES posts(postid) ON DELETE CASCADE
 );
+
 
 -- Dành cho PostgreSQL
 -- INSERT INTO categories (name)

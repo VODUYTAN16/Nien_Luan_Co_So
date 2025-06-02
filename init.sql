@@ -205,9 +205,9 @@ CREATE TABLE IF NOT EXISTS UserLikes (
 );
 
 -- Dành cho PostgreSQL
-INSERT INTO categories (name)
-VALUES ('blog'), ('reportage')
-ON CONFLICT DO NOTHING;
+-- INSERT INTO categories (name)
+-- VALUES ('blog'), ('reportage')
+-- ON CONFLICT DO NOTHING;
 
 -- INSERT INTO role (RoleName)
 -- VALUES ('Admin'), ('Manager')

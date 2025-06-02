@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS tour (
     duration INT,
     description TEXT,
     price DECIMAL(10, 2),
-    img_tour TEXT,
+    imgtour TEXT,
     isdeleted BOOLEAN DEFAULT FALSE
 );
 

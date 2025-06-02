@@ -1705,13 +1705,13 @@ app.get('/api/admins_list', (req, res) => {
 // API promote admin hay manager
 app.post('/api/promote', (req, res) => {
   const user = req.body.user;
-  const query = `SELECT * FROM user join user_role ur on user.user_id = ur.user_id WHERE email = ?`;
+  const query = `SELECT * FROM user join user_role ur on user.userid = ur.userid WHERE email = ?`;
   db.query(query, [user.Email], (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error promote user' });
     } else {
       if (results.length === 0) {
-        const query = `INSERT INTO user_role (user_id, role_id) VALUES (?, ?)`;
+        const query = `INSERT INTO user_role (userid, roleid) VALUES (?, ?)`;
         db.query(query, [user.UserID, req.body.role], (err, results) => {
           if (err) {
             res.status(500).json({ message: 'Error promote user' });
@@ -1720,7 +1720,7 @@ app.post('/api/promote', (req, res) => {
           }
         });
       } else {
-        const query = `UPDATE user_role SET role_id = ? WHERE user_id = ?`;
+        const query = `UPDATE userrole SET roleid = ? WHERE userid = ?`;
         db.query(query, [req.body.Role, user.UserID], (err, results) => {
           if (err) {
             res.status(500).json({ message: 'Error promote user' });
@@ -1735,7 +1735,7 @@ app.post('/api/promote', (req, res) => {
 
 // API dùng để xóa user
 app.put('/api/delete_user', (req, res) => {
-  const query = `UPDATE user SET is_deleted = true WHERE user_id = ?`;
+  const query = `UPDATE user SET isdeleted = true WHERE userid = ?`;
   db.query(query, [req.body.UserID], (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error delete user' });
@@ -1747,7 +1747,7 @@ app.put('/api/delete_user', (req, res) => {
 
 // APi dùng để chỉnh sửa thông tin user
 app.put('/api/update_user', (req, res) => {
-  const query = `UPDATE user SET full_name = ?, email = ?, password = ?, phone_number = ? WHERE user_id = ?`;
+  const query = `UPDATE user SET fullname = ?, email = ?, password = ?, phonenumber = ? WHERE userid = ?`;
   db.query(
     query,
     [
@@ -1769,7 +1769,7 @@ app.put('/api/update_user', (req, res) => {
 
 // API dùng để gián chức user
 app.delete('/api/dismissal/:UserID', (req, res) => {
-  const query = `DELETE FROM user_role WHERE user_id = ?`;
+  const query = `DELETE FROM user_role WHERE userid = ?`;
   db.query(query, [req.params.UserID], (err, results) => {
     if (err) {
       res.status(500).json({ message: 'Error dismissal user' });
@@ -1790,13 +1790,13 @@ app.get('/api/statistics', async (req, res) => {
 
   // Nếu có năm
   if (year) {
-    condition += ` YEAR(b.booking_date) = ?`;
+    condition += ` YEAR(b.bookingdate) = ?`;
     params.push(year);
   }
 
   // Nếu có quý (quarter = 1,2,3,4 hoặc 5 là cả năm)
   if (quarter && quarter != 5) {
-    condition += ` AND QUARTER(b.booking_date) = ?`;
+    condition += ` AND QUARTER(b.bookingdate) = ?`;
     params.push(quarter);
   }
 
@@ -1805,16 +1805,16 @@ app.get('/api/statistics', async (req, res) => {
 
   const sql = `
     SELECT 
-      COUNT(b.booking_id) AS totalBookings, 
-      SUM(b.total_amount) AS totalRevenue, 
-      SUM(b.number_of_guests) AS totalGuests
+      COUNT(b.bookingid) AS totalBookings, 
+      SUM(b.totalamount) AS totalRevenue, 
+      SUM(b.numberofguests) AS totalGuests
     FROM booking b ${condition} AND b.status != 'Cancelled'
   `;
 
   const query = `
-    SELECT AVG(DATEDIFF(CURDATE(), p.date_of_birth) / 365) AS avgAge
+    SELECT AVG(DATEDIFF(CURDATE(), p.dateofbirth) / 365) AS avgAge
     FROM booking b 
-    LEFT JOIN participant p ON b.booking_id = p.booking_id
+    LEFT JOIN participant p ON b.bookingid = p.bookingid
     ${condition}  AND b.status != 'Cancelled'
   `;
 
@@ -1865,7 +1865,7 @@ app.get('/api/tour-capacity', async (req, res) => {
 
     const query = `
       SELECT * FROM schedule s
-      WHERE DATE(s.start_date) BETWEEN ? AND ?;
+      WHERE DATE(s.startdate) BETWEEN ? AND ?;
     `;
 
     const [result] = await db.promise().query(query, [startDate, endDate]);
@@ -1899,12 +1899,12 @@ app.get('/api/tour-statistics', async (req, res) => {
     let params = [];
 
     if (year) {
-      condition += ` YEAR(b.booking_date) = ?`;
+      condition += ` YEAR(b.bookingdate) = ?`;
       params.push(year);
     }
 
     if (quarter && quarter != 5) {
-      condition += ` AND QUARTER(b.booking_date) = ?`;
+      condition += ` AND QUARTER(b.bookingdate) = ?`;
       params.push(quarter);
     }
 
@@ -1912,13 +1912,13 @@ app.get('/api/tour-statistics', async (req, res) => {
 
     const sql = `
       SELECT 
-        s.schedule_id, 
-        SUM(b.number_of_guests) AS totalGuests,
-        SUM(b.total_amount) AS totalRevenue
+        s.scheduleid, 
+        SUM(b.numberofguests) AS totalGuests,
+        SUM(b.totalamount) AS totalRevenue
       FROM booking b
-      JOIN schedule s ON b.schedule_id = s.schedule_id
+      JOIN schedule s ON b.scheduleid = s.scheduleid
        ${condition} AND b.status != 'Cancelled'
-      GROUP BY s.schedule_id 
+      GROUP BY s.scheduleid 
     `;
     console.log(sql);
 
@@ -1952,7 +1952,7 @@ app.get('/api/tour-statistics', async (req, res) => {
 app.get('/api/itinerary/:tourId', (req, res) => {
   const tourId = req.params.tourId;
   db.query(
-    `SELECT * FROM itinerary WHERE tour_id = ? AND is_deleted = 0`,
+    `SELECT * FROM itinerary WHERE tourid = ? AND isdeleted = 0`,
     [tourId],
     (err, results) => {
       if (err) {
@@ -1970,7 +1970,7 @@ app.get('/api/itinerary/:tourId', (req, res) => {
 app.put('/api/delete_schedule', (req, res) => {
   const scheduleId = req.body.id;
   db.query(
-    `UPDATE schedule SET is_deleted = true WHERE schedule_id = ?`,
+    `UPDATE schedule SET isdeleted = true WHERE scheduleid = ?`,
     [scheduleId],
     (err, results) => {
       if (err) {
@@ -1990,7 +1990,7 @@ app.put('/api/delete_itinerary', (req, res) => {
   const itiID = req.body.id;
   console.log(itiID);
   db.query(
-    `UPDATE itinerary SET is_deleted = true WHERE itinerary_id = ?`,
+    `UPDATE itinerary SET isdeleted = true WHERE itineraryid = ?`,
     [itiID],
     (err, results) => {
       if (err) {
@@ -2010,7 +2010,7 @@ app.put('/api/delete_tourService', (req, res) => {
   const serviceId = req.body.ServiceID;
   const tourId = req.body.TourID;
   db.query(
-    `UPDATE tour_service SET is_deleted = true WHERE tour_id = ? AND service_id = ?`,
+    `UPDATE tour_service SET isdeleted = true WHERE tourid = ? AND serviceid = ?`,
     [tourId, serviceId],
     (err, results) => {
       if (err) {

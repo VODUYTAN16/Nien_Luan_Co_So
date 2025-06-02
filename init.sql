@@ -203,13 +203,14 @@ CREATE TABLE IF NOT EXISTS UserLikes (
     FOREIGN KEY (PostID) REFERENCES Posts(PostID) ON DELETE CASCADE
 );
 
-INSERT IGNORE INTO categories (name) VALUES
-('blog'),
-('reportage');
+-- Dành cho PostgreSQL
+INSERT INTO categories (name)
+VALUES ('blog'), ('reportage')
+ON CONFLICT DO NOTHING;
 
-INSERT IGNORE INTO role (RoleName) VALUES
-('Admin'),
-('Manager');
+INSERT INTO role (RoleName)
+VALUES ('Admin'), ('Manager')
+ON CONFLICT DO NOTHING;
 
 
 

@@ -389,8 +389,8 @@
                     aria-label="Default select example"
                     v-model="service.status"
                   >
-                    <option value="Available">Available</option>
-                    <option value="Optional">Optional</option>
+                    <option value="available">Available</option>
+                    <option value="optional">Optional</option>
                   </select>
                 </div>
               </div>
@@ -658,7 +658,7 @@ const filterLiveValue = async (schedules, services) => {
   return schedules.map((schedule) => {
     // Lấy các ServiceID từ mảng services
     const serviceIDs = services
-      ?.filter((service) => service.status === 'Optional') // Lọc các service có Status là 'Optional'
+      ?.filter((service) => service.status === 'optional') // Lọc các service có Status là 'Optional'
       .map((service) => Number(service.serviceid)); // Chuyển đổi ServiceID thành số
 
     // Lấy các key từ schedule.services và chuyển đổi chúng thành số
@@ -742,7 +742,7 @@ const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
 const ListOptionalService = (services) => {
   console.log(services);
   return services?.filter((item) => {
-    return item.Status == 'Optional';
+    return item.status == 'optional';
   });
 };
 const formatDate = (dateString) => {

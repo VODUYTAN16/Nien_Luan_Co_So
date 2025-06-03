@@ -1705,24 +1705,24 @@ app.get('/api/admins_list', (req, res) => {
 app.post('/api/promote', (req, res) => {
   const user = req.body.user;
   const query = `SELECT * FROM user join user_role ur on user.userid = ur.userid WHERE email = ?`;
-  db.query(query, [user.Email], (err, results) => {
+  db.query(query, [user.email], (err, results) => {
     if (err) {
-      res.status(500).json({ message: 'Error promote user' });
+      res.status(500).json({ message: `Error promote user 1 ${err}` });
     } else {
       if (results.length === 0) {
         const query = `INSERT INTO user_role (userid, roleid) VALUES (?, ?)`;
-        db.query(query, [user.UserID, req.body.role], (err, results) => {
+        db.query(query, [user.userid, req.body.role], (err, results) => {
           if (err) {
-            res.status(500).json({ message: 'Error promote user' });
+            res.status(500).json({ message: `Error promote user 2 ${err}` });
           } else {
             res.json({ message: 'User promoted successfully' });
           }
         });
       } else {
         const query = `UPDATE userrole SET roleid = ? WHERE userid = ?`;
-        db.query(query, [req.body.Role, user.UserID], (err, results) => {
+        db.query(query, [req.body.role, user.userid], (err, results) => {
           if (err) {
-            res.status(500).json({ message: 'Error promote user' });
+            res.status(500).json({ message: `Error promote user 3 ${err}` });
           } else {
             res.status(200).json({ message: 'User promoted successfully' });
           }

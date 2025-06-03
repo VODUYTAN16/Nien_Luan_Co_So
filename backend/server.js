@@ -343,10 +343,10 @@ app.get('/api/categories', (req, res) => {
 
 // API lấy danh sách admin
 app.get('/api/users/admin', (req, res) => {
-  const query = `SELECT * from user join userrole ur on user.userid = ur.userid join role on ur.roleid = role.roleid`;
+  const query = `SELECT * from user join user_role ur on user.userid = ur.userid join role on ur.roleid = role.roleid`;
   db.query(query, (err, results) => {
     if (err) {
-      res.status(500).json({ message: 'Error retrieving categories' });
+      res.status(500).json({ message: 'Error get admin list' });
     } else {
       res.json(results);
     }
@@ -1368,7 +1368,7 @@ app.post('/api/create_tour', async (req, res) => {
       tourInf.tourname,
       tourInf.description,
       tourInf.price,
-      tourInf.imgtour,
+      tourInf.imgtour || 'no image',
       tourInf.duration,
     ],
     (err, result) => {
@@ -1381,7 +1381,7 @@ app.post('/api/create_tour', async (req, res) => {
           const query = `INSERT INTO schedule (tourid, startdate, capacity, availablespots, status) VALUES (?,?,?,?, ?)`;
           db.query(
             query,
-            [tourID, date.date, date.capacity, date.capacity, 'Available'],
+            [tourID, date.date, date.capacity, date.capacity, 'available'],
             (err, result) => {
               if (err) {
                 console.log('Error create schedule', err);

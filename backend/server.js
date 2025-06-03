@@ -1365,40 +1365,40 @@ app.post('/api/create_tour', async (req, res) => {
   db.query(
     query,
     [
-      tourInf.TourName,
-      tourInf.Description,
-      tourInf.Price,
-      tourInf.Img_Tour,
-      tourInf.Duration,
+      tourInf.tourname,
+      tourInf.description,
+      tourInf.price,
+      tourInf.imgtour,
+      tourInf.duration,
     ],
     (err, result) => {
       if (err) {
         console.log('Error create tour', err);
-        return res.status(500).json({ message: 'Error create tour' });
+        return res.status(500).json({ message: `Error create tour 1 ${err}` });
       } else {
         const tourID = result.insertId;
         dateForms.map((date) => {
           const query = `INSERT INTO schedule (tourid, startdate, capacity, availablespots, status) VALUES (?,?,?,?, ?)`;
           db.query(
             query,
-            [tourID, date.date, date.Capacity, date.Capacity, 'Available'],
+            [tourID, date.date, date.capacity, date.capacity, 'Available'],
             (err, result) => {
               if (err) {
                 console.log('Error create schedule', err);
                 return res
                   .status(500)
-                  .json({ message: 'Error create schedule for tour' });
+                  .json({ message: 'Error create schedule for tour ${err}' });
               }
 
               const scheduleID = result.insertId;
               const numericKeys = Object.entries(date.services);
 
-              numericKeys.map(([serviceID, Capacity]) => {
+              numericKeys.map(([serviceid, capacity]) => {
                 const query = `INSERT INTO schedule_ts (tourid, scheduleid, serviceid, availablespots, capacity) VALUES (?,?,?,?,?)`;
-                console.log(tourID, scheduleID, serviceID, Capacity);
+                console.log(tourID, scheduleID, serviceid, capacity);
                 db.query(
                   query,
-                  [tourID, scheduleID, serviceID, Capacity, Capacity],
+                  [tourID, scheduleID, serviceid, capacity, capacity],
                   (err) => {
                     if (err) {
                       console.log('Error create schedule_ts', err);
@@ -1417,7 +1417,7 @@ app.post('/api/create_tour', async (req, res) => {
           const query = `INSERT INTO tour_service(tourid, serviceid ,status) VALUES (?,?,?)`;
           db.query(
             query,
-            [tourID, service.ServiceID, service.Status],
+            [tourID, service.serviceid, service.status],
             (err, result) => {
               if (err) {
                 console.log('Error create service', err);
@@ -1436,12 +1436,12 @@ app.post('/api/create_tour', async (req, res) => {
           db.query(
             query,
             [
-              item.DayNumber,
-              item.Location,
-              item.Activities,
-              item.MealsIncluded,
-              item.ImageUrl,
-              item.Description,
+              item.daynumber,
+              item.location,
+              item.activities,
+              item.mealsincluded,
+              item.imageurl,
+              item.description,
               tourID,
             ],
             (err, result) => {

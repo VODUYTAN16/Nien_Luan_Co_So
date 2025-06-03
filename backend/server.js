@@ -1381,7 +1381,13 @@ app.post('/api/create_tour', async (req, res) => {
           const query = `INSERT INTO schedule (tourid, startdate, capacity, availablespots, status) VALUES (?,?,?,?, ?)`;
           db.query(
             query,
-            [tourID, date.date, date.capacity, date.capacity, 'available'],
+            [
+              tourID,
+              date.date || '',
+              date.capacity,
+              date.capacity,
+              'available',
+            ],
             (err, result) => {
               if (err) {
                 console.log('Error create schedule', err);

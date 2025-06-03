@@ -658,20 +658,22 @@ const filterLiveValue = async (schedules, services) => {
   return schedules.map((schedule) => {
     // Lấy các ServiceID từ mảng services
     const serviceIDs = services
-      ?.filter((service) => service.status === 'optional') // Lọc các service có Status là 'Optional'
-      .map((service) => Number(service.serviceid)); // Chuyển đổi ServiceID thành số
+      ?.filter((service) => service.status === 'optional') // Lọc các service có Status là 'optional'
+      .map((service) => Number(service.serviceid)); // Chuyển đổi serviceid thành số
+
+    // Đảm bảo schedule.services không bị null/undefined
+    const serviceObj = schedule.services || {};
 
     // Lấy các key từ schedule.services và chuyển đổi chúng thành số
-    const numericKeys = Object.keys(schedule.services).map((key) =>
-      Number(key)
-    );
+    const numericKeys = Object.keys(serviceObj).map((key) => Number(key));
 
-    console.log(Object.entries(schedule.services));
+    console.log(Object.entries(serviceObj));
+
     // Lọc các key trong schedule.services mà có trong mảng serviceIDs
     const filteredServices = numericKeys
       ?.filter((key) => serviceIDs.includes(key)) // Lọc các key hợp lệ
       .reduce((acc, key) => {
-        acc[key] = schedule.services[key]; // Giữ lại giá trị tương ứng của key
+        acc[key] = serviceObj[key]; // Giữ lại giá trị tương ứng của key
         return acc;
       }, {});
 
@@ -682,6 +684,7 @@ const filterLiveValue = async (schedules, services) => {
     };
   });
 };
+
 
 const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
   console.log(dateForms, serviceForms);

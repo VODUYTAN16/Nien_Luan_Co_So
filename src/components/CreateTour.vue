@@ -658,39 +658,41 @@ const filterLiveValue = async (schedules, services) => {
   return schedules.map((schedule) => {
     // Lấy các ServiceID từ mảng services
     const serviceIDs = services
-      ?.filter((service) => service.status === 'optional') // Lọc các service có Status là 'optional'
-      .map((service) => Number(service.serviceid)); // Chuyển đổi serviceid thành số
+      ?.filter((service) => service.status === 'optional') // Lọc các service có Status là 'Optional'
+      .map((service) => Number(service.serviceid)); // Chuyển đổi ServiceID thành số
 
-    // Đảm bảo schedule.services không bị null/undefined
-    const serviceObj = schedule.services || {};
+    if (schedule.services) {
+      // Lấy các key từ schedule.services và chuyển đổi chúng thành số
+      const numericKeys = Object.keys(schedule.services).map((key) =>
+        Number(key)
+      );
 
-    // Lấy các key từ schedule.services và chuyển đổi chúng thành số
-    const numericKeys = Object.keys(serviceObj).map((key) => Number(key));
+      console.log(Object.entries(schedule.services));
+      // Lọc các key trong schedule.services mà có trong mảng serviceIDs
+      const filteredServices = numericKeys
+        ?.filter((key) => serviceIDs.includes(key)) // Lọc các key hợp lệ
+        .reduce((acc, key) => {
+          acc[key] = schedule.services[key]; // Giữ lại giá trị tương ứng của key
+          return acc;
+        }, {});
 
-    console.log(Object.entries(serviceObj));
-
-    // Lọc các key trong schedule.services mà có trong mảng serviceIDs
-    const filteredServices = numericKeys
-      ?.filter((key) => serviceIDs.includes(key)) // Lọc các key hợp lệ
-      .reduce((acc, key) => {
-        acc[key] = serviceObj[key]; // Giữ lại giá trị tương ứng của key
-        return acc;
-      }, {});
-
-    // Trả về schedule mới với services đã được lọc
-    return {
-      ...schedule,
-      services: filteredServices,
-    };
+      // Trả về schedule mới với services đã được lọc
+      return {
+        ...schedule,
+        services: filteredServices,
+      };
+    } else {
+      return schedule;
+    }
   });
 };
-
 
 const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
   console.log(dateForms, serviceForms);
   try {
     // tiền xử lý
     dateForms = await filterLiveValue(dateForms, serviceForms);
+    console.log('filterLiveValue khong loi ');
     //xử lý ảnh
     const [mainImage, ...itineraryResults] = await Promise.all([
       uploadImage(tourInf.imgtour.file).catch((error) => {

@@ -52,10 +52,12 @@
           </div>
           <div class="modal-body">
             <CreateTour
-              :tourInf="infEditTour.tourInf"
-              :dateForms="infEditTour.dateForms"
-              :serviceForms="infEditTour.serviceForms"
-              :itinerary="infEditTour.itinerary"
+              :tourInf="infEditTour.tourInf ? infEditTour.tourInf : {}"
+              :dateForms="infEditTour.dateForms ? infEditTour.dateForms : []"
+              :serviceForms="
+                infEditTour.serviceForms ? infEditTour.serviceForms : []
+              "
+              :itinerary="infEditTour.itinerary ? infEditTour.itinerary : []"
               :editable="true"
             ></CreateTour>
           </div>

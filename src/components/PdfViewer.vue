@@ -62,7 +62,7 @@
 
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 import pdfCard from './pdfCard.vue';
 
 const formData = reactive({
@@ -75,7 +75,7 @@ const itemsPerPage = 4; // Số lượng item trên mỗi trang
 
 // Fetch dữ liệu từ API
 const fetchReportage = () => {
-  axios
+  api
     .get('/api/posts', {
       params: { category_name: 'reportage' },
     })
@@ -118,7 +118,7 @@ async function deleteBlog(postId, postContentId) {
     }
 
     // Gửi yêu cầu DELETE đến API
-    const response = await axios.delete(
+    const response = await api.delete(
       `/api/posts/${postId}/contents/${postContentId}`
     );
 
@@ -164,7 +164,7 @@ const isAdmin = async () => {
 
 const fetchAdmin = async () => {
   try {
-    const response = await axios.get(`/api/users/admin`);
+    const response = await api.get(`/api/users/admin`);
     return response.data;
   } catch (error) {
     console.error('Error fetching comments:', error);

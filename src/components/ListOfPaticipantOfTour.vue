@@ -210,7 +210,7 @@
 
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 import { toRaw } from 'vue';
 
 const tours = ref([]);
@@ -241,7 +241,7 @@ const getColor = (index, status) => {
 // Hàm tải danh sách tour
 const fetchTours = async () => {
   try {
-    const { data } = await axios.get('/api/tour');
+    const { data } = await api.get('/api/tour');
     tourNameList.value = data.reduce((acc, tourName) => [...acc, tourName], []);
 
     console.log('tourName: ', tourNameList);
@@ -255,7 +255,7 @@ const fetchTours = async () => {
 // Hàm tải danh sách lịch trình của tour
 const fetchTourSchedule = async (tourId) => {
   try {
-    const { data } = await axios.get(`/api/tour/${tourId}/schedule`);
+    const { data } = await api.get(`/api/tour/${tourId}/schedule`);
     console.log(data);
     return data.map((item) => ({
       ...item,
@@ -312,9 +312,7 @@ const fetchParticipants = async (tourId, scheduleId) => {
   const key = `${tourId}-${scheduleId}`;
   loadingSchedule.value = key;
   try {
-    const { data } = await axios.get(
-      `/api/participant/${tourId}/${scheduleId}`
-    );
+    const { data } = await api.get(`/api/participant/${tourId}/${scheduleId}`);
     //Chuyển mảng đối tượng về đối tượng với key là bookingId
     participants.value[key] = data.reduce((acc, item) => {
       const bookingId = item.BookingID;
@@ -407,7 +405,7 @@ const formatDate = (date) => {
 
 const bookedServices = async (bookingId) => {
   try {
-    const response = await axios.get(`/api/booked_service/${bookingId}`);
+    const response = await api.get(`/api/booked_service/${bookingId}`);
     return response.data;
   } catch (error) {
     console.log('Error bookedServices', error);

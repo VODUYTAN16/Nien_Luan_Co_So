@@ -622,7 +622,7 @@ import Tour_Information from '@/components/Tour_Information.vue';
 import { computed, onMounted, reactive, ref, watch, toRefs } from 'vue';
 import { useScreens } from 'vue-screen-utils';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
-import axios, { all } from 'axios';
+import api from '@/axios';
 import { format } from 'date-fns';
 
 const route = useRoute();

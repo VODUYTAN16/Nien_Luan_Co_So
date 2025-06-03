@@ -429,7 +429,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 import { useScreens } from 'vue-screen-utils';
 import ListOfPaticipantOfTour from './ListOfPaticipantOfTour.vue';
 
@@ -504,7 +504,7 @@ const filter = (Filter) => {
 
 const fetchBookings = async () => {
   try {
-    const response = await axios.get('api/booking');
+    const response = await api.get('api/booking');
     bookings = response.data.reverse();
     bookings.map((item) => {
       item.StartDate = new Date(item.StartDate).toLocaleDateString('en-US', {
@@ -533,9 +533,7 @@ const fetchBookings = async () => {
 
 const getDetailOfSpecificedBooking = async (booking) => {
   try {
-    const response = await axios.get(
-      `/api/detail_booking/${booking.BookingID}`
-    );
+    const response = await api.get(`/api/detail_booking/${booking.BookingID}`);
     BookingDetail.value = response.data;
   } catch (err) {
     console.log('err of getDetailOfSpecificedBooking', err);
@@ -544,7 +542,7 @@ const getDetailOfSpecificedBooking = async (booking) => {
 
 const bookedServices = async (bookingId) => {
   try {
-    const response = await axios.get(`/api/booked_service/${bookingId}`);
+    const response = await api.get(`/api/booked_service/${bookingId}`);
     bookServices.value = response.data;
     console.log(bookServices.value);
   } catch (error) {
@@ -560,7 +558,7 @@ const changeStatus = async (bookingId, status, tourId) => {
       return;
     }
 
-    const response = await axios.post(`/api/change_status`, {
+    const response = await api.post(`/api/change_status`, {
       bookingId,
       status,
       tourId,
@@ -586,7 +584,7 @@ const deleteBooking = async (bookingId) => {
       console.log('Deletion canceled by user.');
       return;
     }
-    const response = await axios.put(`/api/delete_booking`, { bookingId });
+    const response = await api.put(`/api/delete_booking`, { bookingId });
     if (response.status == 200) {
       alert('Delete booking successfully');
     } else {

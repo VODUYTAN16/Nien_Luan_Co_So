@@ -40,7 +40,7 @@
 import { computed } from 'vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import api from '@/axios';
 
 const route = useRouter();
 const likes = ref(0);
@@ -111,7 +111,7 @@ const timeAgo = computed(() => {
 
 const fetchCountLikes = async (postId) => {
   try {
-    const response = await axios.get(`/api/user_likes/${postId}`);
+    const response = await api.get(`/api/user_likes/${postId}`);
     likes.value = response.data;
   } catch (error) {
     console.error('Error fetching comments:', error);
@@ -120,7 +120,7 @@ const fetchCountLikes = async (postId) => {
 
 const fetchCountComments = async (postId) => {
   try {
-    const response = await axios.get(`/api/comments/${postId}`);
+    const response = await api.get(`/api/comments/${postId}`);
     comments.value = response.data;
   } catch (error) {
     console.error('Error fetching comments:', error);

@@ -65,7 +65,7 @@ import {
 } from 'chart.js';
 import { DoughnutChart, LineChart } from 'vue-chart-3';
 import { Chart, registerables } from 'chart.js';
-import axios from 'axios';
+import api from '@/axios';
 
 Chart.register(...registerables);
 
@@ -146,7 +146,7 @@ const chartOptions = ref({
 
 const fetchData = async () => {
   try {
-    const { data } = await axios.get('/api/statistics', {
+    const { data } = await api.get('/api/statistics', {
       params: { year: selectedYear.value, quarter: selectedQuarter.value },
     });
 
@@ -162,7 +162,7 @@ const fetchData = async () => {
 
     // Cập nhật dữ liệu biểu đồ đường
     try {
-      const { data } = await axios.get('/api/tour-statistics', {
+      const { data } = await api.get('/api/tour-statistics', {
         params: { year: selectedYear.value, quarter: selectedQuarter.value },
       });
 
@@ -178,7 +178,7 @@ const fetchData = async () => {
     }
 
     // Gọi API để lấy tỷ lệ lấp đầy tour
-    const capacityResponse = await axios.get('/api/tour-capacity', {
+    const capacityResponse = await api.get('/api/tour-capacity', {
       params: { year: selectedYear.value, quarter: selectedQuarter.value },
     });
     const total =

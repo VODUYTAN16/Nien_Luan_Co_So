@@ -70,7 +70,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, reactive } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 import Actical_card from './Actical_card.vue';
 
 const blogs = ref([]); // Tất cả bài viết
@@ -130,7 +130,7 @@ const isAdmin = async () => {
 
 const fetchAdmin = async () => {
   try {
-    const response = await axios.get(`/api/users/admin`);
+    const response = await api.get(`/api/users/admin`);
     return response.data;
   } catch (error) {
     console.error('Error fetching comments:', error);
@@ -159,7 +159,7 @@ const changePage = (page, event) => {
 
 const fetchBlog = async () => {
   try {
-    await axios
+    await api
       .get('/api/posts', {
         params: { category_name: 'blog' },
       })
@@ -186,7 +186,7 @@ async function deleteBlog(postId, postContentId) {
     }
 
     // Gửi yêu cầu DELETE đến API
-    const response = await axios.delete(
+    const response = await api.delete(
       `/api/posts/${postId}/contents/${postContentId}`
     );
     fetchBlog();

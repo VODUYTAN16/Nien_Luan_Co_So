@@ -92,7 +92,7 @@
 import { reactive, ref, onMounted } from 'vue';
 import Card_Tour from './Card_Tour.vue';
 import CreateTour from './CreateTour.vue';
-import axios from 'axios';
+import api from '@/axios';
 import { format } from 'date-fns';
 
 const tours = ref([]);
@@ -113,7 +113,7 @@ const props = defineProps({});
 
 const fetchTours = async () => {
   try {
-    const response = await axios.get(`/api/tour`);
+    const response = await api.get(`/api/tour`);
     console.log(response.data);
     tours.value = response.data.reverse();
   } catch (error) {
@@ -131,7 +131,7 @@ async function deleteTour(tourID) {
     }
 
     // Gửi yêu cầu DELETE đến API
-    const response = await axios.put(`/api/tour/${tourID}`);
+    const response = await api.put(`/api/tour/${tourID}`);
 
     // Kiểm tra phản hồi từ API
     if (response.status === 200) {
@@ -158,7 +158,7 @@ const uploadImage = async (file) => {
   formData.append('image', file); // Append File object vào FormData
 
   try {
-    const response = await axios.post('/api/upload', formData, {
+    const response = await api.post('/api/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
       },
@@ -172,7 +172,7 @@ const uploadImage = async (file) => {
 
 async function editTour(tourID) {
   try {
-    const response = await axios.get(`/api/basis_inf/${tourID}`);
+    const response = await api.get(`/api/basis_inf/${tourID}`);
     infEditTour.value = response.data;
     console.log(infEditTour.value);
     console.log(response.data);
@@ -226,7 +226,7 @@ const saveEditTour = async (tourInf, dateForms, serviceForms, itinerary) => {
       return;
     } else {
       console.log(tourInf, dateForms, serviceForms, itinerary);
-      const response = await axios.put('/api/edit_tour', {
+      const response = await api.put('/api/edit_tour', {
         tourInf,
         dateForms,
         serviceForms,

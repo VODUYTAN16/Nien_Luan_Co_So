@@ -23,7 +23,7 @@
 
 <script setup>
 import { computed, onMounted, ref, reactive } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 const route = useRoute();
 

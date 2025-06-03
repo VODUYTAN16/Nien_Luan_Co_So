@@ -207,7 +207,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 import Actical_card from './Actical_card.vue';
 import BlogContent from './BlogContent.vue'; // Đảm bảo bạn đã import đúng component BlogContent
 import pdfCard from './pdfCard.vue';
@@ -251,11 +251,11 @@ const createPost = async () => {
         console.log('Không tìm thấy ID file trong URL.');
       }
     }
-    const response = await axios.post('/api/posts', formData);
+    const response = await api.post('/api/posts', formData);
     message.value = response.data.message;
     success.value = true;
     console.log(response.data);
-    axios.post(
+    api.post(
       'https://hook.eu2.make.com/7xzu3q45dgkbhi650m8idth9qmpmenr9',
       response.data
     );
@@ -285,7 +285,7 @@ const togglePreviewCard = () => {
 
 const fetchAdmin = async () => {
   try {
-    const response = await axios.get(`/api/users/admin`);
+    const response = await api.get(`/api/users/admin`);
     admins.value = response.data;
     console.log(response.data);
   } catch (error) {
@@ -295,7 +295,7 @@ const fetchAdmin = async () => {
 
 const fetchCategogy = async () => {
   try {
-    const response = await axios.get(`/api/categories`);
+    const response = await api.get(`/api/categories`);
     console.log(response.data);
     categories.value = response.data;
     formData.CreatedAt = new Date().toISOString();
@@ -352,7 +352,7 @@ const uploadImage = async (file) => {
   formData.append('image', file); // Append File object vào FormData
 
   try {
-    const response = await axios.post('/api/upload', formData, {
+    const response = await api.post('/api/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
       },

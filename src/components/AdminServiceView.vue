@@ -207,7 +207,7 @@
 
 <script setup>
 import { onMounted, ref, reactive } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 
 const currentStep = ref(1);
 
@@ -231,7 +231,7 @@ const deleteService = async (ServiceID) => {
     return;
   }
   try {
-    const response = await axios.put(`/api/delete_service/${ServiceID}`);
+    const response = await api.put(`/api/delete_service/${ServiceID}`);
     console.log(response.status);
     fetchService();
   } catch (error) {
@@ -248,7 +248,7 @@ const restoreService = async (ServiceID) => {
     return;
   }
   try {
-    const response = await axios.put(`/api/restore_service/${ServiceID}`);
+    const response = await api.put(`/api/restore_service/${ServiceID}`);
     console.log(response.status);
     fetchService();
   } catch (error) {
@@ -260,7 +260,7 @@ const createServices = async () => {
   if (service.value) {
     try {
       services.value.push({ ...service.value });
-      const response = await axios.post(`/api/create_service`, service.value);
+      const response = await api.post(`/api/create_service`, service.value);
       service.value = {};
       console.log(response.data.message);
       message.value = response.data.message;
@@ -277,7 +277,7 @@ const createServices = async () => {
 
 const fetchService = async () => {
   try {
-    const response = await axios.get('/api/services');
+    const response = await api.get('/api/services');
     services.value = response.data.reverse();
   } catch (error) {
     console.log(error);
@@ -298,7 +298,7 @@ const editService = (item) => {
 
 const saveEdit = async () => {
   try {
-    const response = await axios.put('/api/update_service', editedData);
+    const response = await api.put('/api/update_service', editedData);
     if (response.status == 200) {
       // Tải lại danh sách service
       fetchService();

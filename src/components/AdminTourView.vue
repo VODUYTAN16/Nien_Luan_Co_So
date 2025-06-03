@@ -24,10 +24,10 @@
     </nav>
     <div v-if="currentStep == 1" class="createTour">
       <CreateTour
-        :tourInf="tourInf"
-        :dateForms="dateForms"
-        :itinerary="itinerary"
-        :serviceForms="serviceForms"
+        :tourInf="tourInf ? tourInf : {}"
+        :dateForms="dateForms ? dateForms : []"
+        :itinerary="itinerary ? itinerary : []"
+        :serviceForms="serviceForms ? serviceForms : []"
       ></CreateTour>
     </div>
     <div v-if="currentStep == 2" class="listTour">

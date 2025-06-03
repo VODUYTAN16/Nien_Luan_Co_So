@@ -489,7 +489,7 @@
 import { onMounted, reactive, ref, computed } from 'vue';
 import { useScreens } from 'vue-screen-utils';
 import TourSection from './TourSection.vue';
-import axios from 'axios';
+import api from '@/axios';
 import { format } from 'date-fns';
 // import { applyRulesForDateParts } from 'v-calendar/dist/types/src/utils/date/helpers';
 
@@ -557,7 +557,7 @@ const deleteForm = async (form, index, type) => {
         if (!confirm) {
           return;
         }
-        const respone1 = await axios.put('/api/delete_schedule', {
+        const respone1 = await api.put('/api/delete_schedule', {
           id: form.dateForms[index].ScheduleID,
         });
         if (respone1.status == 200) {
@@ -572,7 +572,7 @@ const deleteForm = async (form, index, type) => {
         if (!confirm2) {
           return;
         }
-        const respone2 = await axios.put('/api/delete_tourService', {
+        const respone2 = await api.put('/api/delete_tourService', {
           TourID: form.tourInf.TourID,
           ServiceID: form.serviceForms[index].ServiceID,
         });
@@ -588,7 +588,7 @@ const deleteForm = async (form, index, type) => {
         if (!confirm3) {
           return;
         }
-        const respone3 = await axios.put('/api/delete_itinerary', {
+        const respone3 = await api.put('/api/delete_itinerary', {
           id: form.itinerary[index].ItineraryID,
         });
         if (respone3.status == 200) {
@@ -642,7 +642,7 @@ const uploadImage = async (file) => {
   formData.append('image', file); // Append File object vào FormData
 
   try {
-    const response = await axios.post('/api/upload', formData, {
+    const response = await api.post('/api/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
       },
@@ -721,7 +721,7 @@ const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
       return;
     } else {
       console.log(tourInf, dateForms, serviceForms, itinerary);
-      const response = await axios.post('/api/create_tour', {
+      const response = await api.post('/api/create_tour', {
         tourInf,
         dateForms,
         serviceForms,
@@ -754,7 +754,7 @@ const formatDate = (dateString) => {
 
 const fetchTourService = async () => {
   try {
-    const response = await axios.get(`/api/services`);
+    const response = await api.get(`/api/services`);
     console.log(response.data);
     services.value = response.data;
   } catch (error) {

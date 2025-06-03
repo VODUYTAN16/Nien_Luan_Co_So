@@ -32,7 +32,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import axios from 'axios';
+import api from '@/axios';
 // import Navigate from './Navigate.vue';
 // import Footer from './Footer.vue';
 
@@ -43,7 +43,7 @@ const file = ref({});
 
 // Hàm gọi API để lấy dữ liệu tệp PDF
 const fetchReportage = (postId) => {
-  axios
+  api
     .get('/api/posts', {
       params: { category_name: 'reportage' },
     })

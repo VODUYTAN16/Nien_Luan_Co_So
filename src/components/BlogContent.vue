@@ -99,7 +99,7 @@
 
 <script setup>
 import { onMounted, ref, toRefs, reactive } from 'vue';
-import axios from 'axios';
+import api from '@/axios';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 
 const route = useRoute();
@@ -154,7 +154,7 @@ const likePost = async () => {
     const action = state.isLiked ? 'unlike' : 'like';
 
     // Gửi yêu cầu tới API
-    const response = await axios.post(`/api/posts/${postId}/like`, {
+    const response = await api.post(`/api/posts/${postId}/like`, {
       action: action,
       userId: user.value.UserID,
     });
@@ -183,7 +183,7 @@ const fetchUser = () => {
 
 const fetchCountLikes = async (postId) => {
   try {
-    const response = await axios.get(`/api/user_likes/${postId}`);
+    const response = await api.get(`/api/user_likes/${postId}`);
     state.likes = response.data;
   } catch (error) {
     console.error('Error fetching comments:', error);
@@ -192,7 +192,7 @@ const fetchCountLikes = async (postId) => {
 
 const fetchCountComments = async (postId) => {
   try {
-    const response = await axios.get(`/api/comments/${postId}`);
+    const response = await api.get(`/api/comments/${postId}`);
     state.comments = response.data;
   } catch (error) {
     console.error('Error fetching comments:', error);
@@ -202,7 +202,7 @@ const fetchCountComments = async (postId) => {
 const is_Liked_post = async (postId) => {
   try {
     const userId = user.value.UserID;
-    const response = await axios.get(`/api/posts/${userId}/is-liked/${postId}`);
+    const response = await api.get(`/api/posts/${userId}/is-liked/${postId}`);
     state.isLiked = response.data.isLiked === true;
   } catch (error) {
     console.error('Error fetching blog:', error);

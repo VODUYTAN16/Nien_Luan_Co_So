@@ -55,11 +55,11 @@ const dateForms = reactive([{ date: null, Capacity: '' }]);
 const serviceForms = reactive([{}]);
 const itinerary = reactive([{}]);
 const tourInf = reactive({
-  TourName: '',
-  Description: '',
-  Price: '',
-  Img_Tour: '',
-  Duration: '',
+  tourname: '',
+  description: '',
+  price: '',
+  imgtour: '',
+  duration: '',
 });
 </script>
 <style scoped>

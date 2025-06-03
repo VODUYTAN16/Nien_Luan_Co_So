@@ -96,7 +96,7 @@ const handleSubmit = async () => {
       Password: password.value,
     };
 
-    const response = await axios.post('/api/login/admin', payload);
+    const response = await api.post('/api/login/admin', payload);
     if (response.data.user) {
       localStorage.setItem('user', JSON.stringify(response.data.user));
       router.push('/');

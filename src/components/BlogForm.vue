@@ -14,16 +14,16 @@
                 type="number"
                 class="form-control"
                 id="author_id"
-                v-model="formData.AuthorID"
+                v-model="formData.authorid"
                 required
               >
                 <option disabled value="">Select Author</option>
                 <option
                   v-for="author in admins"
-                  :key="author.UserID"
-                  :value="author.UserID"
+                  :key="author.userid"
+                  :value="author.userid"
                 >
-                  {{ author.FullName }}
+                  {{ author.fullname }}
                 </option>
               </select>
             </div>
@@ -46,16 +46,16 @@
                 <select
                   class="form-control"
                   id="category_id"
-                  v-model="formData.CategoryID"
+                  v-model="formData.categoryid"
                   required
                 >
                   <option disabled value="">Select a Category</option>
                   <option
                     v-for="category in categories"
-                    :key="category.CategoryID"
-                    :value="category.CategoryID"
+                    :key="category.categoryid"
+                    :value="category.categoryid"
                   >
-                    {{ category.Name }}
+                    {{ category.name }}
                   </option>
                 </select>
               </div>
@@ -65,7 +65,7 @@
                   type="text"
                   class="form-control"
                   id="title"
-                  v-model="formData.Title"
+                  v-model="formData.title"
                   required
                 />
               </div>
@@ -73,59 +73,59 @@
             <div class="col">
               <img
                 class="rounded border border-4 order-light-subtle"
-                :src="formData.ImageUrl"
+                :src="formData.imageurl"
                 alt=""
                 style="height: 200px"
               />
             </div>
           </div>
 
-          <div v-if="formData.CategoryID == 1" class="form-group">
+          <div v-if="formData.categoryid == 1" class="form-group">
             <label for="subtitle">Subtitle</label>
             <input
               type="text"
               class="form-control"
               id="subtitle"
-              v-model="formData.Subtitle"
+              v-model="formData.subtitle"
             />
           </div>
-          <div v-if="formData.CategoryID == 1" class="form-group">
+          <div v-if="formData.categoryid == 1" class="form-group">
             <label for="content_intro">Content Intro</label>
             <textarea
               class="form-control"
               id="content_intro"
-              v-model="formData.ContentIntro"
+              v-model="formData.contentintro"
               rows="3"
               required
             ></textarea>
           </div>
-          <div v-if="formData.CategoryID == 1" class="form-group">
+          <div v-if="formData.categoryid == 1" class="form-group">
             <label for="quote">Quote</label>
             <textarea
               class="form-control"
               id="quote"
-              v-model="formData.Quote"
+              v-model="formData.quote"
               rows="2"
             ></textarea>
           </div>
-          <div v-if="formData.CategoryID == 1" class="form-group">
+          <div v-if="formData.categoryid == 1" class="form-group">
             <label for="content_body">Content Body</label>
             <textarea
               class="form-control"
               id="content_body"
-              v-model="formData.ContentBody"
+              v-model="formData.contentbody"
               rows="5"
               required
             ></textarea>
           </div>
-          <div v-if="formData.CategoryID == 2" class="form-group">
+          <div v-if="formData.categoryid == 2" class="form-group">
             <label for="link">External Link</label>
             <input
               type="url"
               class="form-control"
               id="link"
               required
-              v-model="formData.Link"
+              v-model="formData.link"
             />
           </div>
           <button type="submit" class="btn btn-primary btn-block my-3">
@@ -168,7 +168,7 @@
         </div>
         <div
           v-if="
-            formData.Title && formData.ContentIntro && formData.CategoryID == 1
+            formData.title && formData.contentintro && formData.categoryid == 1
           "
           class="preview-card"
         >
@@ -177,11 +177,11 @@
             <Actical_card
               @click.stop
               @click.native.stop
-              :image="formData.ImageUrl"
-              :title="formData.Title"
-              :description="formData.ContentIntro.slice(0, 100)"
-              :author="formData.Author"
-              :authorAvatar="formData.AuthorAvatar"
+              :image="formData.imageurl"
+              :title="formData.title"
+              :description="formData.contentintro.slice(0, 100)"
+              :author="formData.author"
+              :authoravatar="formData.authoravatar"
               :views="0"
               :id="null"
               :create_at="new Date().toISOString()"
@@ -194,7 +194,7 @@
         </div>
         <div
           v-if="
-            formData.Title && formData.ContentIntro && formData.CategoryID == 2
+            formData.title && formData.contentintro && formData.categoryid == 2
           "
           class="preview-card"
         >
@@ -213,19 +213,19 @@ import BlogContent from './BlogContent.vue'; // Đảm bảo bạn đã import �
 import pdfCard from './pdfCard.vue';
 
 const formData = reactive({
-  AuthorID: -1,
-  CategoryID: '',
-  ImageUrl: 'https://via.placeholder.com/800x400?text=No+Image+Available',
-  Title: 'Title',
-  Subtitle: '',
-  ContentIntro: ' ',
-  Quote: '',
-  ContentBody: '',
-  Author: 'Full Name',
-  AuthorAvatar:
+  authorid: -1,
+  categoryid: '',
+  imageurl: 'https://via.placeholder.com/800x400?text=No+Image+Available',
+  title: 'Title',
+  subtitle: '',
+  contentintro: ' ',
+  quote: '',
+  contentbody: '',
+  author: 'Full Name',
+  authoravatar:
     'https://i.pinimg.com/736x/3a/d8/f9/3ad8f9d4a96c825e9efa524f6b4b70a4.jpg',
-  Link: '',
-  CreatedAt: '',
+  link: '',
+  createdat: '',
 });
 
 const categories = ref([]);
@@ -238,15 +238,15 @@ const showPreviewCard = ref(true); // Trạng thái hiển thị Actical Card
 
 const createPost = async () => {
   try {
-    if (formData.ImageUrl) {
-      formData.ImageUrl = await uploadImage(formData.ImageUrl);
-      console.log(formData.ImageUrl);
+    if (formData.imageurl) {
+      formData.imageurl = await uploadImage(formData.imageurl);
+      console.log(formData.imageurl);
     }
-    if (formData.Link) {
-      const fileId = getDriveFileId(formData.Link);
+    if (formData.link) {
+      const fileId = getDriveFileId(formData.link);
       // Tạo URL tải xuống
       if (fileId) {
-        formData.Link = `https://drive.google.com/uc?id=${fileId}&export=download`;
+        formData.link = `https://drive.google.com/uc?id=${fileId}&export=download`;
       } else {
         console.log('Không tìm thấy ID file trong URL.');
       }
@@ -298,7 +298,7 @@ const fetchCategogy = async () => {
     const response = await api.get(`/api/categories`);
     console.log(response.data);
     categories.value = response.data;
-    formData.CreatedAt = new Date().toISOString();
+    formData.createdat = new Date().toISOString();
   } catch (error) {
     console.error('Error fetching comments:', error);
   }
@@ -307,8 +307,8 @@ const fetchCategogy = async () => {
 const fetchUser = () => {
   const userData = JSON.parse(localStorage.getItem('user'));
   if (userData) {
-    formData.Author = userData.FullName;
-    formData.AuthorID = userData.UserID;
+    formData.author = userData.fullname;
+    formData.authorid = userData.userid;
   }
 };
 
@@ -335,8 +335,8 @@ const fetchUser = () => {
 //     }
 
 //     // Gán vào formData
-//     formData.ImageUrl = base64String;
-//     console.log('Base64 hợp lệ:', formData.ImageUrl);
+//     formData.imageurl = base64String;
+//     console.log('Base64 hợp lệ:', formData.imageurl);
 //   };
 
 //   reader.onerror = (error) => {
@@ -357,7 +357,7 @@ const uploadImage = async (file) => {
         'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
       },
     });
-    return response.data.imageUrl;
+    return response.data.imageurl;
   } catch (error) {
     console.error('Lỗi upload ảnh:', error);
     throw error;
@@ -366,7 +366,7 @@ const uploadImage = async (file) => {
 
 const handleImage = (event) => {
   const file = event.target.files[0];
-  formData.ImageUrl = file;
+  formData.imageurl = file;
 };
 
 onMounted(() => {

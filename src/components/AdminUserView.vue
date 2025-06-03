@@ -9,7 +9,7 @@
             type="text"
             required
             class="form-control"
-            v-model="newUser.FullName"
+            v-model="newUser.fullname"
           />
         </div>
         <div class="col-5">
@@ -18,7 +18,7 @@
             type="email"
             required
             class="form-control"
-            v-model="newUser.Email"
+            v-model="newUser.email"
           />
         </div>
         <div class="col-5">
@@ -26,7 +26,7 @@
           <input
             type="text"
             class="form-control"
-            v-model="newUser.PhoneNumber"
+            v-model="newUser.phonenumber"
           />
         </div>
         <div class="col-5">
@@ -35,7 +35,7 @@
             type="text"
             required
             class="form-control"
-            v-model="newUser.Password"
+            v-model="newUser.password"
           />
         </div>
 
@@ -88,13 +88,13 @@
             <td>{{ index + 1 }}</td>
             <td v-if="editableRow !== item.userid">{{ item.fullname }}</td>
             <td v-else>
-              <input v-model="editedData.FullName" class="form-control" />
+              <input v-model="editedData.fullname" class="form-control" />
             </td>
 
             <td v-if="editableRow !== item.userid">{{ item.email }}</td>
             <td v-else>
               <input
-                v-model="editedData.Email"
+                v-model="editedData.email"
                 type="email"
                 class="form-control"
               />
@@ -102,7 +102,7 @@
 
             <td v-if="editableRow !== item.userid">{{ item.phonenumber }}</td>
             <td v-else>
-              <input v-model="editedData.PhoneNumber" class="form-control" />
+              <input v-model="editedData.phonenumber" class="form-control" />
             </td>
 
             <td>
@@ -174,28 +174,28 @@
         <tbody>
           <tr v-for="(item, index) in adminsList" :key="index">
             <td>{{ index + 1 }}</td>
-            <td v-if="editableRow !== item.UserID">{{ item.FullName }}</td>
+            <td v-if="editableRow !== item.userid">{{ item.fullname }}</td>
             <td v-else>
-              <input v-model="editedData.FullName" class="form-control" />
+              <input v-model="editedData.fullname" class="form-control" />
             </td>
 
-            <td v-if="editableRow !== item.UserID">{{ item.Email }}</td>
+            <td v-if="editableRow !== item.userid">{{ item.email }}</td>
             <td v-else>
               <input
-                v-model="editedData.Email"
+                v-model="editedData.email"
                 type="email"
                 class="form-control"
               />
             </td>
 
-            <td v-if="editableRow !== item.UserID">{{ item.PhoneNumber }}</td>
+            <td v-if="editableRow !== item.userid">{{ item.phonenumber }}</td>
             <td v-else>
-              <input v-model="editedData.PhoneNumber" class="form-control" />
+              <input v-model="editedData.phonenumber" class="form-control" />
             </td>
 
-            <td>{{ item.RoleName }}</td>
-            <td v-if="user.RoleName === 'Admin'">
-              <div v-if="editableRow !== item.UserID">
+            <td>{{ item.rolename }}</td>
+            <td v-if="user.rolename === 'Admin'">
+              <div v-if="editableRow !== item.userid">
                 <button
                   @click="editUser(item)"
                   class="btn btn-sm btn-outline-success"
@@ -203,7 +203,7 @@
                   Edit
                 </button>
                 <button
-                  v-if="user.RoleName === 'Admin'"
+                  v-if="user.rolename === 'Admin'"
                   @click="deleteUser(item)"
                   class="btn btn-sm btn-outline-danger mx-2"
                 >
@@ -335,7 +335,7 @@ const dismissal = async (user) => {
       console.log('Deletion canceled by user.');
       return;
     }
-    const response = await api.delete(`/api/dismissal/${user.UserID}`);
+    const response = await api.delete(`/api/dismissal/${user.userid}`);
     if (response.status == 200) {
       fetchAdminsList();
     }
@@ -381,12 +381,12 @@ const editableRow = ref(null); // Theo dõi ID của hàng đang chỉnh sửa
 const editedData = reactive({}); // Lưu thông tin chỉnh sửa tạm thời
 
 const editUser = (item) => {
-  editableRow.value = item.UserID; // Gán hàng đang chỉnh sửa
-  editedData.UserID = item.UserID;
-  editedData.FullName = item.FullName;
-  editedData.Email = item.Email;
-  editedData.PhoneNumber = item.PhoneNumber;
-  editedData.Password = item.Password;
+  editableRow.value = item.userid; // Gán hàng đang chỉnh sửa
+  editedData.userid = item.userid;
+  editedData.fullname = item.fullname;
+  editedData.email = item.email;
+  editedData.phonenumber = item.phonenumber;
+  editedData.password = item.password;
 };
 
 const saveUserEdit = async () => {

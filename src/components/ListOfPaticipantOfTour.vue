@@ -26,7 +26,7 @@
         </div>
         <div class="form-floating col">
           <select
-            v-model="Filter.TourID"
+            v-model="Filter.tourid"
             class="form-select"
             id="floatingSelect"
             aria-label="Floating label select example"
@@ -35,9 +35,9 @@
             <option
               v-for="(item, index) in tourNameList"
               :key="index"
-              :value="item.TourID"
+              :value="item.tourid"
             >
-              {{ item.TourName }}
+              {{ item.tourname }}
             </option>
           </select>
           <label for="floatingSelect">Select Tour</label>
@@ -45,8 +45,8 @@
       </div>
     </div>
 
-    <div v-for="tour in filteredTours" :key="tour.TourID" class="mb-4">
-      <h4 class="text-center">{{ tour.TourName }}</h4>
+    <div v-for="tour in filteredTours" :key="tour.tourid" class="mb-4">
+      <h4 class="text-center">{{ tour.tourname }}</h4>
       <div
         v-for="(schedule, index) in tour.schedules"
         :key="index"
@@ -55,13 +55,13 @@
         <button
           class="btn btn-primary card-header bg-primary text-white text-center"
           type="button"
-          @click="toggleParticipants(tour.TourID, schedule.ScheduleID)"
+          @click="toggleParticipants(tour.tourid, schedule.scheduleid)"
         >
-          Date: {{ schedule.StartDate }} - {{ schedule.EndDate }}
+          Date: {{ schedule.startdate }} - {{ schedule.enddate }}
         </button>
 
         <div
-          v-show="expandedSchedule === `${tour.TourID}-${schedule.ScheduleID}`"
+          v-show="expandedSchedule === `${tour.tourid}-${schedule.scheduleid}`"
         >
           <table class="table table-bordered table-hover table-sm">
             <thead class="table-light">
@@ -82,7 +82,7 @@
             <tbody>
               <tr
                 v-if="
-                  loadingSchedule === `${tour.TourID}-${schedule.ScheduleID}`
+                  loadingSchedule === `${tour.tourid}-${schedule.scheduleid}`
                 "
               >
                 <td colspan="10" class="text-center">Loading...</td>
@@ -90,10 +90,10 @@
 
               <template
                 v-for="(bookingPackage, bookingPackageIndex) in participants[
-                  `${tour.TourID}-${schedule.ScheduleID}`
+                  `${tour.tourid}-${schedule.scheduleid}`
                 ]
                   ? Object.values(
-                      participants[`${tour.TourID}-${schedule.ScheduleID}`]
+                      participants[`${tour.tourid}-${schedule.scheduleid}`]
                     )
                   : []"
               >
@@ -103,44 +103,44 @@
                   :key="`participant-${bookingPackageIndex}-${index}`"
                   :class="
                     (index === 0 ? 'text-danger ' : '',
-                    getColor(bookingPackageIndex, participant.Status))
+                    getColor(bookingPackageIndex, participant.status))
                   "
                 >
                   <td>
                     {{ index + 1 }}
                   </td>
                   <td :class="index === 0 ? 'text-danger' : ''">
-                    {{ participant.FullName }}
+                    {{ participant.fullname }}
 
                     <i
                       class="bx bx-money text-success fs-5"
-                      v-if="(participant.Status === 'Paid') & (index === 0)"
+                      v-if="(participant.status === 'Paid') & (index === 0)"
                     ></i>
                   </td>
-                  <td>{{ formatDate(participant.DateOfBirth) }}</td>
-                  <td>{{ participant.Gender }}</td>
-                  <td>{{ participant.Email }}</td>
-                  <td>{{ participant.PhoneNumber }}</td>
-                  <td>{{ participant.FullNameOnPassport }}</td>
-                  <td>{{ participant.PassportNumber }}</td>
-                  <td>{{ participant.Nationality }}</td>
+                  <td>{{ formatDate(participant.dateofbirth) }}</td>
+                  <td>{{ participant.gender }}</td>
+                  <td>{{ participant.email }}</td>
+                  <td>{{ participant.phonenumber }}</td>
+                  <td>{{ participant.fullnameonpassport }}</td>
+                  <td>{{ participant.passportnumber }}</td>
+                  <td>{{ participant.nationality }}</td>
                   <td v-if="index === 0" :rowspan="bookingPackage.items.length">
                     {{
                       bookingPackage.services && index === 0
                         ? bookingPackage.services
                             .map(
                               (service) =>
-                                `(${service.Quantity}) - ${service.ServiceName}`
+                                `(${service.quantity}) - ${service.servicename}`
                             )
                             .join(', ')
                         : ''
                     }}
                   </td>
                   <td v-if="index === 0" :rowspan="bookingPackage.items.length">
-                    ${{ participant.TotalAmount }}
+                    ${{ participant.totalamount }}
                     <i
                       class="bx bx-money text-success fs-5"
-                      v-if="(participant.Status === 'Paid') & (index === 0)"
+                      v-if="(participant.status === 'Paid') & (index === 0)"
                     ></i>
                   </td>
                 </tr>
@@ -162,7 +162,7 @@
                         <div class="fw-bold text-success">
                           ${{
                             totalAmount?.[
-                              `${tour.TourID}-${schedule.ScheduleID}`
+                              `${tour.tourid}-${schedule.scheduleid}`
                             ]?.[0]?.total_collected || 0
                           }}
                         </div>
@@ -181,7 +181,7 @@
                         <div class="fw-bold text-warning">
                           ${{
                             totalAmount?.[
-                              `${tour.TourID}-${schedule.ScheduleID}`
+                              `${tour.tourid}-${schedule.scheduleid}`
                             ]?.[0]?.total_pending || 0
                           }}
                         </div>
@@ -192,8 +192,8 @@
               </tr>
               <tr
                 v-if="
-                  participants[`${tour.TourID}-${schedule.ScheduleID}`] &&
-                  participants[`${tour.TourID}-${schedule.ScheduleID}`]
+                  participants[`${tour.tourid}-${schedule.scheduleid}`] &&
+                  participants[`${tour.tourid}-${schedule.scheduleid}`]
                     .length === 0
                 "
               >
@@ -223,12 +223,12 @@ const tourNameList = ref([]);
 var totalAmount = ref({});
 
 const Filter = reactive({
-  StartDate: '',
-  EndDate: '',
-  TourID: '',
-  Status: '',
-  TourName: '', // Thêm trường mới
-  BookingID: '',
+  startdate: '',
+  enddate: '',
+  tourid: '',
+  status: '',
+  tourname: '', // Thêm trường mới
+  bookingid: '',
 });
 
 // Lấy màu từ danh sách sách màu sắc
@@ -253,16 +253,16 @@ const fetchTours = async () => {
 };
 
 // Hàm tải danh sách lịch trình của tour
-const fetchTourSchedule = async (tourId) => {
+const fetchTourSchedule = async (tourid) => {
   try {
-    const { data } = await api.get(`/api/tour/${tourId}/schedule`);
+    const { data } = await api.get(`/api/tour/${tourid}/schedule`);
     console.log(data);
     return data.map((item) => ({
       ...item,
-      StartDate: formatDate(item.StartDate),
+      StartDate: formatDate(item.startdate),
       EndDate: formatDate(
-        new Date(item.StartDate).setDate(
-          new Date(item.StartDate).getDate() + item.Duration - 1
+        new Date(item.startdate).setDate(
+          new Date(item.startdate).getDate() + item.duration - 1
         )
       ),
     }));
@@ -282,14 +282,14 @@ const removeDiacritics = (str) => {
 };
 
 const filteredTours = computed(() => {
-  if (Filter.TourID) {
-    return tours.value.filter((tour) => tour.TourID === Filter.TourID);
+  if (Filter.tourid) {
+    return tours.value.filter((tour) => tour.tourid === Filter.tourid);
   } else {
     const query = removeDiacritics(searchQuery.value.toLowerCase()).trim();
     console.log(tours.value);
     return tours.value.filter((tour) => {
       const tourName = removeDiacritics(
-        tour.TourName ? tour.TourName.toLowerCase() : tour.TourName
+        tour.tourname ? tour.tourname.toLowerCase() : tour.tourname
       );
 
       // Kiểm tra nếu toàn bộ query nằm trong tên tour
@@ -308,14 +308,14 @@ const filteredTours = computed(() => {
 });
 
 // Hàm lấy danh sách người tham gia theo schedule
-const fetchParticipants = async (tourId, scheduleId) => {
-  const key = `${tourId}-${scheduleId}`;
+const fetchParticipants = async (tourid, scheduleid) => {
+  const key = `${tourid}-${scheduleid}`;
   loadingSchedule.value = key;
   try {
-    const { data } = await api.get(`/api/participant/${tourId}/${scheduleId}`);
+    const { data } = await api.get(`/api/participant/${tourid}/${scheduleid}`);
     //Chuyển mảng đối tượng về đối tượng với key là bookingId
     participants.value[key] = data.reduce((acc, item) => {
-      const bookingId = item.BookingID;
+      const bookingId = item.bookingid;
 
       // Kiểm tra xem booking đã có trong acc chưa
       if (!acc[bookingId]) {
@@ -357,10 +357,10 @@ const totalAmount_Booking = async (key) => {
 
   const { total_collected, total_pending } = items.reduce(
     (acc, item) => {
-      if (item.Status === 'Paid')
-        acc.total_collected += Number(item.TotalAmount);
-      if (item.Status === 'Booked')
-        acc.total_pending += Number(item.TotalAmount);
+      if (item.status === 'Paid')
+        acc.total_collected += Number(item.totalamount);
+      if (item.status === 'Booked')
+        acc.total_pending += Number(item.totalamount);
       return acc;
     },
     { total_collected: 0, total_pending: 0 }
@@ -373,14 +373,14 @@ const totalAmount_Booking = async (key) => {
 };
 
 // Khi người dùng click vào schedule
-const toggleParticipants = async (tourId, scheduleId) => {
-  const key = `${tourId}-${scheduleId}`;
+const toggleParticipants = async (tourid, scheduleid) => {
+  const key = `${tourid}-${scheduleid}`;
   if (expandedSchedule.value === key) {
     expandedSchedule.value = null;
   } else {
     expandedSchedule.value = key;
     if (!participants.value[key]) {
-      await fetchParticipants(tourId, scheduleId);
+      await fetchParticipants(tourid, scheduleid);
       // Đảm bảo totalAmount.value[key] là mảng
       if (!totalAmount.value[key]) {
         totalAmount.value[key] = [];
@@ -418,7 +418,7 @@ onMounted(async () => {
   tours.value = await Promise.all(
     tourList.map(async (tour) => ({
       ...tour,
-      schedules: await fetchTourSchedule(tour.TourID),
+      schedules: await fetchTourSchedule(tour.tourid),
     }))
   );
 });

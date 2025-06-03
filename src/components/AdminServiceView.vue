@@ -8,7 +8,7 @@
           type="text"
           id="service_name"
           class="form-control"
-          v-model="service.ServiceName"
+          v-model="service.servicename"
           required
           placeholder="Your Answer"
         />
@@ -22,7 +22,7 @@
           id="price"
           class="form-control"
           min="0"
-          v-model="service.Price"
+          v-model="service.price"
           placeholder="$0"
           required
         />
@@ -32,7 +32,7 @@
         <textarea
           id="description"
           type="text"
-          v-model="service.Description"
+          v-model="service.description"
           class="form-control"
           placeholder="Description about service"
           required
@@ -89,36 +89,36 @@
         <tbody>
           <tr
             v-for="(item, index) in services.filter(
-              (service) => service.IsDeleted === 0
+              (service) => service.isdeleted === 0
             )"
             :key="index"
           >
             <td>{{ index + 1 }}</td>
-            <td v-if="editableRow !== item.ServiceID">
-              {{ item.ServiceName }}
+            <td v-if="editableRow !== item.serviceid">
+              {{ item.servicename }}
             </td>
             <td v-else>
-              <input v-model="editedData.ServiceName" class="form-control" />
+              <input v-model="editedData.servicename" class="form-control" />
             </td>
 
-            <td v-if="editableRow !== item.ServiceID">{{ item.Price }}</td>
+            <td v-if="editableRow !== item.serviceid">{{ item.price }}</td>
             <td v-else>
-              <input v-model="editedData.Price" class="form-control" disabled />
+              <input v-model="editedData.price" class="form-control" disabled />
             </td>
 
-            <td v-if="editableRow !== item.ServiceID">
-              {{ item.Description }}
+            <td v-if="editableRow !== item.serviceid">
+              {{ item.description }}
             </td>
             <td v-else>
               <textarea
-                v-model="editedData.Description"
+                v-model="editedData.description"
                 class="form-control"
                 cols="15"
                 rows="5"
               ></textarea>
             </td>
             <td>
-              <div v-if="editableRow != item.ServiceID" class="d-flex">
+              <div v-if="editableRow != item.serviceid" class="d-flex">
                 <button
                   class="btn btn-sm btn-outline-success mx-1"
                   @click="editService(item)"
@@ -127,7 +127,7 @@
                 </button>
                 <button
                   class="btn btn-sm btn-outline-danger mx-1"
-                  @click="deleteService(item.ServiceID)"
+                  @click="deleteService(item.serviceid)"
                 >
                   Delete
                 </button>
@@ -165,35 +165,35 @@
         <tbody>
           <tr
             v-for="(item, index) in services.filter(
-              (service) => service.IsDeleted != 0
+              (service) => service.isdeleted != 0
             )"
             :key="index"
           >
             <td>{{ index + 1 }}</td>
 
-            <td v-if="editableRow !== item.ServiceID">
-              {{ item.ServiceName }}
+            <td v-if="editableRow !== item.serviceid">
+              {{ item.servicename }}
             </td>
             <td v-else>
-              <input v-model="editedData.ServiceName" class="form-control" />
+              <input v-model="editedData.servicename" class="form-control" />
             </td>
 
-            <td v-if="editableRow !== item.ServiceID">{{ item.Price }}</td>
+            <td v-if="editableRow !== item.serviceid">{{ item.price }}</td>
             <td v-else>
-              <!-- <input v-model="editedData.Price" class="form-control" readonly /> -->
+              <!-- <input v-model="editedData.price" class="form-control" readonly /> -->
             </td>
 
-            <td v-if="editableRow !== item.ServiceID">
-              {{ item.Description }}
+            <td v-if="editableRow !== item.serviceid">
+              {{ item.description }}
             </td>
             <td v-else>
-              <input v-model="editedData.Description" class="form-control" />
+              <input v-model="editedData.description" class="form-control" />
             </td>
 
             <td>
               <button
                 class="btn btn-sm btn-outline-success"
-                @click="restoreService(item.ServiceID)"
+                @click="restoreService(item.serviceid)"
               >
                 Restore
               </button>
@@ -224,14 +224,14 @@ const success = ref(false);
 const service = ref({});
 const services = ref([]);
 
-const deleteService = async (ServiceID) => {
+const deleteService = async (serviceid) => {
   const isConfirmed = confirm('Are you sure you want to DELETE this service');
   if (!isConfirmed) {
     console.log('Deletion canceled by user.');
     return;
   }
   try {
-    const response = await api.put(`/api/delete_service/${ServiceID}`);
+    const response = await api.put(`/api/delete_service/${serviceid}`);
     console.log(response.status);
     fetchService();
   } catch (error) {
@@ -241,14 +241,14 @@ const deleteService = async (ServiceID) => {
   }
 };
 
-const restoreService = async (ServiceID) => {
+const restoreService = async (serviceid) => {
   const isConfirmed = confirm('Are you sure you want to RESTORE this service');
   if (!isConfirmed) {
     console.log('Restore canceled by user.');
     return;
   }
   try {
-    const response = await api.put(`/api/restore_service/${ServiceID}`);
+    const response = await api.put(`/api/restore_service/${serviceid}`);
     console.log(response.status);
     fetchService();
   } catch (error) {
@@ -288,12 +288,12 @@ const editableRow = ref(null); // Theo dõi ID của hàng đang chỉnh sửa
 const editedData = reactive({}); // Lưu thông tin chỉnh sửa tạm thời
 
 const editService = (item) => {
-  editableRow.value = item.ServiceID; // Gán hàng đang chỉnh sửa
-  editedData.ServiceID = item.ServiceID;
-  editedData.ServiceName = item.ServiceName;
-  editedData.Price = item.Price;
-  editedData.IsDeleted = item.IsDeleted;
-  editedData.Description = item.Description;
+  editableRow.value = item.serviceid; // Gán hàng đang chỉnh sửa
+  editedData.serviceid = item.serviceid;
+  editedData.servicename = item.servicename;
+  editedData.price = item.price;
+  editedData.isdeleted = item.isdeleted;
+  editedData.description = item.description;
 };
 
 const saveEdit = async () => {

@@ -12,8 +12,8 @@
     </header> -->
     <div class="card-box">
       <div class="card text-center card-booking">
-        <h1 class="Card-title">${{ parseFloat(tour.Price).toFixed(2) }}</h1>
-        <h6>deposit ${{ parseFloat(tour.Price * 0.3).toFixed(2) }}</h6>
+        <h1 class="Card-title">${{ parseFloat(tour.price).toFixed(2) }}</h1>
+        <h6>deposit ${{ parseFloat(tour.price * 0.3).toFixed(2) }}</h6>
         <hr />
         <div class="btn btn-success" @click="openPopup">Book Now</div>
         <hr />
@@ -92,11 +92,11 @@
                     <div class="d-flex">
                       <h5>Package</h5>
                       <h6
-                        v-if="selectedDate && schedulePicked.AvailableSpots"
+                        v-if="selectedDate && schedulePicked.availablespots"
                         class="mx-1 bg-info rounded p-1"
                         style="max-width: fit-content"
                       >
-                        {{ schedulePicked.AvailableSpots }} left
+                        {{ schedulePicked.availablespots }} left
                       </h6>
                     </div>
                     <div class="mb-3 d-flex">
@@ -116,7 +116,7 @@
                         >
                           <li
                             v-for="value in caculateMount(
-                              schedulePicked.AvailableSpots
+                              schedulePicked.availablespots
                             )"
                             :key="value"
                           >
@@ -132,7 +132,7 @@
                       </div>
 
                       <h6 style="margin-left: 20%">
-                        Trip Price: <strong>${{ tour.Price }}</strong>
+                        Trip Price: <strong>${{ tour.price }}</strong>
                       </h6>
                     </div>
 
@@ -156,8 +156,8 @@
                                   style="width: fit-content"
                                 >
                                   {{
-                                    selectedOptions[option.ServiceID]
-                                      ?.Quantity || 0
+                                    selectedOptions[option.serviceid]
+                                      ?.quantity || 0
                                   }}
                                 </button>
                                 <ul
@@ -166,8 +166,8 @@
                                 >
                                   <li
                                     v-for="value in caculateMount(
-                                      scheduleTSData[option.ServiceID]
-                                        ?.AvailableSpots || 0
+                                      scheduleTSData[option.serviceid]
+                                        ?.availablespots || 0
                                     )"
                                     :key="value"
                                   >
@@ -175,7 +175,7 @@
                                       class="dropdown-item"
                                       href="#"
                                       @click.prevent="
-                                        selectOption(option.ServiceID, value)
+                                        selectOption(option.serviceid, value)
                                       "
                                     >
                                       {{ value }}
@@ -188,24 +188,24 @@
                               <div class="d-flex flex-column">
                                 <div class="d-flex">
                                   <h5>
-                                    {{ option.ServiceName }}
+                                    {{ option.servicename }}
                                   </h5>
                                   <h6
                                     v-if="selectedDate"
                                     class="mx-1 bg-info rounded p-1"
                                   >
                                     {{
-                                      scheduleTSData[option.ServiceID]
-                                        ?.AvailableSpots || 0
+                                      scheduleTSData[option.serviceid]
+                                        ?.availablespots || 0
                                     }}
                                     left
                                   </h6>
                                   <h5 style="margin-left: auto">
-                                    ${{ option.Price }}
+                                    ${{ option.price }}
                                   </h5>
                                 </div>
                                 <div>
-                                  {{ option.Description }}
+                                  {{ option.description }}
                                 </div>
                               </div>
                               <hr />
@@ -223,7 +223,7 @@
                         <div class="col-6">
                           <label for="" class="form-label">First Name</label>
                           <input
-                            v-model="Buyer.firstName"
+                            v-model="Buyer.firstname"
                             type="text"
                             class="form-control"
                             placeholder="First Name"
@@ -233,7 +233,7 @@
                         <div class="col-6">
                           <label for="" class="form-label">Last Name</label>
                           <input
-                            v-model="Buyer.lastName"
+                            v-model="Buyer.lastname"
                             type="text"
                             class="form-control"
                             placeholder="Last Name"
@@ -253,7 +253,7 @@
                         <div class="col-6">
                           <label for="" class="form-label">Confirm Email</label>
                           <input
-                            v-model="Buyer.confirmEmail"
+                            v-model="Buyer.confirmemail"
                             type="email"
                             class="form-control"
                             placeholder="Confirm Email"
@@ -263,7 +263,7 @@
                         <div class="col">
                           <label for="" class="form-label">Phone Number</label>
                           <input
-                            v-model="Buyer.phoneNumber"
+                            v-model="Buyer.phonenumber"
                             type="text"
                             class="form-control"
                             placeholder="Your Answer"
@@ -288,7 +288,7 @@
                                   >First Name</label
                                 >
                                 <input
-                                  v-model="part.firstName"
+                                  v-model="part.firstname"
                                   type="text"
                                   class="form-control"
                                   placeholder="First Name"
@@ -300,7 +300,7 @@
                                   >Last Name</label
                                 >
                                 <input
-                                  v-model="part.lastName"
+                                  v-model="part.lastname"
                                   type="text"
                                   class="form-control"
                                   placeholder="Last Name"
@@ -312,7 +312,7 @@
                                   >Date of Birth
                                 </label>
                                 <VDatePicker
-                                  v-model="part.dateOfBirth"
+                                  v-model="part.dateofbirth"
                                   :popover="popover"
                                 >
                                   <template
@@ -345,7 +345,7 @@
                               >
                               <input
                                 id="inputNameOnPassport"
-                                v-model="part.fullNameOnPassport"
+                                v-model="part.fullnameonpassport"
                                 type="text"
                                 class="form-control"
                                 placeholder="Your Answer"
@@ -360,7 +360,7 @@
                               >
                               <input
                                 id="inputPassportNumber"
-                                v-model="part.passportNumber"
+                                v-model="part.passportnumber"
                                 type="number"
                                 class="form-control"
                                 placeholder="Your Answer"
@@ -419,7 +419,7 @@
                               >
                               <input
                                 id="inputPhoneNumber"
-                                v-model="part.phoneNumber"
+                                v-model="part.phonenumber"
                                 type="text"
                                 class="form-control"
                                 placeholder="Your Answer"
@@ -550,12 +550,12 @@
                       <div class="d-flex">
                         <h6 class="text-bold">Trip Price:</h6>
                         <h6 style="margin-left: auto">
-                          ${{ tour.Price * selectedPakage }}
+                          ${{ tour.price * selectedPakage }}
                         </h6>
                       </div>
 
                       <span style="font-size: small; margin-left: 10px"
-                        >${{ tour.Price }} * {{ selectedPakage }}</span
+                        >${{ tour.price }} * {{ selectedPakage }}</span
                       >
                     </div>
                     <hr />
@@ -568,10 +568,10 @@
                       >
                         <div class="d-flex">
                           <h6 class="text-bold" style="margin-bottom: 0">
-                            {{ optionData.ServiceName }}
+                            {{ optionData.servicename }}
                           </h6>
                           <h6 style="margin-left: auto; margin-bottom: 0">
-                            ${{ optionData.Price * optionData.Quantity }}
+                            ${{ optionData.price * optionData.quantity }}
                           </h6>
                         </div>
 
@@ -582,7 +582,7 @@
                             margin-bottom: 15px;
                           "
                         >
-                          ${{ optionData.Price }} * {{ optionData.Quantity }}
+                          ${{ optionData.price }} * {{ optionData.quantity }}
                         </span>
                       </div>
                       <hr />
@@ -658,8 +658,8 @@ var allAvailableDates = ref([]);
 // Tính toán các ngày được phép
 const allowedDates = computed(() => {
   return schedules.value.map((date) => ({
-    key: `allowed-${date.StartDate}`,
-    dates: date.StartDate,
+    key: `allowed-${date.startdate}`,
+    dates: date.startdate,
     highlight: {
       color: 'blue',
       fillMode: 'outline',
@@ -697,7 +697,7 @@ const disabledDates = async () => {
     if (
       !schedules.value.some(
         (schedule) =>
-          new Date(schedule.StartDate).toDateString() ===
+          new Date(schedule.startdate).toDateString() ===
           currentDate.toDateString()
       )
     ) {
@@ -727,13 +727,13 @@ const closePopup = () => {
 
 const calculateTotal = () => {
   // Tính giá tour dựa trên số lượng người
-  const tourTotal = (parseFloat(tour.value.Price) || 0) * selectedPakage.value;
+  const tourTotal = (parseFloat(tour.value.price) || 0) * selectedPakage.value;
 
   // Tính tổng giá các dịch vụ đã chọn
   const servicesTotal = Object.values(selectedOptions.value).reduce(
     (total, option) => {
-      const price = parseFloat(option.Price) || 0; // Giá dịch vụ
-      const quantity = option.Quantity || 0; // Số lượng dịch vụ
+      const price = parseFloat(option.price) || 0; // Giá dịch vụ
+      const quantity = option.quantity || 0; // Số lượng dịch vụ
       return total + price * quantity; // Tích lũy tổng giá trị dịch vụ
     },
     0 // Giá trị ban đầu là 0
@@ -759,15 +759,15 @@ const initializeParticipants = (number) => {
   Participant.splice(0, Participant.length); // Xóa tất cả phần tử hiện tại
   for (let i = 0; i < number; i++) {
     Participant.push({
-      firstName: '',
-      lastName: '',
+      firstname: '',
+      lastname: '',
       email: '',
-      fullNameOnPassport: '',
-      passportNumber: '',
-      dateOfBirth: '',
+      fullnameonpassport: '',
+      passportnumber: '',
+      dateofbirth: '',
       gender: '',
       nationality: '',
-      phoneNumber: '',
+      phonenumber: '',
     });
   }
 };
@@ -787,20 +787,20 @@ const _selectPackage = (value) => {
   initializeParticipants(value);
 };
 
-const selectOption = (optionId, Quantity) => {
+const selectOption = (optionId, quantity) => {
   const service = services.value.find(
-    (service) => service.ServiceID == optionId
+    (service) => service.serviceid == optionId
   );
-  selectedOptions.value[optionId] = { Quantity, ...service }; // Cập nhật số lượng cho từng option
+  selectedOptions.value[optionId] = { quantity, ...service }; // Cập nhật số lượng cho từng option
 };
 
-const fetchScheduleTS = async (ScheduleID) => {
+const fetchScheduleTS = async (scheduleid) => {
   try {
     const tourid = route.params.tourid;
-    const response = await axios.get(`/api/tour/${tourid}/${ScheduleID}`);
+    const response = await api.get(`/api/tour/${tourid}/${scheduleid}`);
     if (response.status === 200) {
       response.data.forEach((item) => {
-        scheduleTSData.value[item.ServiceID] = item; // Lưu trữ dữ liệu theo ServiceID
+        scheduleTSData.value[item.serviceid] = item; // Lưu trữ dữ liệu theo ServiceID
       });
     }
 
@@ -812,11 +812,11 @@ const fetchScheduleTS = async (ScheduleID) => {
 
 // current = 2
 const Buyer = reactive({
-  firstName: '',
-  lastName: '',
+  firstname: '',
+  lastname: '',
   email: '',
-  confirmEmail: '',
-  phoneNumber: '',
+  confirmemail: '',
+  phonenumber: '',
 });
 
 const Participant = reactive([{}]);
@@ -850,7 +850,7 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
     }
     const index_StartDate = schedules.value.findIndex(
       (date) =>
-        new Date(date.StartDate).toDateString() === datePicked.toDateString()
+        new Date(date.startdate).toDateString() === datePicked.toDateString()
     );
     // Kiểm tra ngày được chọn có ở trong schedule
     if (index_StartDate != -1) {
@@ -861,7 +861,7 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
           day: 'numeric',
         });
         schedulePicked.value = schedules.value[index_StartDate];
-        fetchScheduleTS(schedulePicked.value.ScheduleID);
+        fetchScheduleTS(schedulePicked.value.scheduleid);
         const startDate = new Date(datePicked);
         allAvailableDates.value.push(datePicked);
 
@@ -891,28 +891,28 @@ const removeSevenDaysAfterSelectedDate = async (datePicked) => {
 
 const fetchTourSchedule = async (tourid) => {
   try {
-    const response = await axios.get(`/api/tour/${tourid}/schedule`);
+    const response = await api.get(`/api/tour/${tourid}/schedule`);
     schedules.value = response.data;
     schedules.value.sort(
-      (a, b) => new Date(a.StartDate) - new Date(b.StartDate)
+      (a, b) => new Date(a.startdate) - new Date(b.startdate)
     );
     minDate.value = new Date(
-      Math.min(...schedules.value.map((item) => new Date(item.StartDate)))
+      Math.min(...schedules.value.map((item) => new Date(item.startdate)))
     );
 
     maxDate.value = new Date(
-      Math.max(...schedules.value.map((item) => new Date(item.StartDate)))
+      Math.max(...schedules.value.map((item) => new Date(item.startdate)))
     );
     maxDate.value.setDate(maxDate.value.getDate() + 30);
     disabledDates();
 
     schedules.value.map((item) => {
-      item.StartDate = new Date(item.StartDate).toLocaleDateString('en-US', {
+      item.startdate = new Date(item.startdate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
-      item.EndDate = new Date(item.EndDate).toLocaleDateString('en-US', {
+      item.enddate = new Date(item.enddate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -925,7 +925,7 @@ const fetchTourSchedule = async (tourid) => {
 
 const fetchTourDetail = async (tourid) => {
   try {
-    const response = await axios.get(`/api/tour/${tourid}`);
+    const response = await api.get(`/api/tour/${tourid}`);
     tour.value = response.data;
   } catch (error) {
     console.error('Error fetching Tour Detail:', error);
@@ -934,7 +934,7 @@ const fetchTourDetail = async (tourid) => {
 
 const fetchTourService = async (tourid) => {
   try {
-    const response = await axios.get(`/api/tour/${tourid}/service`);
+    const response = await api.get(`/api/tour/${tourid}/service`);
     services.value = response.data;
   } catch (error) {
     console.error('Error fetching Tour Detail:', error);
@@ -973,29 +973,29 @@ const validateForm = () => {
 
   if (currentStep.value === 2) {
     if (
-      !Buyer.firstName ||
-      !Buyer.lastName ||
+      !Buyer.firstname ||
+      !Buyer.lastname ||
       !Buyer.email ||
-      !Buyer.confirmEmail ||
-      !Buyer.phoneNumber
+      !Buyer.confirmemail ||
+      !Buyer.phonenumber
     ) {
       alert('Please fill in all buyer information.');
       return false;
     }
-    if (Buyer.email !== Buyer.confirmEmail) {
+    if (Buyer.email !== Buyer.confirmemail) {
       alert('Email and Confirm Email do not match.');
       return false;
     }
     for (let participant of Participant) {
       if (
-        !participant.firstName ||
-        !participant.lastName ||
+        !participant.firstname ||
+        !participant.lastname ||
         !participant.email ||
-        !participant.fullNameOnPassport ||
+        !participant.fullnameonpassport ||
         !participant.gender ||
-        !participant.passportNumber ||
+        !participant.passportnumber ||
         !participant.nationality ||
-        !participant.phoneNumber
+        !participant.phonenumber
       ) {
         alert('Please fill in all participant information.');
         return false;
@@ -1015,7 +1015,7 @@ const fetchUser = () => {
 
 const fetchItyneraty = async (tourid) => {
   try {
-    const response = await axios.get(`/api/itinerary/${tourid}`);
+    const response = await api.get(`/api/itinerary/${tourid}`);
     console.log(response.data);
     itineraries.value = response.data;
   } catch (error) {
@@ -1026,12 +1026,12 @@ const fetchItyneraty = async (tourid) => {
 const createBooking = async () => {
   try {
     Participant.map((part) => {
-      part.dateOfBirth = format(
-        new Date(part.dateOfBirth),
+      part.dateofbirth = format(
+        new Date(part.dateofbirth),
         'yyyy-MM-dd HH:mm:ss'
       );
     });
-    const response = await axios.post('/api/create_booking', {
+    const response = await api.post('/api/create_booking', {
       Buyer: user.value,
       Participant: Participant,
       schedulePicked: schedulePicked.value,
@@ -1058,10 +1058,10 @@ watch(
   () => Participant[0],
   (newVal) => {
     if (newVal) {
-      Buyer.firstName = newVal.firstName;
-      Buyer.lastName = newVal.lastName;
+      Buyer.firstname = newVal.firstname;
+      Buyer.lastname = newVal.lastname;
       Buyer.email = newVal.email;
-      Buyer.phoneNumber = newVal.phoneNumber;
+      Buyer.phonenumber = newVal.phonenumber;
     }
   },
   { deep: true } // Theo dõi thay đổi sâu
@@ -1071,10 +1071,10 @@ watch(
   () => Buyer,
   (newVal) => {
     if (Participant[0]) {
-      Participant[0].firstName = newVal.firstName;
-      Participant[0].lastName = newVal.lastName;
+      Participant[0].firstname = newVal.firstname;
+      Participant[0].lastname = newVal.lastname;
       Participant[0].email = newVal.email;
-      Participant[0].phoneNumber = newVal.phoneNumber;
+      Participant[0].phonenumber = newVal.phonenumber;
     }
   },
   { deep: true }

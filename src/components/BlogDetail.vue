@@ -47,9 +47,9 @@
               <div class="comment">
                 <Comment :comment="comment" />
                 <button
-                  v-if="state.userId === comment.AuthorID"
+                  v-if="state.userid === comment.authorid"
                   class="btn btn-link text-danger p-0 mt-2"
-                  @click="deleteComment(comment.CommentID, state.userId)"
+                  @click="deleteComment(comment.commentid, state.userid)"
                 >
                   <i class="fa-solid fa-rectangle-xmark fs-5"></i>
                 </button>
@@ -85,14 +85,14 @@
               class="col-md-4 mb-4"
             >
               <Actical_card
-                :image="article.ImageUrl"
-                :title="article.Title"
-                :description="article.ContentIntro.slice(0, 100) + '...'"
-                :author="article.Author"
-                :authorAvatar="article.AuthorAvatar"
-                :views="article.Views"
-                :id="article.PostID"
-                :create_at="article.CreatedAt"
+                :image="article.imageurl"
+                :title="article.title"
+                :description="article.contentintro.slice(0, 100) + '...'"
+                :author="article.author"
+                :authoravatar="article.authoravatar"
+                :views="article.views"
+                :id="article.postid"
+                :create_at="article.createdat"
               ></Actical_card>
             </div>
           </div>
@@ -116,7 +116,7 @@ import Comment from './Comment.vue';
 // import { AnnotationLayer } from 'pdfjs-dist';
 
 const state = reactive({
-  userId: 0,
+  userid: 0,
 });
 // Khai báo biến và dữ liệu
 const blog = ref({});
@@ -156,9 +156,9 @@ const clearForm = () => {
 };
 
 // Hàm gọi API
-const fetchBlog = async (postId) => {
+const fetchBlog = async (postid) => {
   try {
-    const response = await api.get(`/api/posts/${postId}`);
+    const response = await api.get(`/api/posts/${postid}`);
     blog.value = response.data;
     console.log(blog.value);
     visibleCommentsCount.value = 3;
@@ -167,9 +167,9 @@ const fetchBlog = async (postId) => {
   }
 };
 
-const fetchComments = async (postId) => {
+const fetchComments = async (postid) => {
   try {
-    const response = await api.get(`/api/posts/${postId}/comments`);
+    const response = await api.get(`/api/posts/${postid}/comments`);
     comments.value = response.data.reverse();
   } catch (error) {
     console.error('Error fetching comments:', error);
@@ -180,10 +180,10 @@ const fetchUser = () => {
   const userData = JSON.parse(localStorage.getItem('user'));
   console.log(userData);
   if (userData) {
-    newComment.value.author_id = userData.UserID;
-    newComment.value.author_avatar = userData.ImageAvatar;
-    newComment.value.email = userData.Email;
-    state.userId = userData.UserID;
+    newComment.value.author_id = userData.userid;
+    newComment.value.author_avatar = userData.imageavatar;
+    newComment.value.email = userData.email;
+    state.userid = userData.userid;
   } else {
     newComment.value.author_id = '';
     newComment.value.author_avatar = '';
@@ -192,28 +192,28 @@ const fetchUser = () => {
 };
 
 const addComment = async () => {
-  const postId = route.params.id;
+  const postid = route.params.id;
   try {
     if (!newComment.value.email) {
       alert('Vui long dang nhap');
       return;
     }
     const response = await api.post(
-      `/api/posts/${postId}/comments`,
+      `/api/posts/${postid}/comments`,
       newComment.value
     );
     if (response.status != 200) {
       alert('Faile to add comment');
     }
     // comments.value.push(response.data);
-    fetchComments(postId);
+    fetchComments(postid);
     clearForm();
   } catch (error) {
     console.error('Error adding comment:', error);
   }
 };
 
-async function deleteComment(commentId, authorId) {
+async function deleteComment(commentid, authorid) {
   const confirmDelete = confirm(
     'Are you sure you want to delete this comment?'
   );
@@ -221,13 +221,13 @@ async function deleteComment(commentId, authorId) {
     return; // Hủy xóa nếu người dùng chọn "Cancel"
   }
   try {
-    const postId = route.params.id;
+    const postid = route.params.id;
     // Gửi request DELETE đến API
     const response = await api.delete(
-      `/api/posts/${postId}/comments/${commentId}`,
+      `/api/posts/${postid}/comments/${commentid}`,
       {
         data: {
-          author_id: authorId, // Truyền author_id trong phần body
+          author_id: authorid, // Truyền author_id trong phần body
         },
       }
     );
@@ -235,7 +235,7 @@ async function deleteComment(commentId, authorId) {
     // Kiểm tra kết quả trả về
     if (response.status === 200) {
       console.log(response.data.message); // Log thông báo thành công
-      fetchComments(postId);
+      fetchComments(postid);
       // Thực hiện các hành động bổ sung, ví dụ:
       // - Cập nhật danh sách comment trên UI
       // - Hiển thị thông báo
@@ -266,18 +266,18 @@ const fetchRelatedArticles = async () => {
 
 // Lifecycle hook: Khi component được tạo
 onMounted(() => {
-  const postId = route.params.id;
-  fetchBlog(postId);
+  const postid = route.params.id;
+  fetchBlog(postid);
   fetchRelatedArticles();
-  fetchComments(postId);
+  fetchComments(postid);
   fetchUser();
 });
 
 // Xử lý khi route thay đổi
 onBeforeRouteUpdate((to, from, next) => {
-  const postId = to.params.id; // Lấy ID mới từ route
-  fetchBlog(postId); // Cập nhật dữ liệu bài viết
-  fetchComments(postId); // Cập nhật bình luận
+  const postid = to.params.id; // Lấy ID mới từ route
+  fetchBlog(postid); // Cập nhật dữ liệu bài viết
+  fetchComments(postid); // Cập nhật bình luận
   next(); // Cho phép điều hướng
 });
 </script>

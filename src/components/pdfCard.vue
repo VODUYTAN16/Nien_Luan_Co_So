@@ -1,17 +1,17 @@
 <template>
   <div class="card shadow-sm">
     <img
-      :src="file.ImageUrl"
+      :src="file.imageurl"
       class="card-img-top"
       alt="Thumbnail"
       style="height: 150px; object-fit: cover"
     />
     <div class="card-body">
       <h5 class="card-title text-truncate" title="Click to view">
-        {{ file.Title }}
+        {{ file.title }}
       </h5>
       <p class="card-text text-muted">
-        <small>Update: {{ timeAgo(file.CreatedAt) }}</small>
+        <small>Update: {{ timeAgo(file.createdat) }}</small>
       </p>
       <button class="btn btn-primary btn-sm w-100" @click="openFile(file)">
         Open

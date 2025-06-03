@@ -45,7 +45,7 @@
               <input
                 type="text"
                 class="form-control"
-                v-model="Filter.TourName"
+                v-model="Filter.tourname"
                 placeholder="Search by tour name"
               />
             </div>
@@ -55,7 +55,7 @@
                 <span class="input-group-text" id="basic-addon1"
                   >Start Date</span
                 >
-                <VDatePicker v-model="Filter.StartDate">
+                <VDatePicker v-model="Filter.startdate">
                   <template #default="{ inputValue, inputEvents }">
                     <input
                       class="form-control"
@@ -67,7 +67,7 @@
               </div>
               <!-- <div class="input-group mb-3 col">
                 <span class="input-group-text" id="basic-addon1">End Date</span>
-                <VDatePicker v-model="Filter.EndDate">
+                <VDatePicker v-model="Filter.enddate">
                   <template #default="{ inputValue, inputEvents }">
                     <input
                       class="form-control"
@@ -79,7 +79,7 @@
               </div> -->
               <div class="form-floating col">
                 <select
-                  v-model="Filter.TourID"
+                  v-model="Filter.tourid"
                   class="form-select"
                   id="floatingSelect"
                   aria-label="Floating label select example"
@@ -88,9 +88,9 @@
                   <option
                     v-for="(item, index) in tourNameList"
                     :key="index"
-                    :value="item.TourID"
+                    :value="item.tourid"
                   >
-                    {{ item.TourName }}
+                    {{ item.tourname }}
                   </option>
                 </select>
                 <label for="floatingSelect">Select Tour</label>
@@ -100,7 +100,7 @@
                   class="form-select"
                   id="floatingSelect"
                   aria-label="Floating label select example"
-                  v-model="Filter.Status"
+                  v-model="Filter.status"
                 >
                   <option selected>All</option>
                   <option value="Pending">Pending</option>
@@ -129,23 +129,23 @@
         <tbody>
           <tr
             v-for="(item, index) in filter(Filter).filter((item) => {
-              return item.Status != 'Paid' && item.Status != 'Cancelled';
+              return item.status != 'Paid' && item.status != 'Cancelled';
             })"
             :key="index"
             :class="{
-              'table-danger': item.Status === 'Cancelled',
-              'table-light': item.Status === 'Pending',
-              'table-success': item.Status === 'Booked',
+              'table-danger': item.status === 'Cancelled',
+              'table-light': item.status === 'Pending',
+              'table-success': item.status === 'Booked',
             }"
           >
             <td>{{ index + 1 }}</td>
-            <td>{{ item.TourName }}</td>
-            <td>{{ item.StartDate }}</td>
+            <td>{{ item.tourname }}</td>
+            <td>{{ item.startdate }}</td>
             <td>
               {{
                 new Date(
-                  new Date(item.StartDate).setDate(
-                    new Date(item.StartDate).getDate() + item.Duration - 1
+                  new Date(item.startdate).setDate(
+                    new Date(item.startdate).getDate() + item.duration - 1
                   )
                 ).toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -154,10 +154,10 @@
                 })
               }}
             </td>
-            <td>{{ item.NumberOfGuests }}</td>
+            <td>{{ item.numberofguests }}</td>
             <td>
               {{
-                new Date(item.BookingDate).toLocaleDateString('en-US', {
+                new Date(item.bookingdate).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
@@ -167,7 +167,7 @@
                 })
               }}
             </td>
-            <td>{{ item.Status }}</td>
+            <td>{{ item.status }}</td>
             <td>
               <!-- Button trigger modal -->
               <button
@@ -177,14 +177,14 @@
                 data-bs-target="#exampleModal"
                 @click="
                   getDetailOfSpecificedBooking(item),
-                    bookedServices(item.BookingID)
+                    bookedServices(item.bookingid)
                 "
               >
                 Detail
               </button>
               <!-- <button
                 class="btn btn-sm btn-outline-danger mx-2"
-                @click="deleteBooking(item.BookingID)"
+                @click="deleteBooking(item.bookingid)"
               >
                 Delete
               </button> -->
@@ -199,33 +199,33 @@
                 </button>
                 <ul class="dropdown-menu text-center">
                   <li
-                    v-if="item.Status != 'Pending'"
+                    v-if="item.status != 'Pending'"
                     class="dropdown-items"
                     @click="
-                      changeStatus(item.BookingID, 'Pending', item.TourID)
+                      changeStatus(item.bookingid, 'Pending', item.tourid)
                     "
                   >
                     Pending
                   </li>
                   <li
-                    v-if="item.Status != 'Booked'"
+                    v-if="item.status != 'Booked'"
                     class="dropdown-items"
-                    @click="changeStatus(item.BookingID, 'Booked', item.TourID)"
+                    @click="changeStatus(item.bookingid, 'Booked', item.tourid)"
                   >
                     Booked
                   </li>
                   <li
-                    v-if="item.Status != 'Paid'"
+                    v-if="item.status != 'Paid'"
                     class="dropdown-items"
-                    @click="changeStatus(item.BookingID, 'Paid', item.TourID)"
+                    @click="changeStatus(item.bookingid, 'Paid', item.tourid)"
                   >
                     Paid
                   </li>
                   <li
-                    v-if="item.Status != 'Cancelled'"
+                    v-if="item.status != 'Cancelled'"
                     class="dropdown-items"
                     @click="
-                      changeStatus(item.BookingID, 'Cancelled', item.TourID)
+                      changeStatus(item.bookingid, 'Cancelled', item.tourid)
                     "
                   >
                     Cancelled
@@ -267,13 +267,13 @@
             <div class="row">
               <div class="col">
                 <h5 class="text-success">Info Of Tour</h5>
-                <h6>Name of tour: {{ BookingDetail[0].TourName }}</h6>
-                <h6>Price of tour: ${{ BookingDetail[0].Price }}</h6>
+                <h6>Name of tour: {{ BookingDetail[0].tourname }}</h6>
+                <h6>Price of tour: ${{ BookingDetail[0].price }}</h6>
 
                 <h6>
                   Start Date:
                   {{
-                    new Date(BookingDetail[0].StartDate).toLocaleDateString(
+                    new Date(BookingDetail[0].startdate).toLocaleDateString(
                       'en-US',
                       {
                         year: 'numeric',
@@ -287,8 +287,8 @@
                   End Date:
                   {{
                     new Date(
-                      new Date(BookingDetail[0].StartDate).setDate(
-                        new Date(BookingDetail[0].StartDate).getDate() +
+                      new Date(BookingDetail[0].startdate).setDate(
+                        new Date(BookingDetail[0].startdate).getDate() +
                           BookingDetail[0].Duration -
                           1
                       )
@@ -302,7 +302,7 @@
               </div>
               <div class="col">
                 <h5 class="text-success">Whose Booking</h5>
-                <h6>FullName: {{ BookingDetail[0].FullName }}</h6>
+                <h6>FullName: {{ BookingDetail[0].fullname }}</h6>
                 <h6>Phone Number: {{ BookingDetail[0].PhoneNumber }}</h6>
                 <h6>
                   Booking Date:
@@ -321,7 +321,7 @@
                   }}
                 </h6>
                 <h6>
-                  Number of participant: {{ BookingDetail[0].NumberOfGuests }}
+                  Number of participant: {{ BookingDetail[0].numberofguests }}
                 </h6>
                 <h6>
                   <span class="fst-italic text-nowrap">
@@ -331,14 +331,14 @@
                 </h6>
                 <h6>
                   <span class="fst-italic text-nowrap">Trip Price:</span>
-                  ${{ BookingDetail[0].Price }} *
-                  {{ BookingDetail[0].NumberOfGuests }} = ${{
-                    BookingDetail[0].Price * BookingDetail[0].NumberOfGuests
+                  ${{ BookingDetail[0].price }} *
+                  {{ BookingDetail[0].numberofguests }} = ${{
+                    BookingDetail[0].price * BookingDetail[0].numberofguests
                   }}
                 </h6>
                 <h6>
                   <span class="fst-italic text-nowrap">Total Amount:</span>
-                  ${{ BookingDetail[0].TotalAmount }}
+                  ${{ BookingDetail[0].totalamount }}
                 </h6>
               </div>
               <div class="col">
@@ -359,10 +359,10 @@
                   <tbody>
                     <tr v-for="(service, index) in bookServices" :key="index">
                       <td>{{ index + 1 }}</td>
-                      <td>{{ service.ServiceName }}</td>
-                      <td>${{ service.Price }}</td>
-                      <td>{{ service.Quantity }}</td>
-                      <td>${{ service.Quantity * service.Price }}</td>
+                      <td>{{ service.servicename }}</td>
+                      <td>${{ service.price }}</td>
+                      <td>{{ service.quantity }}</td>
+                      <td>${{ service.quantity * service.price }}</td>
                     </tr>
                     <tr v-if="bookServices && bookServices.length === 0">
                       <td colspan="7" class="text-center">Nothing</td>
@@ -392,22 +392,22 @@
               <tbody>
                 <tr v-for="(item, index) in BookingDetail" :key="index">
                   <td>{{ index + 1 }}</td>
-                  <td>{{ item.FullName }}</td>
+                  <td>{{ item.fullname }}</td>
                   <td>
                     {{
-                      new Date(item.DateOfBirth).toLocaleDateString('en-US', {
+                      new Date(item.dateofbirth).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                       })
                     }}
                   </td>
-                  <td>{{ item.Gender }}</td>
-                  <td>{{ item.Email }}</td>
-                  <td>{{ item.PhoneNumber }}</td>
-                  <td>{{ item.FullNameOnPassport }}</td>
-                  <td>{{ item.PassportNumber }}</td>
-                  <td>{{ item.Nationality }}</td>
+                  <td>{{ item.gender }}</td>
+                  <td>{{ item.email }}</td>
+                  <td>{{ item.phonenumber }}</td>
+                  <td>{{ item.fullnameonpassport }}</td>
+                  <td>{{ item.passportnumber }}</td>
+                  <td>{{ item.nationality }}</td>
                 </tr>
               </tbody>
             </table>
@@ -444,12 +444,12 @@ const expanded = mapCurrent({ lg: false }, true);
 const selectedColor = ref('blue');
 
 const Filter = reactive({
-  StartDate: '',
-  EndDate: '',
-  TourID: '',
-  Status: '',
-  TourName: '', // Thêm trường mới
-  BookingID: '',
+  startdate: '',
+  enddate: '',
+  tourid: '',
+  status: '',
+  tourname: '', // Thêm trường mới
+  bookingid: '',
 });
 
 const currentStep = ref(1);
@@ -476,10 +476,10 @@ const removeDiacritics = (str) => {
 
 const filter = (Filter) => {
   console.log(Filter);
-  const query = removeDiacritics(Filter.TourName || '').trim();
+  const query = removeDiacritics(Filter.tourname || '').trim();
 
   return bookings.filter((booking) => {
-    const tourName = removeDiacritics(booking.TourName).trim();
+    const tourName = removeDiacritics(booking.tourname).trim();
     const queryWords = query.split(/\s+/); // Tách từ theo khoảng trắng
     const tourWords = tourName.split(/\s+/);
 
@@ -489,15 +489,15 @@ const filter = (Filter) => {
     );
 
     return (
-      (!Filter.TourID ||
-        Filter.TourID == -1 ||
-        booking.TourID == Filter.TourID) &&
+      (!Filter.tourid ||
+        Filter.tourid == -1 ||
+        booking.tourid == Filter.tourid) &&
       (!Filter.Status ||
         Filter.Status === 'All' ||
         booking.Status === Filter.Status) &&
-      (!Filter.StartDate ||
-        new Date(booking.StartDate) >= new Date(Filter.StartDate)) &&
-      (!Filter.TourName || matchEachWord) // Chỉ lọc theo tên nếu có TourName
+      (!Filter.startdate ||
+        new Date(booking.startdate) >= new Date(Filter.startdate)) &&
+      (!Filter.tourname || matchEachWord) // Chỉ lọc theo tên nếu có TourName
     );
   });
 };
@@ -507,12 +507,12 @@ const fetchBookings = async () => {
     const response = await api.get('api/booking');
     bookings = response.data.reverse();
     bookings.map((item) => {
-      item.StartDate = new Date(item.StartDate).toLocaleDateString('en-US', {
+      item.startdate = new Date(item.startdate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
-      item.EndDate = new Date(item.EndDate).toLocaleDateString('en-US', {
+      item.enddate = new Date(item.enddate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -521,8 +521,8 @@ const fetchBookings = async () => {
     tourNameList.value = [
       ...new Map(
         bookings.map((booking) => [
-          booking.TourID,
-          { TourID: booking.TourID, TourName: booking.TourName },
+          booking.tourid,
+          { tourid: booking.tourid, tourname: booking.tourname },
         ])
       ).values(),
     ];
@@ -533,16 +533,16 @@ const fetchBookings = async () => {
 
 const getDetailOfSpecificedBooking = async (booking) => {
   try {
-    const response = await api.get(`/api/detail_booking/${booking.BookingID}`);
+    const response = await api.get(`/api/detail_booking/${booking.bookingid}`);
     BookingDetail.value = response.data;
   } catch (err) {
     console.log('err of getDetailOfSpecificedBooking', err);
   }
 };
 
-const bookedServices = async (bookingId) => {
+const bookedServices = async (bookingid) => {
   try {
-    const response = await api.get(`/api/booked_service/${bookingId}`);
+    const response = await api.get(`/api/booked_service/${bookingid}`);
     bookServices.value = response.data;
     console.log(bookServices.value);
   } catch (error) {
@@ -550,7 +550,7 @@ const bookedServices = async (bookingId) => {
   }
 };
 
-const changeStatus = async (bookingId, status, tourId) => {
+const changeStatus = async (bookingid, status, tourid) => {
   try {
     const isConfirmed = confirm(`Are you sure you want change to ${status} `);
     if (!isConfirmed) {
@@ -559,9 +559,9 @@ const changeStatus = async (bookingId, status, tourId) => {
     }
 
     const response = await api.post(`/api/change_status`, {
-      bookingId,
+      bookingid,
       status,
-      tourId,
+      tourid,
     });
     if (response.status == 200) {
       alert('Change status successfully');
@@ -571,11 +571,11 @@ const changeStatus = async (bookingId, status, tourId) => {
 
     fetchBookings();
   } catch (error) {
-    console.log('Error changeStatus', error);
+    console.log('Error changestatus', error);
   }
 };
 
-const deleteBooking = async (bookingId) => {
+const deleteBooking = async (bookingid) => {
   try {
     const isConfirmed = confirm(
       'Are you sure you want to delete this booking?'
@@ -584,7 +584,7 @@ const deleteBooking = async (bookingId) => {
       console.log('Deletion canceled by user.');
       return;
     }
-    const response = await api.put(`/api/delete_booking`, { bookingId });
+    const response = await api.put(`/api/delete_booking`, { bookingid });
     if (response.status == 200) {
       alert('Delete booking successfully');
     } else {
@@ -598,7 +598,7 @@ const deleteBooking = async (bookingId) => {
 
 const ServicePriceTotal = (bookServices) => {
   return bookServices.reduce((acc, service) => {
-    return acc + service.Price * service.Quantity;
+    return acc + service.price * service.quantity;
   }, 0);
 };
 

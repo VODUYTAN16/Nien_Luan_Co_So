@@ -3,10 +3,10 @@
     <div class="row">
       <div
         class="col-xl-3 col-md-6 col-lg-4 tour-item"
-        v-for="(item, index) in tours?.filter((tour) => tour.IsDeleted == 0)"
+        v-for="(item, index) in tours?.filter((tour) => tour.isdeleted == 0)"
         :key="index"
       >
-        <router-link :to="`/TourDetail/${item.TourID}`">
+        <router-link :to="`/TourDetail/${item.tourid}`">
           <Card_Tour :Tour="item"></Card_Tour>
         </router-link>
         <div class="nav-button">
@@ -15,13 +15,13 @@
             data-bs-toggle="modal"
             data-bs-target="#staticBackdrop"
             class="btn btn-link text-success p-0 mt-2"
-            @click="editTour(item.TourID)"
+            @click="editTour(item.tourid)"
           >
             <i class="bx bxs-comment-edit fs-2"></i>
           </button>
           <button
             class="btn btn-link text-danger p-0 mt-2"
-            @click="deleteTour(item.TourID)"
+            @click="deleteTour(item.tourid)"
           >
             <i class="bx bxs-x-square fs-2"></i>
           </button>
@@ -97,15 +97,15 @@ import { format } from 'date-fns';
 
 const tours = ref([]);
 let infEditTour = ref({
-  dateForms: reactive([{ date: null, Capacity: '' }]),
+  dateForms: reactive([{ date: null, capacity: '' }]),
   serviceForms: reactive([{}]),
   itinerary: reactive([{}]),
   tourInf: reactive({
-    TourName: '',
-    Description: '',
-    Price: '',
-    Duration: '',
-    Img_Tour: '',
+    tourname: '',
+    description: '',
+    price: '',
+    duration: '',
+    imgtour: '',
   }),
 });
 
@@ -121,7 +121,7 @@ const fetchTours = async () => {
   }
 };
 
-async function deleteTour(tourID) {
+async function deleteTour(tourid) {
   try {
     // Hiển thị thông báo xác nhận trước khi xóa
     const isConfirmed = confirm('Are you sure you want to delete this tour?');
@@ -131,7 +131,7 @@ async function deleteTour(tourID) {
     }
 
     // Gửi yêu cầu DELETE đến API
-    const response = await api.put(`/api/tour/${tourID}`);
+    const response = await api.put(`/api/tour/${tourid}`);
 
     // Kiểm tra phản hồi từ API
     if (response.status === 200) {
@@ -163,16 +163,16 @@ const uploadImage = async (file) => {
         'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
       },
     });
-    return response.data.imageUrl;
+    return response.data.imageurl;
   } catch (error) {
     console.error('Lỗi upload ảnh:', error);
     throw error;
   }
 };
 
-async function editTour(tourID) {
+async function editTour(tourid) {
   try {
-    const response = await api.get(`/api/basis_inf/${tourID}`);
+    const response = await api.get(`/api/basis_inf/${tourid}`);
     infEditTour.value = response.data;
     console.log(infEditTour.value);
     console.log(response.data);
@@ -188,8 +188,8 @@ const saveEditTour = async (tourInf, dateForms, serviceForms, itinerary) => {
     // tiền xử lý
     //xử lý ảnh
 
-    if (tourInf.Img_Tour.file) {
-      tourInf.Img_Tour = await uploadImage(tourInf.Img_Tour.file).catch(
+    if (tourInf.imgtour.file) {
+      tourInf.imgtour = await uploadImage(tourInf.imgtour.file).catch(
         (error) => {
           console.error('Lỗi upload ảnh chính:', error);
           return null;
@@ -199,14 +199,14 @@ const saveEditTour = async (tourInf, dateForms, serviceForms, itinerary) => {
 
     itinerary = await Promise.all(
       itinerary.map(async (item, index) => {
-        if (item.ImageUrl?.file) {
+        if (item.imageurl?.file) {
           try {
             // Gọi hàm uploadImage để lấy link ảnh
-            const imageUrl = await uploadImage(item.ImageUrl.file);
-            item.ImageUrl = imageUrl; // Cập nhật link ảnh mới
+            const imageUrl = await uploadImage(item.imageurl.file);
+            item.imageurl = imageUrl; // Cập nhật link ảnh mới
           } catch (error) {
             console.error(`Lỗi upload ảnh ngày ${index + 1}:`, error);
-            item.ImageUrl = null; // Xử lý lỗi bằng cách gán null hoặc giá trị mặc định
+            item.imageurl = null; // Xử lý lỗi bằng cách gán null hoặc giá trị mặc định
           }
         }
         return item; // Trả về item đã được cập nhật

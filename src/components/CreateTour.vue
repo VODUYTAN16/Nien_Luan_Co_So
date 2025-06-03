@@ -16,7 +16,7 @@
               id="tourName"
               class="form-control"
               placeholder="Your Anwer"
-              v-model="tourInf.TourName"
+              v-model="tourInf.tourname"
               required
             />
           </div>
@@ -28,7 +28,7 @@
               class="form-control"
               placeholder="Your Anwer"
               required
-              @change="(event) => handleImage(event, props.tourInf, 'Img_Tour')"
+              @change="(event) => handleImage(event, props.tourInf, 'imgtour')"
             />
           </div>
         </div>
@@ -44,7 +44,7 @@
                   id="price"
                   min="0"
                   class="form-control"
-                  v-model="tourInf.Price"
+                  v-model="tourInf.price"
                   required
                   placeholder="$0"
                 />
@@ -57,7 +57,7 @@
                   id="price"
                   min="0"
                   class="form-control"
-                  v-model="tourInf.Price"
+                  v-model="tourInf.price"
                   required
                   placeholder="$0"
                   disabled
@@ -73,7 +73,7 @@
                   class="form-control"
                   placeholder="Ex: 7 days"
                   required
-                  v-model="tourInf.Duration"
+                  v-model="tourInf.duration"
                 />
               </div>
             </div>
@@ -94,9 +94,9 @@
             <img
               class="rounded order-light-subtle"
               :src="
-                tourInf.Img_Tour?.preview
-                  ? tourInf.Img_Tour.preview
-                  : tourInf.Img_Tour
+                tourInf.imgtour?.preview
+                  ? tourInf.imgtour.preview
+                  : tourInf.imgtour
               "
               alt="Image of Tour"
               style="height: 200px; border-radius: 10px"
@@ -110,7 +110,7 @@
           <textarea
             id="description"
             class="form-control"
-            v-model="tourInf.Description"
+            v-model="tourInf.description"
             placeholder="Description about some interesting of the tour"
           ></textarea>
         </div>
@@ -140,7 +140,7 @@
                 <h5
                   class="text-primary mx-2 text-center d-flex align-items-center"
                 >
-                  Day {{ item.DayNumber }}
+                  Day {{ item.daynumber }}
                 </h5>
 
                 <button
@@ -169,10 +169,10 @@
                     step="1"
                     min="1"
                     placeholder="Day order in tour"
-                    :max="tourInf?.Duration"
+                    :max="tourInf?.duration"
                     required
                     class="form-control"
-                    v-model="item.DayNumber"
+                    v-model="item.daynumber"
                   />
                 </div>
 
@@ -195,7 +195,7 @@
                         type="text"
                         class="form-control"
                         placeholder="Your Anwer"
-                        v-model="item.MealsIncluded"
+                        v-model="item.mealsincluded"
                       />
                     </div>
 
@@ -207,7 +207,7 @@
                         required
                         placeholder="Your Anwer"
                         rows="2"
-                        v-model="item.Activities"
+                        v-model="item.activities"
                       />
                     </div>
 
@@ -218,16 +218,16 @@
                         required
                         placeholder="Your Anwer"
                         class="form-control"
-                        v-model="item.Location"
+                        v-model="item.location"
                       />
                     </div>
                   </div>
                   <div class="col">
                     <img
                       :src="
-                        item.ImageUrl?.preview
-                          ? item.ImageUrl.preview
-                          : item.ImageUrl
+                        item.imageurl?.preview
+                          ? item.imageurl.preview
+                          : item.imageurl
                       "
                       alt=""
                       style="width: 250px; border-radius: 5px; margin: 5px"
@@ -241,7 +241,7 @@
                     type="text"
                     placeholder="Description about the interesting of that place"
                     class="form-control"
-                    v-model="item.Description"
+                    v-model="item.description"
                   ></textarea>
                 </div>
               </div>
@@ -310,7 +310,7 @@
                     min="0"
                     placeholder="Your Anwer"
                     id="capacity"
-                    v-model="form.Capacity"
+                    v-model="form.capacity"
                     required
                   />
                 </div>
@@ -366,18 +366,18 @@
                     >Service Name</label
                   >
                   <select
-                    v-model="service.ServiceID"
+                    v-model="service.serviceid"
                     class="form-select"
                     id="servicename"
                   >
                     <option
                       v-for="ser in services?.filter(
-                        (service) => service.IsDeleted == 0
+                        (service) => service.isdeleted == 0
                       )"
-                      :key="ser.ServiceID"
-                      :value="ser.ServiceID"
+                      :key="ser.serviceid"
+                      :value="ser.serviceid"
                     >
-                      {{ ser.ServiceName }}
+                      {{ ser.servicename }}
                     </option>
                   </select>
                 </div>
@@ -387,7 +387,7 @@
                     required
                     class="form-select"
                     aria-label="Default select example"
-                    v-model="service.Status"
+                    v-model="service.status"
                   >
                     <option value="Available">Available</option>
                     <option value="Optional">Optional</option>
@@ -448,19 +448,19 @@
                 <td>
                   {{
                     services?.filter((item) => {
-                      return item.ServiceID == service.ServiceID;
-                    })[0]?.ServiceName
+                      return item.serviceid == service.serviceid;
+                    })[0]?.servicename
                   }}
                 </td>
                 <td>
                   <input
                     type="number"
                     step="1"
-                    :value="getServiceCapacity(schedule, service.ServiceID)"
+                    :value="getServiceCapacity(schedule, service.serviceid)"
                     @input="
                       updateServiceCapacity(
                         schedule,
-                        service.ServiceID,
+                        service.serviceid,
                         $event.target.value
                       )
                     "
@@ -505,14 +505,14 @@ const { mapCurrent } = useScreens({
 const selectedColor = ref('blue');
 
 const props = defineProps({
-  dateForms: reactive([{ date: null, Capacity: '' }]),
+  dateForms: reactive([{ date: null, capacity: '' }]),
   serviceForms: reactive([{}]),
   tourInf: reactive({
-    TourName: '',
-    Description: '',
-    Price: '',
-    Img_Tour: new FormData(),
-    Duration: '',
+    tourname: '',
+    description: '',
+    price: '',
+    imgtour: new FormData(),
+    duration: '',
   }),
   itinerary: reactive([{}]),
   editable: false,
@@ -558,7 +558,7 @@ const deleteForm = async (form, index, type) => {
           return;
         }
         const respone1 = await api.put('/api/delete_schedule', {
-          id: form.dateForms[index].ScheduleID,
+          id: form.dateForms[index].scheduleid,
         });
         if (respone1.status == 200) {
           removeForm(form.dateForms, index);
@@ -573,8 +573,8 @@ const deleteForm = async (form, index, type) => {
           return;
         }
         const respone2 = await api.put('/api/delete_tourService', {
-          TourID: form.tourInf.TourID,
-          ServiceID: form.serviceForms[index].ServiceID,
+          TourID: form.tourInf.tourid,
+          ServiceID: form.serviceForms[index].serviceid,
         });
         if (respone2.status == 200) {
           removeForm(form.serviceForms, index);
@@ -589,7 +589,7 @@ const deleteForm = async (form, index, type) => {
           return;
         }
         const respone3 = await api.put('/api/delete_itinerary', {
-          id: form.itinerary[index].ItineraryID,
+          id: form.itinerary[index].itineraryid,
         });
         if (respone3.status == 200) {
           removeForm(form.itinerary, index);
@@ -647,7 +647,7 @@ const uploadImage = async (file) => {
         'Content-Type': 'multipart/form-data', // Bắt buộc phải có header này
       },
     });
-    return response.data.imageUrl;
+    return response.data.imageurl;
   } catch (error) {
     console.error('Lỗi upload ảnh:', error);
     throw error;
@@ -658,8 +658,8 @@ const filterLiveValue = async (schedules, services) => {
   return schedules.map((schedule) => {
     // Lấy các ServiceID từ mảng services
     const serviceIDs = services
-      ?.filter((service) => service.Status === 'Optional') // Lọc các service có Status là 'Optional'
-      .map((service) => Number(service.ServiceID)); // Chuyển đổi ServiceID thành số
+      ?.filter((service) => service.status === 'Optional') // Lọc các service có Status là 'Optional'
+      .map((service) => Number(service.serviceid)); // Chuyển đổi ServiceID thành số
 
     // Lấy các key từ schedule.services và chuyển đổi chúng thành số
     const numericKeys = Object.keys(schedule.services).map((key) =>
@@ -690,13 +690,13 @@ const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
     dateForms = await filterLiveValue(dateForms, serviceForms);
     //xử lý ảnh
     const [mainImage, ...itineraryResults] = await Promise.all([
-      uploadImage(tourInf.Img_Tour.file).catch((error) => {
+      uploadImage(tourInf.imgtour.file).catch((error) => {
         console.error('Lỗi upload ảnh chính:', error);
         return null;
       }),
       ...itinerary.map((item, index) =>
-        item.ImageUrl?.file
-          ? uploadImage(item.ImageUrl.file).catch((error) => {
+        item.imageurl?.file
+          ? uploadImage(item.imageurl.file).catch((error) => {
               console.error(`Lỗi upload ảnh ngày ${index + 1}:`, error);
               return null;
             })
@@ -706,9 +706,9 @@ const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
 
     // Gán kết quả
     console.log(mainImage, itineraryResults);
-    tourInf.Img_Tour = mainImage || '';
+    tourInf.imgtour = mainImage || '';
     itinerary.forEach((item, index) => {
-      item.ImageUrl = itineraryResults[index] || '';
+      item.imageurl = itineraryResults[index] || '';
     });
     // Xử lý form date
     dateForms.map((date) => {
@@ -762,18 +762,18 @@ const fetchTourService = async () => {
   }
 };
 
-const getServiceCapacity = (schedule, serviceID) => {
+const getServiceCapacity = (schedule, serviceid) => {
   if (!schedule.services) {
     schedule.services = {};
   }
-  return schedule.services[serviceID];
+  return schedule.services[serviceid];
 };
 
-const updateServiceCapacity = (schedule, serviceID, value) => {
+const updateServiceCapacity = (schedule, serviceid, value) => {
   if (!schedule.services) {
     schedule.services = {};
   }
-  schedule.services[serviceID] = Number(value);
+  schedule.services[serviceid] = Number(value);
 };
 
 onMounted(() => {

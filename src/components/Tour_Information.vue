@@ -9,14 +9,14 @@
       </div> -->
       <div class="mx-5">
         <i class="fa-solid fa-calendar-days"></i> Duration:
-        {{ Tour.Duration }}
+        {{ Tour.duration }}
         days
       </div>
       <div><i class="fa-regular fa-user"></i> Group size: 6 - 18</div>
     </div>
     <div class="container">
       <h2>About this trip</h2>
-      {{ Tour.Description }}
+      {{ Tour.description }}
     </div>
     <div class="container my-4">
       <h2>Upcoming dates</h2>
@@ -25,16 +25,16 @@
         <h5 class="my-1">{{ year }}</h5>
         <div v-for="(item, index) in items" :key="index">
           <span>
-            {{ item.StartDate }} -
+            {{ item.startdate }} -
             {{
-              item.Status == 'Full'
+              item.status == 'Full'
                 ? 'FULL '
-                : item.AvailableSpots
-                ? item.AvailableSpots + ' spots left'
+                : item.availablespots
+                ? item.availablespots + ' spots left'
                 : 0 + ' spots left'
             }}
           </span>
-          <span v-if="item.Status == 'Full'"
+          <span v-if="item.status == 'Full'"
             ><i class="fa-solid fa-x text-danger"></i
           ></span>
         </div>
@@ -91,10 +91,10 @@
                 <span class="text-success"
                   ><i class="fa-solid fa-circle-check"></i
                 ></span>
-                {{ item.ServiceName }}
+                {{ item.servicename }}
               </div>
               <div class="col-md-6">
-                {{ item.Description }}
+                {{ item.description }}
               </div>
             </div>
             <hr />
@@ -107,10 +107,10 @@
                 <span class="text-success">
                   <i class="bx bx-chevrons-right text-info fs-4"></i
                 ></span>
-                {{ item.ServiceName }}
+                {{ item.servicename }}
               </div>
               <div class="col-md-6">
-                {{ item.Description }}
+                {{ item.description }}
               </div>
             </div>
             <hr />
@@ -134,15 +134,15 @@
             :class="{ active: index === 0 }"
           >
             <div class="image-container">
-              <img :src="item.ImageUrl" class="d-block w-100" alt="..." />
+              <img :src="item.imageurl" class="d-block w-100" alt="..." />
               <!-- Lớp phủ mờ -->
               <div class="overlay"></div>
             </div>
             <div class="carousel-caption d-none d-md-block overlay">
-              <h5>Day {{ item.DayNumber }}: {{ item.Location }}</h5>
-              <p><strong>Activities:</strong> {{ item.Activities }}</p>
-              <p><strong>Meals Included:</strong> {{ item.MealsIncluded }}</p>
-              <p>{{ item.Description }}</p>
+              <h5>Day {{ item.daynumber }}: {{ item.location }}</h5>
+              <p><strong>Activities:</strong> {{ item.activities }}</p>
+              <p><strong>Meals Included:</strong> {{ item.mealsincluded }}</p>
+              <p>{{ item.description }}</p>
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@ const props = defineProps({
 
 const groupedSchedules = computed(() => {
   return props.Schedules.reduce((acc, schedule) => {
-    const year = schedule.StartDate.split(' ').pop();
+    const year = schedule.startdate.split(' ').pop();
     if (!acc[year]) acc[year] = [];
     acc[year].push(schedule);
     return acc;
@@ -189,7 +189,7 @@ const groupedSchedules = computed(() => {
 
 const groupedServices = computed(() => {
   return props.Services.reduce((acc, service) => {
-    const status = service.Status;
+    const status = service.status;
     if (!acc[status]) acc[status] = [];
     acc[status].push(service);
     return acc;

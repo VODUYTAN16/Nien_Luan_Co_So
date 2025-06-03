@@ -1,10 +1,10 @@
 <template>
   <div class="card-tour card">
-    <img :src="Tour.Img_Tour" alt="" class="card-img-top" />
+    <img :src="Tour.imgtour" alt="" class="card-img-top" />
     <div class="card-body">
-      <h4 class="card-title">| {{ Tour.Duration }} Days</h4>
-      <h4 class="card-title">{{ Tour.TourName }}</h4>
-      <h6 class="card-text text-primary">From ${{ Tour.Price }} USD</h6>
+      <h4 class="card-title">| {{ Tour.duration }} Days</h4>
+      <h4 class="card-title">{{ Tour.tourname }}</h4>
+      <h6 class="card-text text-primary">From ${{ Tour.price }} USD</h6>
     </div>
   </div>
 </template>

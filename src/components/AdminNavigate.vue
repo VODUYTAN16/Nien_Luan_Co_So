@@ -157,9 +157,9 @@ const fetchUser = () => {
   const userData = JSON.parse(localStorage.getItem('user'));
   if (userData) {
     isLoggedIn.value = true;
-    user.email = userData.Email;
-    user.fullname = userData.FullName;
-    user.avatarurl = userData.AvatarUrl;
+    user.email = userData.email;
+    user.fullname = userData.fullname;
+    user.avatarurl = userData.avatarurl;
     console.log(user.avatarurl);
   } else {
     isLoggedIn.value = false;

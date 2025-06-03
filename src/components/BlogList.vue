@@ -5,24 +5,24 @@
       <div class="row">
         <div
           v-for="blog in pagedBlogs"
-          :key="blog.PostID"
+          :key="blog.postid"
           class="col-xl-3 col-md-6 col-lg-4"
         >
           <div class="blog_card">
             <Actical_card
-              :image="blog.ImageUrl"
-              :title="blog.Title"
-              :description="blog.ContentIntro.slice(0, 100) + '...'"
-              :author="blog.Author"
-              :authorAvatar="blog.AuthorAvatar"
-              :views="blog.Views"
-              :id="blog.PostID"
-              :create_at="blog.CreatedAt"
+              :image="blog.imageurl"
+              :title="blog.title"
+              :description="blog.contentintro.slice(0, 100) + '...'"
+              :author="blog.author"
+              :authoravatar="blog.authoravatar"
+              :views="blog.views"
+              :id="blog.postid"
+              :create_at="blog.createdat"
             ></Actical_card>
             <button
               v-if="formData.admin"
               class="btn btn-link text-danger p-0 mt-2"
-              @click="deleteBlog(blog.PostID, blog.PostContentID)"
+              @click="deleteBlog(blog.postid, blog.postcontentid)"
             >
               <i class="fa-solid fa-rectangle-xmark fs-5"></i>
             </button>
@@ -174,7 +174,7 @@ const fetchBlog = async () => {
   }
 };
 
-async function deleteBlog(postId, postContentId) {
+async function deleteBlog(postid, postcontentid) {
   try {
     // Hiển thị thông báo xác nhận trước khi xóa
     const isConfirmed = confirm(
@@ -187,7 +187,7 @@ async function deleteBlog(postId, postContentId) {
 
     // Gửi yêu cầu DELETE đến API
     const response = await api.delete(
-      `/api/posts/${postId}/contents/${postContentId}`
+      `/api/posts/${postid}/contents/${postcontentid}`
     );
     fetchBlog();
 

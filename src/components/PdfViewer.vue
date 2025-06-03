@@ -12,13 +12,13 @@
         style="margin-bottom: 20px"
       >
         <div class="roportage">
-          <router-link :to="`/view-file/${file.PostID}`">
+          <router-link :to="`/view-file/${file.postid}`">
             <pdfCard :file="file"></pdfCard>
           </router-link>
           <button
             v-if="formData.admin"
             class="btn btn-link text-danger p-0 mt-2"
-            @click="deleteBlog(file.PostID, file.post_content_id)"
+            @click="deleteBlog(file.postid, file.post_content_id)"
           >
             <i class="fa-solid fa-rectangle-xmark fs-5"></i>
           </button>
@@ -106,7 +106,7 @@ const goToPage = (page) => {
   }
 };
 
-async function deleteBlog(postId, postContentId) {
+async function deleteBlog(postid, postContentId) {
   try {
     // Hiển thị thông báo xác nhận trước khi xóa
     const isConfirmed = confirm(
@@ -119,7 +119,7 @@ async function deleteBlog(postId, postContentId) {
 
     // Gửi yêu cầu DELETE đến API
     const response = await api.delete(
-      `/api/posts/${postId}/contents/${postContentId}`
+      `/api/posts/${postid}/contents/${postContentId}`
     );
 
     // Kiểm tra phản hồi từ API

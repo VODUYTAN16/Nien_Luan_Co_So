@@ -5,15 +5,15 @@
       <!-- <p class="text-muted">
         {{ blog.created_at || 'N/A' }} • {{ blog.readTime || 'N/A' }} read
       </p> -->
-      <h1>{{ blog.Title || 'No Title Available' }}</h1>
-      <p class="lead">{{ blog.Subtitle || 'No Subtitle' }}</p>
+      <h1>{{ blog.title || 'No Title Available' }}</h1>
+      <p class="lead">{{ blog.subtitle || 'No Subtitle' }}</p>
     </div>
 
     <!-- Image Section -->
     <div class="text-center mb-4">
       <img
-        v-if="blog.ImageUrl"
-        :src="blog.ImageUrl"
+        v-if="blog.imageurl"
+        :src="blog.imageurl"
         alt="Blog Image"
         class="img-fluid rounded"
       />
@@ -27,11 +27,11 @@
 
     <!-- Main Content -->
     <div class="mb-4">
-      <p>{{ blog.ContentIntro || '' }}</p>
-      <blockquote v-if="blog.Quote" class="blockquote fst-italic px-3">
-        <p>{{ blog.Quote }}</p>
+      <p>{{ blog.contentintro || '' }}</p>
+      <blockquote v-if="blog.quote" class="blockquote fst-italic px-3">
+        <p>{{ blog.quote }}</p>
       </blockquote>
-      <p>{{ blog.ContentBody || '' }}</p>
+      <p>{{ blog.contentbody || '' }}</p>
     </div>
 
     <!-- Share and Interaction Section -->
@@ -64,7 +64,7 @@
       <!-- Views -->
       <div>
         <span class="text-muted mb-0">
-          {{ blog.Views !== undefined ? blog.Views : 0 }}
+          {{ blog.views !== undefined ? blog.views : 0 }}
           <i class="fa-regular fa-eye"></i>
         </span>
 
@@ -84,7 +84,7 @@
             :class="[
               'fa-heart',
               'fa-solid',
-              state.isLiked ? 'text-danger' : 'text-secondary',
+              state.isliked ? 'text-danger' : 'text-secondary',
             ]"
           ></i>
         </button>
@@ -116,7 +116,7 @@ const props = defineProps({
 const state = reactive({
   likes: 0, // Số lượt thích ban đầu
   comments: 0, // Số lượt bình luận ban đầu
-  isLiked: false, // Trạng thái thích hay không
+  isliked: false, // Trạng thái thích hay không
 });
 
 // Hàm chia sẻ bài viết
@@ -144,26 +144,26 @@ const share = (platform) => {
 // Hàm tăng số lượt thích
 
 const likePost = async () => {
-  if (!user.value.UserID) {
+  if (!user.value.userid) {
     alert('Vui long dang nhap');
     return;
   }
   try {
     const postId = route.params.id;
     // Xác định hành động 'like' hoặc 'unlike'
-    const action = state.isLiked ? 'unlike' : 'like';
+    const action = state.isliked ? 'unlike' : 'like';
 
     // Gửi yêu cầu tới API
     const response = await api.post(`/api/posts/${postId}/like`, {
       action: action,
-      userId: user.value.UserID,
+      userId: user.value.userid,
     });
 
     // Cập nhật trạng thái nếu API thành công
     if (response.status === 200) {
-      state.isLiked = !state.isLiked; // Đảo ngược trạng thái thích
+      state.isliked = !state.isliked; // Đảo ngược trạng thái thích
       is_Liked_post(postId);
-      state.likes += state.isLiked ? 1 : -1; // Cập nhật số lượt thích
+      state.likes += state.isliked ? 1 : -1; // Cập nhật số lượt thích
     } else {
       console.error('Có lỗi xảy ra khi gọi API:', response.data.message);
     }
@@ -201,9 +201,9 @@ const fetchCountComments = async (postId) => {
 
 const is_Liked_post = async (postId) => {
   try {
-    const userId = user.value.UserID;
+    const userId = user.value.userid;
     const response = await api.get(`/api/posts/${userId}/is-liked/${postId}`);
-    state.isLiked = response.data.isLiked === true;
+    state.isliked = response.data.isliked === true;
   } catch (error) {
     console.error('Error fetching blog:', error);
   }

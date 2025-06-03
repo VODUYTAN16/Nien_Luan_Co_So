@@ -6,7 +6,7 @@
     </header> -->
     <main>
       <div class="pdfFile container">
-        <h1 class="text-center my-4">{{ file.Title }}</h1>
+        <h1 class="text-center my-4">{{ file.title }}</h1>
 
         <!-- Hiển thị trạng thái loading nếu chưa tải xong iframe -->
         <div v-if="loading" class="text-center">
@@ -42,18 +42,18 @@ const pdfViewerUrl = ref('');
 const file = ref({});
 
 // Hàm gọi API để lấy dữ liệu tệp PDF
-const fetchReportage = (postId) => {
+const fetchReportage = (postid) => {
   api
     .get('/api/posts', {
       params: { category_name: 'reportage' },
     })
     .then((response) => {
       const link = response.data.filter((item) => {
-        return item.PostID == postId;
+        return item.postid == postid;
       })[0];
 
       pdfViewerUrl.value = `http://localhost:3000/proxy?url=${encodeURIComponent(
-        link.Link
+        link.link
       )}`;
       file.value = link;
     })
@@ -71,8 +71,8 @@ const onIframeLoad = () => {
 };
 
 onMounted(() => {
-  const postId = route.params.id;
-  fetchReportage(postId);
+  const postid = route.params.id;
+  fetchReportage(postid);
 });
 </script>
 

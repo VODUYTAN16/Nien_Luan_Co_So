@@ -371,7 +371,7 @@
                     id="servicename"
                   >
                     <option
-                      v-for="ser in services.filter(
+                      v-for="ser in services?.filter(
                         (service) => service.IsDeleted == 0
                       )"
                       :key="ser.ServiceID"
@@ -447,7 +447,7 @@
                 </td>
                 <td>
                   {{
-                    services.filter((item) => {
+                    services?.filter((item) => {
                       return item.ServiceID == service.ServiceID;
                     })[0]?.ServiceName
                   }}
@@ -658,7 +658,7 @@ const filterLiveValue = async (schedules, services) => {
   return schedules.map((schedule) => {
     // Lấy các ServiceID từ mảng services
     const serviceIDs = services
-      .filter((service) => service.Status === 'Optional') // Lọc các service có Status là 'Optional'
+      ?.filter((service) => service.Status === 'Optional') // Lọc các service có Status là 'Optional'
       .map((service) => Number(service.ServiceID)); // Chuyển đổi ServiceID thành số
 
     // Lấy các key từ schedule.services và chuyển đổi chúng thành số
@@ -669,7 +669,7 @@ const filterLiveValue = async (schedules, services) => {
     console.log(Object.entries(schedule.services));
     // Lọc các key trong schedule.services mà có trong mảng serviceIDs
     const filteredServices = numericKeys
-      .filter((key) => serviceIDs.includes(key)) // Lọc các key hợp lệ
+      ?.filter((key) => serviceIDs.includes(key)) // Lọc các key hợp lệ
       .reduce((acc, key) => {
         acc[key] = schedule.services[key]; // Giữ lại giá trị tương ứng của key
         return acc;
@@ -741,7 +741,7 @@ const createTour = async (tourInf, dateForms, serviceForms, itinerary) => {
 
 const ListOptionalService = (services) => {
   console.log(services);
-  return services.filter((item) => {
+  return services?.filter((item) => {
     return item.Status == 'Optional';
   });
 };

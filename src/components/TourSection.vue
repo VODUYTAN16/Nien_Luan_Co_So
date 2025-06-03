@@ -3,7 +3,7 @@
     <div class="row">
       <div
         class="col-xl-3 col-md-6 col-lg-4 tour-item"
-        v-for="(item, index) in tours.filter((tour) => tour.IsDeleted == 0)"
+        v-for="(item, index) in tours?.filter((tour) => tour.IsDeleted == 0)"
         :key="index"
       >
         <router-link :to="`/TourDetail/${item.TourID}`">

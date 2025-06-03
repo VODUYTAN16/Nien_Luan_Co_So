@@ -270,15 +270,15 @@ app.get('/api/posts/:id', (req, res) => {
 // API đăng bài viết mới (posts và post_content)
 app.post('/api/posts', (req, res) => {
   const {
-    AuthorID,
-    CategoryID,
-    ImageUrl,
-    Title,
-    Subtitle,
-    ContentIntro,
-    Quote,
-    ContentBody,
-    Link,
+    authorid,
+    categoryid,
+    imageurl,
+    title,
+    subtitle,
+    contentintro,
+    quote,
+    contentbody,
+    link,
   } = req.body;
   console.log(req.body);
 
@@ -288,7 +288,7 @@ app.post('/api/posts', (req, res) => {
     VALUES (?, ?)
   `;
 
-  db.query(insertPostQuery, [AuthorID, CategoryID], (err, result) => {
+  db.query(insertPostQuery, [authorid, categoryid], (err, result) => {
     if (err) {
       return res.status(500).json({ message: 'Error creating post' });
     }
@@ -305,21 +305,21 @@ app.post('/api/posts', (req, res) => {
       insertContentQuery,
       [
         postId,
-        Title,
-        Subtitle,
-        ContentIntro,
-        Quote,
-        ContentBody,
-        ImageUrl,
-        Link,
+        title,
+        subtitle,
+        contentintro,
+        quote,
+        contentbody,
+        imageurl,
+        link,
       ],
       (err, result) => {
         if (err) {
           res.status(500).json({ message: 'Error creating post content' });
         } else {
           res.status(200).json({
-            Title,
-            image: ImageUrl,
+            title,
+            image: imageurl,
             message: 'Post created successfully',
             postId: postId,
           });

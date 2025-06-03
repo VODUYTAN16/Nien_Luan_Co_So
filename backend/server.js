@@ -945,7 +945,7 @@ app.post('/api/create_service', (req, res) => {
   const query = `INSERT INTO service (servicename, description, price) VALUE (?,?,?)`;
   db.query(
     query,
-    [service.ServiceName, service.Description, service.Price],
+    [service.servicename, service.description, service.price],
     (err, results) => {
       if (err) {
         res.status(500).json({ message: 'Error create service' });

@@ -729,7 +729,7 @@ app.post('/api/login/admin', async (req, res) => {
   try {
     // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
     db.query(
-      `SELECT * FROM user join userrole ur on user.userid = ur.userid
+      `SELECT * FROM user join user_role ur on user.userid = ur.userid
       join role on ur.roleid = role.roleid WHERE email = ?`,
       [Email],
       async (err, results) => {

@@ -89,10 +89,10 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   }
   console.log(req.body);
 
-  const imagePath = `http://localhost:${port}/uploads/${req.file.filename}`;
+  const imagePath = `${process.env.VITE_API_BASE_URL}/uploads/${req.file.filename}`;
   res
     .status(200)
-    .json({ message: 'Upload succsessfully', imageUrl: imagePath });
+    .json({ message: 'Upload succsessfully', imageurl: imagePath });
 });
 
 // API tìm bài viết mới nhất
